@@ -12,7 +12,12 @@
           "package_name": "com.example.tuhubread"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "435400073673-kr5su90ml72o7j33fkr014if866p0eai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBqYPqoTYC9EBosXIzdEjeuGiUISufEMTM"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "435400073673-kr5su90ml72o7j33fkr014if866p0eai.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "435400073673-v1k21r0mknfke7ofn60v8hq4883jetmb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.tuhubread"
+              }
+            }
+          ]
         }
       }
     }

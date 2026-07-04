@@ -127,3 +127,4 @@ be/configs/tuhubread-1e656-firebase-adminsdk-fbsvc-d6f651fcca.json
 
 # fe
 tuhubread/.env
+tuhubread/android/app/google-services.json
