@@ -8,12 +8,12 @@ android.apply {
     productFlavors {
         create("development") {
             dimension = "flavor-type"
-            applicationId = "com.example.tuhubread.dev"
+            applicationId = "com.example.tuhubread"
             resValue(type = "string", name = "app_name", value = "TuHuBread.Dev")
         }
         create("production") {
             dimension = "flavor-type"
-            applicationId = "com.example.tuhubread"
+            applicationId = "com.example.tuhubread.prod"
             resValue(type = "string", name = "app_name", value = "TuHuBread")
         }
     }

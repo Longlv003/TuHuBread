@@ -123,3 +123,7 @@ DATABASE_TUHUBREAD.MD
 # backend
 be/.env
 be/node_modules
+be/configs/tuhubread-1e656-firebase-adminsdk-fbsvc-d6f651fcca.json
+
+# fe
+tuhubread/.env

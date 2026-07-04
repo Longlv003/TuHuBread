@@ -399,7 +399,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.prod;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -410,6 +410,30 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = "Release-production";
+		};
+		11F75F6A95B6634EE158454E /* Profile-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = EF8073DA663787392C32BBCB /* Flutter/productionProfile.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Profile-production";
+		};
+		1BF39C6CB9183464C4362827 /* Debug-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 400285826450456390ADFC76 /* Flutter/productionDebug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug-production";
+		};
+		20BA45BD4F65641B98FED615 /* Debug-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0F4C44AFDC15ABA61F88803 /* Flutter/developmentDebug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug-development";
 		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
@@ -544,7 +568,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -553,6 +577,14 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = "Profile-development";
+		};
+		2E2934AC42D266EF6B56A7BB /* Release-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A0D0A038005EED7B25E8C46 /* Flutter/developmentRelease.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Release-development";
 		};
 		32279C3AA9F00F81E7596343 /* Profile-production */ = {
 			isa = XCBuildConfiguration;
@@ -614,7 +646,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.prod;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -731,7 +763,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -758,6 +790,14 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Release-production";
+		};
+		528F782DABA02ECB2869F0E5 /* Profile-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = EF8073DA663787392C32BBCB /* Flutter/productionProfile.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Profile-production";
 		};
 		66E5960A14B98A63EAEB9D01 /* Profile-production */ = {
 			isa = XCBuildConfiguration;
@@ -842,7 +882,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -1020,6 +1060,22 @@
 			};
 			name = "Debug-development";
 		};
+		AF3C6C4445840E5CC5915AF5 /* Release-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA8933DB467D70063BD531AC /* Flutter/productionRelease.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Release-production";
+		};
+		B5FC45D2082EE09B497E5AFF /* Profile-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 329BFCCC3D3C0B7269F5105D /* Flutter/developmentProfile.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Profile-development";
+		};
 		BA087BB09270D6011A39AE7E /* Debug-production */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 400285826450456390ADFC76 /* Flutter/productionDebug.xcconfig */;
@@ -1087,13 +1143,53 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tuhubread.prod;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Debug-production";
+		};
+		CBDBCCF592D7E5256619F4ED /* Debug-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 400285826450456390ADFC76 /* Flutter/productionDebug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug-production";
+		};
+		CCD92D02B0E999DF7069CFB4 /* Release-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A0D0A038005EED7B25E8C46 /* Flutter/developmentRelease.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Release-development";
+		};
+		E6F5248EC648268182715AD5 /* Release-production */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA8933DB467D70063BD531AC /* Flutter/productionRelease.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Release-production";
+		};
+		EEFA78575806E976BC030037 /* Profile-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 329BFCCC3D3C0B7269F5105D /* Flutter/developmentProfile.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Profile-development";
+		};
+		F192CC22F5087124DEDD87CC /* Debug-development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0F4C44AFDC15ABA61F88803 /* Flutter/developmentDebug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug-development";
 		};
 /* End XCBuildConfiguration section */
 
@@ -1136,6 +1232,18 @@
 				6893C74153C8A4BBF492B22A /* Debug-production */,
 				66E5960A14B98A63EAEB9D01 /* Profile-production */,
 				456E524B5662858A3B791AFD /* Release-production */,
+				F192CC22F5087124DEDD87CC /* Debug-development */,
+				EEFA78575806E976BC030037 /* Profile-development */,
+				2E2934AC42D266EF6B56A7BB /* Release-development */,
+				CBDBCCF592D7E5256619F4ED /* Debug-production */,
+				11F75F6A95B6634EE158454E /* Profile-production */,
+				E6F5248EC648268182715AD5 /* Release-production */,
+				20BA45BD4F65641B98FED615 /* Debug-development */,
+				B5FC45D2082EE09B497E5AFF /* Profile-development */,
+				CCD92D02B0E999DF7069CFB4 /* Release-development */,
+				1BF39C6CB9183464C4362827 /* Debug-production */,
+				528F782DABA02ECB2869F0E5 /* Profile-production */,
+				AF3C6C4445840E5CC5915AF5 /* Release-production */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

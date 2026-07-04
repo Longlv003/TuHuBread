@@ -3,14 +3,14 @@ flavors:
     app:
       name: "TuHuBread.Dev"
     android:
-      applicationId: "com.example.tuhubread.dev"
+      applicationId: "com.example.tuhubread"
     ios:
-      bundleId: "com.example.tuhubread.dev"
+      bundleId: "com.example.tuhubread"
 
   production:
     app:
       name: "TuHuBread"
     android:
-      applicationId: "com.example.tuhubread"
+      applicationId: "com.example.tuhubread.prod"
     ios:
-      bundleId: "com.example.tuhubread"
+      bundleId: "com.example.tuhubread.prod"
