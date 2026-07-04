@@ -109,6 +109,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome'**
   String get welcomeMessage;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TuHuBread'**
+  String get loginTitle;
+
+  /// No description provided for @loginSlogan.
+  ///
+  /// In en, this message translates to:
+  /// **'Hot bread, fast delivery'**
+  String get loginSlogan;
+
+  /// No description provided for @loginHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Account'**
+  String get loginHeading;
+
+  /// No description provided for @loginSubheading.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email and password'**
+  String get loginSubheading;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailHint;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordHint;
+
+  /// No description provided for @confirmPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPasswordHint;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginButton;
+
+  /// No description provided for @noAccountText.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? '**
+  String get noAccountText;
+
+  /// No description provided for @registerNowLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Register Now'**
+  String get registerNowLink;
+
+  /// No description provided for @orText.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get orText;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Account'**
+  String get registerTitle;
+
+  /// No description provided for @registerSlogan.
+  ///
+  /// In en, this message translates to:
+  /// **'Start enjoying delicious bread'**
+  String get registerSlogan;
+
+  /// No description provided for @fullNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullNameHint;
+
+  /// No description provided for @registerButtonText.
+  ///
+  /// In en, this message translates to:
+  /// **'Register Now'**
+  String get registerButtonText;
+
+  /// No description provided for @hasAccountText.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? '**
+  String get hasAccountText;
+
+  /// No description provided for @logoutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get logoutButton;
+
+  /// No description provided for @roleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role: '**
+  String get roleLabel;
+
+  /// No description provided for @emptyFieldsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in all fields'**
+  String get emptyFieldsError;
+
+  /// No description provided for @passwordMismatchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match!'**
+  String get passwordMismatchError;
+
+  /// No description provided for @emptyEmailPassError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter both email and password'**
+  String get emptyEmailPassError;
+
+  /// No description provided for @invalidEmailError.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email format'**
+  String get invalidEmailError;
+
+  /// No description provided for @splashErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: '**
+  String get splashErrorMessage;
+
+  /// No description provided for @retryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryButton;
+
+  /// No description provided for @firebaseErrorInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password'**
+  String get firebaseErrorInvalidCredential;
+
+  /// No description provided for @firebaseErrorUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled'**
+  String get firebaseErrorUserDisabled;
+
+  /// No description provided for @firebaseErrorTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed attempts. Please try again later'**
+  String get firebaseErrorTooManyRequests;
+
+  /// No description provided for @firebaseErrorEmailAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already in use'**
+  String get firebaseErrorEmailAlreadyInUse;
+
+  /// No description provided for @firebaseErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak'**
+  String get firebaseErrorWeakPassword;
+
+  /// No description provided for @firebaseErrorDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get firebaseErrorDefault;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error, please check your connection'**
+  String get networkError;
+
+  /// No description provided for @connectionTimeoutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection timeout, please try again'**
+  String get connectionTimeoutError;
+
+  /// No description provided for @registerFailureDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed'**
+  String get registerFailureDefault;
+
+  /// No description provided for @loginFailureDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailureDefault;
 }
 
 class _AppLocalizationsDelegate
