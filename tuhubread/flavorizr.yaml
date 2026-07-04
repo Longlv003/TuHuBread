@@ -1,0 +1,16 @@
+flavors:
+  development:
+    app:
+      name: "TuHuBread.Dev"
+    android:
+      applicationId: "com.example.tuhubread.dev"
+    ios:
+      bundleId: "com.example.tuhubread.dev"
+
+  production:
+    app:
+      name: "TuHuBread"
+    android:
+      applicationId: "com.example.tuhubread"
+    ios:
+      bundleId: "com.example.tuhubread"
