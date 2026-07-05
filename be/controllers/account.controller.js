@@ -18,9 +18,7 @@ exports.verifyFirebaseUser = async (req, res) => {
     const { uid, email, name, picture } = decodedToken;
     const provider = decodedToken.firebase?.sign_in_provider;
 
-    let user = await accModel.findOne({
-      firebase_uid: uid, // nhớ check schema
-    });
+    let user = await accModel.findOne({ firebase_uid: uid });
 
     if (!user) {
       user = new accModel({
@@ -28,10 +26,22 @@ exports.verifyFirebaseUser = async (req, res) => {
         email,
         full_name: name || null,
         avatar: picture || null,
-        // provider,
       });
-
       await user.save();
+    } else {
+      // Cập nhật thông tin avatar và họ tên mới nhất từ Google/Facebook nếu có thay đổi
+      let hasChanges = false;
+      if (picture && user.avatar !== picture) {
+        user.avatar = picture;
+        hasChanges = true;
+      }
+      if (name && user.full_name !== name) {
+        user.full_name = name;
+        hasChanges = true;
+      }
+      if (hasChanges) {
+        await user.save();
+      }
     }
 
     dataRes.msg = "Verify success";

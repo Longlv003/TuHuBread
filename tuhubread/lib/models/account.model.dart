@@ -12,9 +12,6 @@ class AccountModel {
 
   final String email;
 
-  @JsonKey(name: 'phone_number', defaultValue: '')
-  final String phoneNumber;
-
   @JsonKey(name: 'avatar', defaultValue: '')
   final String avatarUrl;
 
@@ -25,7 +22,6 @@ class AccountModel {
     required this.firebaseUid,
     required this.fullName,
     required this.email,
-    required this.phoneNumber,
     required this.avatarUrl,
     required this.role,
   });

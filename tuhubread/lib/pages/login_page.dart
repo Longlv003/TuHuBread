@@ -320,6 +320,14 @@ class _LoginPageState extends State<LoginPage> {
                           defaultLoginError: l10n.loginFailureDefault,
                           networkErrorMsg: l10n.networkError,
                           timeoutErrorMsg: l10n.connectionTimeoutError,
+                          cancelledError: l10n.loginCancelledError,
+                          firebaseErrors: {
+                            'invalid-credential': l10n.firebaseErrorInvalidCredential,
+                            'user-disabled': l10n.firebaseErrorUserDisabled,
+                            'too-many-requests': l10n.firebaseErrorTooManyRequests,
+                            'default': l10n.firebaseErrorDefault,
+                            'account-exists-with-different-credential': l10n.firebaseErrorAccountExistsWithDifferentCredential,
+                          },
                         ),
                         borderRadius: BorderRadius.circular(12),
                         child: Ink(
@@ -335,6 +343,14 @@ class _LoginPageState extends State<LoginPage> {
                           defaultLoginError: l10n.loginFailureDefault,
                           networkErrorMsg: l10n.networkError,
                           timeoutErrorMsg: l10n.connectionTimeoutError,
+                          cancelledError: l10n.loginCancelledError,
+                          firebaseErrors: {
+                            'invalid-credential': l10n.firebaseErrorInvalidCredential,
+                            'user-disabled': l10n.firebaseErrorUserDisabled,
+                            'too-many-requests': l10n.firebaseErrorTooManyRequests,
+                            'default': l10n.firebaseErrorDefault,
+                            'account-exists-with-different-credential': l10n.firebaseErrorAccountExistsWithDifferentCredential,
+                          },
                         ),
                         borderRadius: BorderRadius.circular(12),
                         child: Ink(

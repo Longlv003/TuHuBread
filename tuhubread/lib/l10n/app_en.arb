@@ -34,5 +34,7 @@
   "networkError": "Network error, please check your connection",
   "connectionTimeoutError": "Connection timeout, please try again",
   "registerFailureDefault": "Registration failed",
-  "loginFailureDefault": "Login failed"
+  "loginFailureDefault": "Login failed",
+  "loginCancelledError": "Login was cancelled",
+  "firebaseErrorAccountExistsWithDifferentCredential": "An account already exists with this email using a different sign-in method"
 }

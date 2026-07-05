@@ -46,3 +46,7 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Environment variables (secrets - do NOT commit)
+.env
+.env.*

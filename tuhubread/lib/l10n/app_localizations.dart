@@ -313,6 +313,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login failed'**
   String get loginFailureDefault;
+
+  /// No description provided for @loginCancelledError.
+  ///
+  /// In en, this message translates to:
+  /// **'Login was cancelled'**
+  String get loginCancelledError;
+
+  /// No description provided for @firebaseErrorAccountExistsWithDifferentCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists with this email using a different sign-in method'**
+  String get firebaseErrorAccountExistsWithDifferentCredential;
 }
 
 class _AppLocalizationsDelegate

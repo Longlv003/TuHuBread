@@ -11,7 +11,6 @@ const accSchema = new db.mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    phone_number: { type: String, unique: true },
     role: {
       type: String,
       enum: ["superAdmin", "admin", "user"],

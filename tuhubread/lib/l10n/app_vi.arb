@@ -34,5 +34,7 @@
   "networkError": "Lỗi kết nối mạng, vui lòng kiểm tra lại đường truyền",
   "connectionTimeoutError": "Kết nối quá hạn, vui lòng thử lại sau",
   "registerFailureDefault": "Đăng ký tài khoản thất bại",
-  "loginFailureDefault": "Đăng nhập tài khoản thất bại"
+  "loginFailureDefault": "Đăng nhập tài khoản thất bại",
+  "loginCancelledError": "Đã hủy đăng nhập",
+  "firebaseErrorAccountExistsWithDifferentCredential": "Email này đã được sử dụng với một phương thức đăng nhập khác (ví dụ: Google hoặc Mật khẩu)"
 }
