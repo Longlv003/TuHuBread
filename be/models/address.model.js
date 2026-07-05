@@ -2,9 +2,9 @@ const db = require("../configs/db");
 
 const addressSchema = new db.mongoose.Schema(
   {
-    account_id: {
+    user_id: {
       type: db.mongoose.Schema.Types.ObjectId,
-      ref: "accModel",
+      ref: "userModel",
       required: true,
     },
     receiver_name: { type: String, required: true },

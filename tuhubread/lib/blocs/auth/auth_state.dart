@@ -1,4 +1,4 @@
-import '../../models/account.model.dart';
+import '../../models/user.model.dart';
 
 abstract class AuthState {
   const AuthState();
@@ -14,7 +14,7 @@ class AuthLoading extends AuthState {
 
 
 class AuthSuccess extends AuthState {
-  final AccountModel user;
+  final UserModel user;
   const AuthSuccess(this.user);
 }
 
