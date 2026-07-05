@@ -5,11 +5,33 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
-import '../flavors.dart';
+import '../models/user.model.dart';
 import '../routes/routes.dart';
+import '../widgets/customer_bottom_nav.dart';
+import '../widgets/customer_header.dart';
+import 'tabs/cart_tab.dart';
+import 'tabs/history_tab.dart';
+import 'tabs/home_tab.dart';
+import 'tabs/profile_tab.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
+  int _unreadNotifications = 3; // Demo notification count
+
+  void _onBellPressed() {
+    if (_unreadNotifications > 0) {
+      setState(() {
+        _unreadNotifications--;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,103 +43,122 @@ class MyHomePage extends StatelessWidget {
           getx.Get.offAllNamed(Routes.loginPage);
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFFCF9F6),
-        appBar: AppBar(
-          title: Text(F.title),
-          backgroundColor: const Color(0xFFE67E22),
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout_rounded, color: Colors.white),
-              onPressed: () {
-                context.read<AuthCubit>().handleLogout();
-              },
-            ),
-          ],
-        ),
-        body: BlocBuilder<AuthCubit, AuthState>(
-          builder: (context, state) {
-            if (state is AuthSuccess) {
-              final user = state.user;
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          final avatar = user.avatarUrl;
-                          final hasAvatar = avatar != null && avatar.isNotEmpty;
-                          return CircleAvatar(
-                            radius: 50,
-                            backgroundColor: const Color(0xFFE67E22).withOpacity(0.2),
-                            backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
-                            child: !hasAvatar
-                                ? const Icon(
-                                    Icons.person_rounded,
-                                    size: 50,
-                                    color: Color(0xFFD35400),
-                                  )
-                                : null,
-                          );
-                        },
+      child: BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, state) {
+          if (state is AuthSuccess) {
+            final user = state.user;
+
+            // List of views for each tab
+            final List<Widget> tabViews = [
+              HomeTab(user: user),
+              CartTab(user: user),
+              HistoryTab(user: user),
+              ProfileTab(user: user),
+            ];
+
+            return Scaffold(
+              backgroundColor: const Color(0xFFFDFBF7),
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    // Extracted Reusable Header Customer
+                    CustomerHeader(
+                      user: user,
+                      titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                      unreadNotifications: _unreadNotifications,
+                      onNotificationTap: _onBellPressed,
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF1EAE1)),
+                    // Active Tab View Content
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: tabViews[_currentIndex],
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        user.fullName.isNotEmpty ? user.fullName : 'Khách TuHu',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2C3E50),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${l10n.roleLabel}${user.role}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF95A5A6),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<AuthCubit>().handleLogout();
-                        },
-                        icon: const Icon(
-                          Icons.logout_rounded,
-                          color: Colors.white,
-                        ),
-                        label: Text(
-                          l10n.logoutButton,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFC0392B),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            }
-            return Center(child: Text(l10n.loadingMessage));
-          },
-        ),
+              ),
+              // Extracted Reusable Bottom Navigation Bar
+              bottomNavigationBar: CustomerBottomNav(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+              ),
+            );
+          }
+          return Scaffold(
+            body: Center(child: Text(l10n.loadingMessage)),
+          );
+        },
       ),
     );
+  }
+
+  // Header Custom Widget depending on current tab
+  Widget _buildHeaderWidgetForTab(UserModel user, AppLocalizations l10n) {
+    switch (_currentIndex) {
+      case 0: // Home Tab Header: User Welcome Info
+        final avatar = user.avatarUrl;
+        final hasAvatar = avatar != null && avatar.isNotEmpty;
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: const Color(0xFFE67E22).withOpacity(0.2),
+              backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
+              child: !hasAvatar
+                  ? const Icon(
+                      Icons.person_rounded,
+                      size: 20,
+                      color: Color(0xFFD35400),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${l10n.welcomeMessage},',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+                  ),
+                  Text(
+                    user.fullName.isNotEmpty ? user.fullName : l10n.guestUser,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C3E50),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      case 1:
+        return Text(
+          l10n.cartTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+        );
+      case 2:
+        return Text(
+          l10n.historyTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+        );
+      case 3:
+        return Text(
+          l10n.profileTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

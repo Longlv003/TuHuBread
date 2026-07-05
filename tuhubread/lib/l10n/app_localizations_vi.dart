@@ -125,4 +125,56 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get firebaseErrorAccountExistsWithDifferentCredential =>
       'Email này đã được sử dụng với một phương thức đăng nhập khác (ví dụ: Google hoặc Mật khẩu)';
+
+  @override
+  String get tabHome => 'Trang chủ';
+
+  @override
+  String get tabCart => 'Giỏ hàng';
+
+  @override
+  String get tabHistory => 'Lịch sử';
+
+  @override
+  String get tabProfile => 'Cá nhân';
+
+  @override
+  String get homePromoTitle => 'Bánh mì TuHu nóng hổi!';
+
+  @override
+  String get homePromoSub =>
+      'Thưởng thức hương vị bánh mì truyền thống giòn ngon ngay hôm nay.';
+
+  @override
+  String get homeTitle => 'Khung nội dung Trang chủ';
+
+  @override
+  String get homeBodyPlaceholder =>
+      'Nội dung và danh sách bánh mì sẽ được thiết kế tại đây theo yêu cầu của bạn.';
+
+  @override
+  String get cartTitle => 'Giỏ hàng của tôi';
+
+  @override
+  String get cartEmpty => 'Giỏ hàng trống';
+
+  @override
+  String get cartEmptySub =>
+      'Thêm các sản phẩm bánh mì giòn ngon để bắt đầu mua sắm.';
+
+  @override
+  String get historyTitle => 'Lịch sử đặt hàng';
+
+  @override
+  String get historyEmpty => 'Chưa có đơn hàng nào';
+
+  @override
+  String get historyEmptySub =>
+      'Lịch sử đặt bánh mì của bạn sẽ hiển thị tại tab này.';
+
+  @override
+  String get profileTitle => 'Hồ sơ cá nhân';
+
+  @override
+  String get guestUser => 'Khách TuHu';
 }

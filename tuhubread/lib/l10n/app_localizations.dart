@@ -325,6 +325,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An account already exists with this email using a different sign-in method'**
   String get firebaseErrorAccountExistsWithDifferentCredential;
+
+  /// No description provided for @tabHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get tabHome;
+
+  /// No description provided for @tabCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart'**
+  String get tabCart;
+
+  /// No description provided for @tabHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get tabHistory;
+
+  /// No description provided for @tabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get tabProfile;
+
+  /// No description provided for @homePromoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hot TuHu Bread!'**
+  String get homePromoTitle;
+
+  /// No description provided for @homePromoSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoy the taste of delicious traditional crispy bread today.'**
+  String get homePromoSub;
+
+  /// No description provided for @homeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Feed Frame'**
+  String get homeTitle;
+
+  /// No description provided for @homeBodyPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'The bread list and content will be designed here as per your request.'**
+  String get homeBodyPlaceholder;
+
+  /// No description provided for @cartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Cart'**
+  String get cartTitle;
+
+  /// No description provided for @cartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty Cart'**
+  String get cartEmpty;
+
+  /// No description provided for @cartEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Add some crispy breads to start shopping.'**
+  String get cartEmptySub;
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order History'**
+  String get historyTitle;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No Orders Yet'**
+  String get historyEmpty;
+
+  /// No description provided for @historyEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bread ordering history will be shown here.'**
+  String get historyEmptySub;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Profile'**
+  String get profileTitle;
+
+  /// No description provided for @guestUser.
+  ///
+  /// In en, this message translates to:
+  /// **'TuHu Guest'**
+  String get guestUser;
 }
 
 class _AppLocalizationsDelegate

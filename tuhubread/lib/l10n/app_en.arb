@@ -36,5 +36,21 @@
   "registerFailureDefault": "Registration failed",
   "loginFailureDefault": "Login failed",
   "loginCancelledError": "Login was cancelled",
-  "firebaseErrorAccountExistsWithDifferentCredential": "An account already exists with this email using a different sign-in method"
+  "firebaseErrorAccountExistsWithDifferentCredential": "An account already exists with this email using a different sign-in method",
+  "tabHome": "Home",
+  "tabCart": "Cart",
+  "tabHistory": "History",
+  "tabProfile": "Profile",
+  "homePromoTitle": "Hot TuHu Bread!",
+  "homePromoSub": "Enjoy the taste of delicious traditional crispy bread today.",
+  "homeTitle": "Home Feed Frame",
+  "homeBodyPlaceholder": "The bread list and content will be designed here as per your request.",
+  "cartTitle": "My Cart",
+  "cartEmpty": "Empty Cart",
+  "cartEmptySub": "Add some crispy breads to start shopping.",
+  "historyTitle": "Order History",
+  "historyEmpty": "No Orders Yet",
+  "historyEmptySub": "Your bread ordering history will be shown here.",
+  "profileTitle": "User Profile",
+  "guestUser": "TuHu Guest"
 }
