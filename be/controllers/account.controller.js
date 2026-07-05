@@ -1,5 +1,5 @@
 const { auth } = require("../configs/firebase.config");
-const { accModel } = require("../models/account.model");
+const { userModel } = require("../models/user.model");
 
 exports.verifyFirebaseUser = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
@@ -18,14 +18,15 @@ exports.verifyFirebaseUser = async (req, res) => {
     const { uid, email, name, picture } = decodedToken;
     const provider = decodedToken.firebase?.sign_in_provider;
 
-    let user = await accModel.findOne({ firebase_uid: uid });
+    let user = await userModel.findOne({ firebase_uid: uid });
 
     if (!user) {
-      user = new accModel({
+      user = new userModel({
         firebase_uid: uid,
         email,
-        full_name: name || null,
+        full_name: name || (email ? email.split("@")[0] : "Người dùng"),
         avatar: picture || null,
+        role: "customer",
       });
       await user.save();
     } else {

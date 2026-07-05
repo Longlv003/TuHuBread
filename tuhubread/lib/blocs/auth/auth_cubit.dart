@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
-import '../../models/account.model.dart';
+import '../../models/user.model.dart';
 import '../../services/api_service.dart';
 import 'auth_state.dart';
 
@@ -28,8 +28,8 @@ class AuthCubit extends Cubit<AuthState> {
       apiService.updateToken(firebaseToken);
       final response = await apiService.post('/api/auth/firebase', {});
       if (response['data'] != null) {
-        final account = AccountModel.fromJson(response['data'] as Map<String, dynamic>);
-        emit(AuthSuccess(account));
+        final user = UserModel.fromJson(response['data'] as Map<String, dynamic>);
+        emit(AuthSuccess(user));
       } else {
         emit(AuthFailure(response['msg'] ?? defaultLoginError));
       }
