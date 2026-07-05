@@ -116,4 +116,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginFailureDefault => 'Login failed';
+
+  @override
+  String get loginCancelledError => 'Login was cancelled';
+
+  @override
+  String get firebaseErrorAccountExistsWithDifferentCredential =>
+      'An account already exists with this email using a different sign-in method';
 }

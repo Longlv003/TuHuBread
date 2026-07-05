@@ -10,7 +10,6 @@ AccountModel _$AccountModelFromJson(Map<String, dynamic> json) => AccountModel(
   firebaseUid: json['firebase_uid'] as String,
   fullName: json['full_name'] as String? ?? '',
   email: json['email'] as String,
-  phoneNumber: json['phone_number'] as String? ?? '',
   avatarUrl: json['avatar'] as String? ?? '',
   role: json['role'] as String? ?? 'user',
 );
@@ -20,7 +19,6 @@ Map<String, dynamic> _$AccountModelToJson(AccountModel instance) =>
       'firebase_uid': instance.firebaseUid,
       'full_name': instance.fullName,
       'email': instance.email,
-      'phone_number': instance.phoneNumber,
       'avatar': instance.avatarUrl,
       'role': instance.role,
     };

@@ -118,4 +118,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get loginFailureDefault => 'Đăng nhập tài khoản thất bại';
+
+  @override
+  String get loginCancelledError => 'Đã hủy đăng nhập';
+
+  @override
+  String get firebaseErrorAccountExistsWithDifferentCredential =>
+      'Email này đã được sử dụng với một phương thức đăng nhập khác (ví dụ: Google hoặc Mật khẩu)';
 }

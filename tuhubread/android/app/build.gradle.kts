@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -19,7 +21,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -31,6 +33,18 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Read .env file directly from the flutter project root
+        val envFile = rootProject.file("../.env")
+        val envProps = Properties()
+        if (envFile.exists()) {
+            envFile.inputStream().use { envProps.load(it) }
+        }
+        val fbAppId = envProps.getProperty("FACEBOOK_APP_ID") ?: ""
+        val fbClientToken = envProps.getProperty("FACEBOOK_CLIENT_TOKEN") ?: ""
+        
+        manifestPlaceholders["facebookAppId"] = fbAppId
+        manifestPlaceholders["facebookClientToken"] = fbClientToken
     }
 
     buildTypes {

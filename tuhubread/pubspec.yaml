@@ -50,6 +50,8 @@ dependencies:
   intl: ^0.20.2
   flutter_gen: ^5.14.1
   json_annotation: ^4.9.0
+  flutter_facebook_auth: ^7.2.0
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
