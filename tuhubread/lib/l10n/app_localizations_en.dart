@@ -123,4 +123,55 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get firebaseErrorAccountExistsWithDifferentCredential =>
       'An account already exists with this email using a different sign-in method';
+
+  @override
+  String get tabHome => 'Home';
+
+  @override
+  String get tabCart => 'Cart';
+
+  @override
+  String get tabHistory => 'History';
+
+  @override
+  String get tabProfile => 'Profile';
+
+  @override
+  String get homePromoTitle => 'Hot TuHu Bread!';
+
+  @override
+  String get homePromoSub =>
+      'Enjoy the taste of delicious traditional crispy bread today.';
+
+  @override
+  String get homeTitle => 'Home Feed Frame';
+
+  @override
+  String get homeBodyPlaceholder =>
+      'The bread list and content will be designed here as per your request.';
+
+  @override
+  String get cartTitle => 'My Cart';
+
+  @override
+  String get cartEmpty => 'Empty Cart';
+
+  @override
+  String get cartEmptySub => 'Add some crispy breads to start shopping.';
+
+  @override
+  String get historyTitle => 'Order History';
+
+  @override
+  String get historyEmpty => 'No Orders Yet';
+
+  @override
+  String get historyEmptySub =>
+      'Your bread ordering history will be shown here.';
+
+  @override
+  String get profileTitle => 'User Profile';
+
+  @override
+  String get guestUser => 'TuHu Guest';
 }

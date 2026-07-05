@@ -36,5 +36,21 @@
   "registerFailureDefault": "Đăng ký tài khoản thất bại",
   "loginFailureDefault": "Đăng nhập tài khoản thất bại",
   "loginCancelledError": "Đã hủy đăng nhập",
-  "firebaseErrorAccountExistsWithDifferentCredential": "Email này đã được sử dụng với một phương thức đăng nhập khác (ví dụ: Google hoặc Mật khẩu)"
+  "firebaseErrorAccountExistsWithDifferentCredential": "Email này đã được sử dụng với một phương thức đăng nhập khác (ví dụ: Google hoặc Mật khẩu)",
+  "tabHome": "Trang chủ",
+  "tabCart": "Giỏ hàng",
+  "tabHistory": "Lịch sử",
+  "tabProfile": "Cá nhân",
+  "homePromoTitle": "Bánh mì TuHu nóng hổi!",
+  "homePromoSub": "Thưởng thức hương vị bánh mì truyền thống giòn ngon ngay hôm nay.",
+  "homeTitle": "Khung nội dung Trang chủ",
+  "homeBodyPlaceholder": "Nội dung và danh sách bánh mì sẽ được thiết kế tại đây theo yêu cầu của bạn.",
+  "cartTitle": "Giỏ hàng của tôi",
+  "cartEmpty": "Giỏ hàng trống",
+  "cartEmptySub": "Thêm các sản phẩm bánh mì giòn ngon để bắt đầu mua sắm.",
+  "historyTitle": "Lịch sử đặt hàng",
+  "historyEmpty": "Chưa có đơn hàng nào",
+  "historyEmptySub": "Lịch sử đặt bánh mì của bạn sẽ hiển thị tại tab này.",
+  "profileTitle": "Hồ sơ cá nhân",
+  "guestUser": "Khách TuHu"
 }
