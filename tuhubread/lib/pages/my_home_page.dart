@@ -46,21 +46,23 @@ class MyHomePage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: const Color(
-                          0xFFE67E22,
-                        ).withOpacity(0.2),
-                        backgroundImage: user.avatarUrl.isNotEmpty
-                            ? NetworkImage(user.avatarUrl)
-                            : null,
-                        child: user.avatarUrl.isEmpty
-                            ? const Icon(
-                                Icons.person_rounded,
-                                size: 50,
-                                color: Color(0xFFD35400),
-                              )
-                            : null,
+                      Builder(
+                        builder: (context) {
+                          final avatar = user.avatarUrl;
+                          final hasAvatar = avatar != null && avatar.isNotEmpty;
+                          return CircleAvatar(
+                            radius: 50,
+                            backgroundColor: const Color(0xFFE67E22).withOpacity(0.2),
+                            backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
+                            child: !hasAvatar
+                                ? const Icon(
+                                    Icons.person_rounded,
+                                    size: 50,
+                                    color: Color(0xFFD35400),
+                                  )
+                                : null,
+                          );
+                        },
                       ),
                       const SizedBox(height: 24),
                       Text(
