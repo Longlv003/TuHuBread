@@ -22,7 +22,9 @@ const voucherSchema = new db.mongoose.Schema(
     discount_value: { type: Number, required: true },
     min_order_amount: { type: Number, required: true, default: 0 },
     max_discount_amount: { type: Number, default: null },
-    usage_limit: { type: Number, default: null },
+    claim_limit: { type: Number, default: null },   // số người tối đa được save
+    claimed_count: { type: Number, default: 0 },     // số người đã save
+    usage_limit: { type: Number, default: null },    // null = không giới hạn lần dùng
     used_count: { type: Number, required: true, default: 0 },
     start_date: { type: Date, required: true },
     end_date: { type: Date, required: true },

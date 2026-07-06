@@ -112,6 +112,7 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    - assets/icons/
     - .env
 
 l10n:

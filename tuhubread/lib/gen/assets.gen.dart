@@ -11,6 +11,20 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsIconsGen {
+  const $AssetsIconsGen();
+
+  /// File path: assets/icons/discount.png
+  AssetGenImage get discount =>
+      const AssetGenImage('assets/icons/discount.png');
+
+  /// File path: assets/icons/hot.png
+  AssetGenImage get hot => const AssetGenImage('assets/icons/hot.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [discount, hot];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -34,6 +48,7 @@ class Assets {
   const Assets._();
 
   static const String aEnv = '.env';
+  static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 
   /// List of all assets
