@@ -33,13 +33,27 @@ class ApiService {
         options: Options(method: method),
       );
 
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+        return {
+          "msg": responseData['msg'] ?? "Success",
+          "data": responseData['data'],
+        };
+      }
       return {
-        "msg": response.data['msg'] ?? "Success",
-        "data": response.data['data'],
+        "msg": "Success",
+        "data": responseData,
       };
     } on DioException catch (e) {
+      final errData = e.response?.data;
+      String errorMsg = e.message ?? "Request failed";
+      if (errData is Map<String, dynamic>) {
+        errorMsg = errData['msg'] ?? errorMsg;
+      } else if (errData is String && errData.isNotEmpty) {
+        errorMsg = errData;
+      }
       return {
-        "msg": e.response?.data['msg'] ?? e.message ?? "Request failed",
+        "msg": errorMsg,
         "data": null,
       };
     }

@@ -174,4 +174,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guestUser => 'TuHu Guest';
+
+  @override
+  String get homeShopBranch => 'Shop Branches';
+
+  @override
+  String get homeDeselect => 'Deselect';
+
+  @override
+  String get homeSearchHint => 'Search bread, drinks...';
+
+  @override
+  String get homePromoForYou => 'Promotions For You';
+
+  @override
+  String get homeExpired => 'Expired';
+
+  @override
+  String get homeFlash => 'FLASH';
+
+  @override
+  String homeDiscountFormat(Object discount, Object minOrder) {
+    return 'Get $discount off • Min order $minOrder';
+  }
+
+  @override
+  String homeDiscountPercentFormat(Object discount, Object maxDiscount) {
+    return 'Get $discount% off • Max discount $maxDiscount';
+  }
+
+  @override
+  String homeClaimedVoucherSnackbar(Object code) {
+    return 'Saved code \"$code\" to wallet!';
+  }
+
+  @override
+  String get homeClaimed => 'Saved';
+
+  @override
+  String get homeClaimVoucher => 'Save Code';
+
+  @override
+  String get homeBestSellersBranch => 'Best Sellers at Branch';
+
+  @override
+  String get homeBestSellersGlobal => 'Best Sellers';
+
+  @override
+  String get homeSalesBranch => 'On Sale at Branch';
+
+  @override
+  String get homeSalesGlobal => 'On Sale';
+
+  @override
+  String get homeAllBranches => 'All Branches';
+
+  @override
+  String get homeCategories => 'Categories';
+
+  @override
+  String get homeAll => 'All';
+
+  @override
+  String get homeShopMenu => 'Shop\'s Menu';
+
+  @override
+  String get homeAllItems => 'All Items';
+
+  @override
+  String get homeNoProductsFound => 'No matching products found';
+
+  @override
+  String homeRemainingVouchers(Object count) {
+    return '$count vouchers left';
+  }
+
+  @override
+  String get homeSoldOutVouchers => 'Sold out';
 }

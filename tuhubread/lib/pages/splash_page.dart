@@ -45,39 +45,40 @@ class SplashPage extends StatelessWidget {
         },
         child: BlocBuilder<SplashCubit, SplashState>(
           builder: (context, state) {
-            return Scaffold(
-              body: Center(
-                child: state is SplashLoading
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 16),
-                          Text(l10n.loadingMessage),
-                        ],
-                      )
-                    : state is SplashError
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("${l10n.splashErrorMessage}${state.message}"),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.read<SplashCubit>().initializeApp();
-                            },
-                            child: Text(l10n.retryButton),
+            if (state is SplashError) {
+              return Scaffold(
+                backgroundColor: const Color(0xFFFDFBF7),
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("${l10n.splashErrorMessage}${state.message}"),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<SplashCubit>().initializeApp();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE67E22),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 16),
-                          Text(l10n.welcomeMessage),
-                        ],
+                        ),
+                        child: Text(l10n.retryButton),
                       ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return const Scaffold(
+              backgroundColor: Color(0xFFFDFBF7),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFE67E22),
+                ),
               ),
             );
           },

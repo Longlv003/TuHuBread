@@ -9,6 +9,7 @@ const shopCategorySchema = new db.mongoose.Schema(
     },
     category_name: { type: String, required: true },
     category_slug: { type: String, required: true },
+    category_icon: { type: String, default: null },
     sort_order: { type: Number, required: true, default: 0 },
     status: {
       type: String,
