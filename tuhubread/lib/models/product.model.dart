@@ -7,6 +7,7 @@ class ProductModel {
   @JsonKey(name: '_id')
   final String id;
   final String shopId;
+  @JsonKey(name: 'global_category_id')
   final String categoryId;
   @JsonKey(name: 'shop_category_id')
   final String? shopCategoryId;

@@ -31,10 +31,10 @@ class ProductSaleModel {
 
   /// Kiểm tra xem đợt sale có đang diễn ra không (countdown hợp lệ)
   bool get isActiveNow {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     return status == 'active' &&
-        now.isAfter(startDate) &&
-        now.isBefore(endDate) &&
+        now.isAfter(startDate.toUtc()) &&
+        now.isBefore(endDate.toUtc()) &&
         (saleLimit == null || soldQuantity < saleLimit!);
   }
 

@@ -177,4 +177,81 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get guestUser => 'Khách TuHu';
+
+  @override
+  String get homeShopBranch => 'Chi nhánh cửa hàng';
+
+  @override
+  String get homeDeselect => 'Bỏ chọn';
+
+  @override
+  String get homeSearchHint => 'Tìm bánh mì, đồ uống...';
+
+  @override
+  String get homePromoForYou => 'Khuyến mãi dành cho bạn';
+
+  @override
+  String get homeExpired => 'Hết hạn';
+
+  @override
+  String get homeFlash => 'FLASH';
+
+  @override
+  String homeDiscountFormat(Object discount, Object minOrder) {
+    return 'Giảm $discount • Đơn từ $minOrder';
+  }
+
+  @override
+  String homeDiscountPercentFormat(Object discount, Object maxDiscount) {
+    return 'Giảm $discount% • Tối đa $maxDiscount';
+  }
+
+  @override
+  String homeClaimedVoucherSnackbar(Object code) {
+    return 'Đã lưu mã \"$code\" vào ví!';
+  }
+
+  @override
+  String get homeClaimed => 'Đã lưu';
+
+  @override
+  String get homeClaimVoucher => 'Lưu mã';
+
+  @override
+  String get homeBestSellersBranch => 'Bán chạy tại chi nhánh';
+
+  @override
+  String get homeBestSellersGlobal => 'Bán chạy toàn hệ thống';
+
+  @override
+  String get homeSalesBranch => 'Đang giảm giá tại chi nhánh';
+
+  @override
+  String get homeSalesGlobal => 'Đang giảm giá toàn hệ thống';
+
+  @override
+  String get homeAllBranches => 'Tất cả chi nhánh';
+
+  @override
+  String get homeCategories => 'Danh mục';
+
+  @override
+  String get homeAll => 'Tất cả';
+
+  @override
+  String get homeShopMenu => 'Thực đơn của cửa hàng';
+
+  @override
+  String get homeAllItems => 'Tất cả món';
+
+  @override
+  String get homeNoProductsFound => 'Không tìm thấy món phù hợp';
+
+  @override
+  String homeRemainingVouchers(Object count) {
+    return 'Còn $count mã';
+  }
+
+  @override
+  String get homeSoldOutVouchers => 'Hết mã';
 }

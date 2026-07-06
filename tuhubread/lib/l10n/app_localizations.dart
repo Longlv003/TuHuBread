@@ -421,6 +421,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TuHu Guest'**
   String get guestUser;
+
+  /// No description provided for @homeShopBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Branches'**
+  String get homeShopBranch;
+
+  /// No description provided for @homeDeselect.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect'**
+  String get homeDeselect;
+
+  /// No description provided for @homeSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search bread, drinks...'**
+  String get homeSearchHint;
+
+  /// No description provided for @homePromoForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotions For You'**
+  String get homePromoForYou;
+
+  /// No description provided for @homeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get homeExpired;
+
+  /// No description provided for @homeFlash.
+  ///
+  /// In en, this message translates to:
+  /// **'FLASH'**
+  String get homeFlash;
+
+  /// No description provided for @homeDiscountFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {discount} off • Min order {minOrder}'**
+  String homeDiscountFormat(Object discount, Object minOrder);
+
+  /// No description provided for @homeDiscountPercentFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {discount}% off • Max discount {maxDiscount}'**
+  String homeDiscountPercentFormat(Object discount, Object maxDiscount);
+
+  /// No description provided for @homeClaimedVoucherSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved code \"{code}\" to wallet!'**
+  String homeClaimedVoucherSnackbar(Object code);
+
+  /// No description provided for @homeClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get homeClaimed;
+
+  /// No description provided for @homeClaimVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Code'**
+  String get homeClaimVoucher;
+
+  /// No description provided for @homeBestSellersBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Sellers at Branch'**
+  String get homeBestSellersBranch;
+
+  /// No description provided for @homeBestSellersGlobal.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Sellers'**
+  String get homeBestSellersGlobal;
+
+  /// No description provided for @homeSalesBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'On Sale at Branch'**
+  String get homeSalesBranch;
+
+  /// No description provided for @homeSalesGlobal.
+  ///
+  /// In en, this message translates to:
+  /// **'On Sale'**
+  String get homeSalesGlobal;
+
+  /// No description provided for @homeAllBranches.
+  ///
+  /// In en, this message translates to:
+  /// **'All Branches'**
+  String get homeAllBranches;
+
+  /// No description provided for @homeCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get homeCategories;
+
+  /// No description provided for @homeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get homeAll;
+
+  /// No description provided for @homeShopMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop\'s Menu'**
+  String get homeShopMenu;
+
+  /// No description provided for @homeAllItems.
+  ///
+  /// In en, this message translates to:
+  /// **'All Items'**
+  String get homeAllItems;
+
+  /// No description provided for @homeNoProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching products found'**
+  String get homeNoProductsFound;
+
+  /// No description provided for @homeRemainingVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} vouchers left'**
+  String homeRemainingVouchers(Object count);
+
+  /// No description provided for @homeSoldOutVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold out'**
+  String get homeSoldOutVouchers;
 }
 
 class _AppLocalizationsDelegate

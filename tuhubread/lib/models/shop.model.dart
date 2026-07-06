@@ -7,8 +7,9 @@ class ShopModel {
   @JsonKey(name: '_id')
   final String id;
   final String shopName;
+  @JsonKey(name: 'phone_number')
   final String phone;
-  final String avatar;
+  final String logo;
   final String banner;
   @JsonKey(defaultValue: 5.0)
   final double rating;
@@ -18,7 +19,7 @@ class ShopModel {
     required this.id,
     required this.shopName,
     required this.phone,
-    required this.avatar,
+    required this.logo,
     required this.banner,
     required this.rating,
     required this.status,
