@@ -162,23 +162,30 @@ class ProductGridCard extends StatelessWidget {
                     const Spacer(),
                     Row(
                       children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Color(0xFFF1C40F),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          "${product.rating}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF7F8C8D),
+                        if (product.rating > 0) ...[
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Color(0xFFF1C40F),
+                            size: 12,
                           ),
-                        ),
-                        const SizedBox(width: 5),
+                          const SizedBox(width: 2),
+                          Text(
+                            "${product.rating}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF7F8C8D),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          const Text(
+                            "•",
+                            style: TextStyle(fontSize: 9, color: Color(0xFFBDC3C7)),
+                          ),
+                          const SizedBox(width: 5),
+                        ],
                         Text(
-                          "• Đã bán ${product.salesCount}",
+                          "Đã bán ${product.salesCount}",
                           style: const TextStyle(
                             fontSize: 9,
                             color: Color(0xFFBDC3C7),

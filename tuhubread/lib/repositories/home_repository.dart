@@ -4,6 +4,9 @@ import '../models/product.model.dart';
 import '../models/product_sale.model.dart';
 import '../models/shop.model.dart';
 import '../models/voucher.model.dart';
+import '../models/shop_category.model.dart';
+
+import '../models/product_detail.model.dart';
 
 /// Kết quả tổng hợp từ API /products/on-sale
 /// (sản phẩm + danh sách thông tin sale tương ứng)
@@ -23,4 +26,6 @@ abstract class HomeRepository {
   Future<Result<SaleDataResult>> fetchSaleProducts();
   Future<Result<List<VoucherModel>>> fetchActiveVouchers();
   Future<Result<bool>> saveVoucher(String voucherId);
+  Future<Result<ProductDetailModel>> fetchProductDetail(String id);
+  Future<Result<List<ShopCategoryModel>>> fetchShopCategories(String shopId);
 }

@@ -559,6 +559,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sold out'**
   String get homeSoldOutVouchers;
+
+  /// No description provided for @detailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Detail'**
+  String get detailTitle;
+
+  /// No description provided for @detailSelectSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Size'**
+  String get detailSelectSize;
+
+  /// No description provided for @detailExtraOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra Options'**
+  String get detailExtraOptions;
+
+  /// No description provided for @detailAddToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Cart'**
+  String get detailAddToCart;
+
+  /// No description provided for @detailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Description'**
+  String get detailDescription;
+
+  /// No description provided for @detailPrepTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} mins prep'**
+  String detailPrepTime(Object minutes);
+
+  /// No description provided for @detailTotalPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Price'**
+  String get detailTotalPrice;
+
+  /// No description provided for @detailAddedToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to cart!'**
+  String get detailAddedToCart;
+
+  /// No description provided for @detailBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Now'**
+  String get detailBuyNow;
+
+  /// No description provided for @detailQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get detailQuantity;
+
+  /// No description provided for @detailBuyNowSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceeding to checkout now!'**
+  String get detailBuyNowSuccess;
+
+  /// No description provided for @detailShopSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Provided by Branch'**
+  String get detailShopSection;
+
+  /// No description provided for @detailReviewsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Reviews ({count})'**
+  String detailReviewsSection(Object count);
+
+  /// No description provided for @detailNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet for this product'**
+  String get detailNoReviews;
+
+  /// No description provided for @detailShopPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch Hotline: {phone}'**
+  String detailShopPhone(Object phone);
+
+  /// No description provided for @detailNoRatingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ratings yet'**
+  String get detailNoRatingYet;
+
+  /// No description provided for @detailOtherShopsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Other branches selling this'**
+  String get detailOtherShopsSection;
 }
 
 class _AppLocalizationsDelegate

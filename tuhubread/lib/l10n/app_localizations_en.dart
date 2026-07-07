@@ -251,4 +251,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSoldOutVouchers => 'Sold out';
+
+  @override
+  String get detailTitle => 'Product Detail';
+
+  @override
+  String get detailSelectSize => 'Select Size';
+
+  @override
+  String get detailExtraOptions => 'Extra Options';
+
+  @override
+  String get detailAddToCart => 'Add to Cart';
+
+  @override
+  String get detailDescription => 'Product Description';
+
+  @override
+  String detailPrepTime(Object minutes) {
+    return '$minutes mins prep';
+  }
+
+  @override
+  String get detailTotalPrice => 'Total Price';
+
+  @override
+  String get detailAddedToCart => 'Added to cart!';
+
+  @override
+  String get detailBuyNow => 'Buy Now';
+
+  @override
+  String get detailQuantity => 'Quantity';
+
+  @override
+  String get detailBuyNowSuccess => 'Proceeding to checkout now!';
+
+  @override
+  String get detailShopSection => 'Provided by Branch';
+
+  @override
+  String detailReviewsSection(Object count) {
+    return 'Customer Reviews ($count)';
+  }
+
+  @override
+  String get detailNoReviews => 'No reviews yet for this product';
+
+  @override
+  String detailShopPhone(Object phone) {
+    return 'Branch Hotline: $phone';
+  }
+
+  @override
+  String get detailNoRatingYet => 'No ratings yet';
+
+  @override
+  String get detailOtherShopsSection => 'Other branches selling this';
 }

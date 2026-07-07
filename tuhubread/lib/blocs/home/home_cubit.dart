@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 
 import '../../core/result.dart';
 import '../../models/voucher.model.dart';
+import '../../models/shop_category.model.dart';
 import '../../repositories/home_repository.dart';
 import 'home_state.dart';
 
@@ -14,6 +15,25 @@ class HomeCubit extends Cubit<HomeState> {
   final HomeRepository repository;
 
   HomeCubit({required this.repository}) : super(const HomeInitial());
+
+  /// Load danh mục của shop cụ thể
+  Future<void> loadShopCategories(String shopId) async {
+    if (state is! HomeLoaded) return;
+    final current = state as HomeLoaded;
+
+    if (shopId.isEmpty) {
+      emit(current.copyWith(shopCategories: []));
+      return;
+    }
+
+    final res = await repository.fetchShopCategories(shopId);
+    if (res is Success<List<ShopCategoryModel>>) {
+      emit(current.copyWith(shopCategories: res.dataOrNull ?? []));
+    } else {
+      _log.e('[loadShopCategories] Failed: ${res.errorOrNull}');
+      emit(current.copyWith(shopCategories: []));
+    }
+  }
 
   // ─────────── LOAD ALL HOME DATA ───────────
 
