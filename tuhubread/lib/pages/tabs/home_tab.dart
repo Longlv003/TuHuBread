@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../../blocs/home/home_cubit.dart';
@@ -14,6 +15,7 @@ import '../../models/shop.model.dart';
 import '../../models/shop_category.model.dart';
 import '../../models/user.model.dart';
 import '../../models/voucher.model.dart';
+import '../../routes/routes.dart';
 import '../../utils/currency_formatter.dart';
 import '../../widgets/horizontal_product_card.dart';
 import '../../widgets/product_grid_card.dart';
@@ -55,9 +57,6 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // Set tracking voucher IDs user đã save (mock local state)
   final Set<String> _savedVoucherIds = {};
-
-  // Vì chưa có API Backend cho ShopCategory nên tạm thời dùng list rỗng
-  final List<ShopCategoryModel> _shopCategories = [];
 
   @override
   void initState() {
@@ -175,9 +174,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       builder: (context, state) {
         if (state is HomeLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFFE67E22),
-            ),
+            child: CircularProgressIndicator(color: Color(0xFFE67E22)),
           );
         }
 
@@ -195,7 +192,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                 Text(
                   state.error,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
+                  style: const TextStyle(
+                    color: Color(0xFF7F8C8D),
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
@@ -219,9 +219,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           final bestSellers = _getBestSellers(state);
           final discountedProducts = _getDiscountedProducts(state);
           final filteredProducts = _getFilteredProducts(state);
-          final shopCats = _shopCategories
-              .where((sc) => sc.shopId == _selectedShopId)
-              .toList();
+          final shopCats = state.shopCategories;
 
           return RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().refresh(),
@@ -248,7 +246,6 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
                   // 4. Bán chạy nhất
                   _buildBestSellersSection(bestSellers, state, l10n),
-                  const SizedBox(height: 20),
 
                   // 5. Đang giảm giá
                   _buildDiscountedSection(discountedProducts, state, l10n),
@@ -276,7 +273,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── SHOP SELECTOR ───────────
 
-  Widget _buildShopSelectorSection(List<ShopModel> shops, AppLocalizations l10n) {
+  Widget _buildShopSelectorSection(
+    List<ShopModel> shops,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,11 +295,14 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               const SizedBox(width: 6),
               if (_hasShopSelected)
                 GestureDetector(
-                  onTap: () => setState(() {
-                    _selectedShopId = '';
-                    _selectedShopCategoryId = 'all';
-                    _selectedGlobalCategoryId = 'all';
-                  }),
+                  onTap: () {
+                    setState(() {
+                      _selectedShopId = '';
+                      _selectedShopCategoryId = 'all';
+                      _selectedGlobalCategoryId = 'all';
+                    });
+                    context.read<HomeCubit>().loadShopCategories('');
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -345,11 +348,13 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               final isSelected = _selectedShopId == shop.id;
               return GestureDetector(
                 onTap: () {
+                  final newShopId = isSelected ? '' : shop.id;
                   setState(() {
-                    _selectedShopId = isSelected ? '' : shop.id;
+                    _selectedShopId = newShopId;
                     _selectedShopCategoryId = 'all';
                     _selectedGlobalCategoryId = 'all';
                   });
+                  context.read<HomeCubit>().loadShopCategories(newShopId);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -480,7 +485,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           decoration: InputDecoration(
             hintText: l10n.homeSearchHint,
             hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
-            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFE67E22)),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: Color(0xFFE67E22),
+            ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 14),
           ),
@@ -491,7 +499,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── VOUCHER SLIDER ───────────
 
-  Widget _buildVoucherSlider(AppLocalizations l10n, List<VoucherModel> visibleVouchers) {
+  Widget _buildVoucherSlider(
+    AppLocalizations l10n,
+    List<VoucherModel> visibleVouchers,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -653,7 +664,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   isPercent
                       ? l10n.homeDiscountPercentFormat(
                           voucher.discountValue.toInt().toString(),
-                          CurrencyFormatter.formatVND(voucher.maxDiscountAmount ?? 0),
+                          CurrencyFormatter.formatVND(
+                            voucher.maxDiscountAmount ?? 0,
+                          ),
                         )
                       : l10n.homeDiscountFormat(
                           CurrencyFormatter.formatVND(voucher.discountValue),
@@ -694,7 +707,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                       Text(
                         isFull
                             ? l10n.homeSoldOutVouchers
-                            : l10n.homeRemainingVouchers((voucher.claimLimit! - voucher.claimedCount).toString()),
+                            : l10n.homeRemainingVouchers(
+                                (voucher.claimLimit! - voucher.claimedCount)
+                                    .toString(),
+                              ),
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
@@ -764,7 +780,11 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── BÁN CHẠY NHẤT ───────────
 
-  Widget _buildBestSellersSection(List<ProductModel> bestSellers, HomeLoaded state, AppLocalizations l10n) {
+  Widget _buildBestSellersSection(
+    List<ProductModel> bestSellers,
+    HomeLoaded state,
+    AppLocalizations l10n,
+  ) {
     final label = _hasShopSelected
         ? l10n.homeBestSellersBranch
         : l10n.homeBestSellersGlobal;
@@ -781,7 +801,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── ĐANG GIẢM GIÁ ───────────
 
-  Widget _buildDiscountedSection(List<ProductModel> discountedProducts, HomeLoaded state, AppLocalizations l10n) {
+  Widget _buildDiscountedSection(
+    List<ProductModel> discountedProducts,
+    HomeLoaded state,
+    AppLocalizations l10n,
+  ) {
+    const SizedBox(height: 20);
     final label = _hasShopSelected
         ? l10n.homeSalesBranch
         : l10n.homeSalesGlobal;
@@ -875,12 +900,17 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       activeSale: _getActiveSale(state, product.id),
       now: _now,
       showDiscountBadge: showDiscountBadge,
+      onTap: () =>
+          getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
     );
   }
 
   // ─────────── GLOBAL CATEGORY FILTER ───────────
 
-  Widget _buildGlobalCategoryFilter(List<CategoryModel> categories, AppLocalizations l10n) {
+  Widget _buildGlobalCategoryFilter(
+    List<CategoryModel> categories,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -928,7 +958,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── SHOP CATEGORY FILTER ───────────
 
-  Widget _buildShopCategoryFilter(List<ShopCategoryModel> shopCats, AppLocalizations l10n) {
+  Widget _buildShopCategoryFilter(
+    List<ShopCategoryModel> shopCats,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1089,11 +1122,18 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           childAspectRatio: 0.8,
         ),
         itemCount: products.length,
-        itemBuilder: (context, idx) => ProductGridCard(
-          product: products[idx],
-          activeSale: _getActiveSale(state, products[idx].id),
-          now: _now,
-        ),
+        itemBuilder: (context, idx) {
+          final product = products[idx];
+          return ProductGridCard(
+            product: product,
+            activeSale: _getActiveSale(state, product.id),
+            now: _now,
+            onTap: () => getx.Get.toNamed(
+              Routes.productDetailPage,
+              arguments: product.id,
+            ),
+          );
+        },
       ),
     );
   }

@@ -75,5 +75,22 @@
   "homeAllItems": "Tất cả món",
   "homeNoProductsFound": "Không tìm thấy món phù hợp",
   "homeRemainingVouchers": "Còn {count} mã",
-  "homeSoldOutVouchers": "Hết mã"
+  "homeSoldOutVouchers": "Hết mã",
+  "detailTitle": "Chi tiết sản phẩm",
+  "detailSelectSize": "Chọn kích cỡ",
+  "detailExtraOptions": "Tùy chọn thêm",
+  "detailAddToCart": "Thêm vào giỏ hàng",
+  "detailDescription": "Thông tin chi tiết",
+  "detailPrepTime": "{minutes} phút chuẩn bị",
+  "detailTotalPrice": "Tổng cộng",
+  "detailAddedToCart": "Đã thêm vào giỏ hàng!",
+  "detailBuyNow": "Mua ngay",
+  "detailQuantity": "Số lượng",
+  "detailBuyNowSuccess": "Đang tiến hành đặt hàng mua ngay!",
+  "detailShopSection": "Cửa hàng cung cấp",
+  "detailReviewsSection": "Đánh giá từ khách hàng ({count})",
+  "detailNoReviews": "Chưa có đánh giá nào cho sản phẩm này",
+  "detailShopPhone": "Hotline chi nhánh: {phone}",
+  "detailNoRatingYet": "Chưa có đánh giá",
+  "detailOtherShopsSection": "Các chi nhánh khác cùng bán"
 }

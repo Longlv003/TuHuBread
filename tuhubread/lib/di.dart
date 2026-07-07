@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
+import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
 import 'package:tuhubread/repositories/home_repository_impl.dart';
@@ -29,5 +30,9 @@ Future<void> init() async {
   getIt.registerFactory<HomeCubit>(
     () => HomeCubit(repository: getIt<HomeRepository>()),
   );
-}
 
+  // ─── Product Detail ───────────────────────────────────────────────────────
+  getIt.registerFactory<ProductDetailCubit>(
+    () => ProductDetailCubit(repository: getIt<HomeRepository>()),
+  );
+}

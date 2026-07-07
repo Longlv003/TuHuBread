@@ -3,4 +3,5 @@ class Routes {
   static String loginPage = '/loginPage';
   static String registerPage = '/registerPage';
   static String homePage = '/homePage';
+  static String productDetailPage = '/productDetailPage';
 }

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -254,4 +255,61 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get homeSoldOutVouchers => 'Hết mã';
+
+  @override
+  String get detailTitle => 'Chi tiết sản phẩm';
+
+  @override
+  String get detailSelectSize => 'Chọn kích cỡ';
+
+  @override
+  String get detailExtraOptions => 'Tùy chọn thêm';
+
+  @override
+  String get detailAddToCart => 'Thêm vào giỏ hàng';
+
+  @override
+  String get detailDescription => 'Thông tin chi tiết';
+
+  @override
+  String detailPrepTime(Object minutes) {
+    return '$minutes phút chuẩn bị';
+  }
+
+  @override
+  String get detailTotalPrice => 'Tổng cộng';
+
+  @override
+  String get detailAddedToCart => 'Đã thêm vào giỏ hàng!';
+
+  @override
+  String get detailBuyNow => 'Mua ngay';
+
+  @override
+  String get detailQuantity => 'Số lượng';
+
+  @override
+  String get detailBuyNowSuccess => 'Đang tiến hành đặt hàng mua ngay!';
+
+  @override
+  String get detailShopSection => 'Cửa hàng cung cấp';
+
+  @override
+  String detailReviewsSection(Object count) {
+    return 'Đánh giá từ khách hàng ($count)';
+  }
+
+  @override
+  String get detailNoReviews => 'Chưa có đánh giá nào cho sản phẩm này';
+
+  @override
+  String detailShopPhone(Object phone) {
+    return 'Hotline chi nhánh: $phone';
+  }
+
+  @override
+  String get detailNoRatingYet => 'Chưa có đánh giá';
+
+  @override
+  String get detailOtherShopsSection => 'Các chi nhánh khác cùng bán';
 }

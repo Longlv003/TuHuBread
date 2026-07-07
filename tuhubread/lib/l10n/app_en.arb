@@ -75,5 +75,22 @@
   "homeAllItems": "All Items",
   "homeNoProductsFound": "No matching products found",
   "homeRemainingVouchers": "{count} vouchers left",
-  "homeSoldOutVouchers": "Sold out"
+  "homeSoldOutVouchers": "Sold out",
+  "detailTitle": "Product Detail",
+  "detailSelectSize": "Select Size",
+  "detailExtraOptions": "Extra Options",
+  "detailAddToCart": "Add to Cart",
+  "detailDescription": "Product Description",
+  "detailPrepTime": "{minutes} mins prep",
+  "detailTotalPrice": "Total Price",
+  "detailAddedToCart": "Added to cart!",
+  "detailBuyNow": "Buy Now",
+  "detailQuantity": "Quantity",
+  "detailBuyNowSuccess": "Proceeding to checkout now!",
+  "detailShopSection": "Provided by Branch",
+  "detailReviewsSection": "Customer Reviews ({count})",
+  "detailNoReviews": "No reviews yet for this product",
+  "detailShopPhone": "Branch Hotline: {phone}",
+  "detailNoRatingYet": "No ratings yet",
+  "detailOtherShopsSection": "Other branches selling this"
 }
