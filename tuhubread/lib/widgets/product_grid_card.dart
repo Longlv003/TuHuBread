@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/product.model.dart';
 import '../models/product_sale.model.dart';
 import '../utils/currency_formatter.dart';
@@ -119,7 +120,9 @@ class ProductGridCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              _formatCountdown(activeSale!.endDate.difference(now)),
+                              _formatCountdown(
+                                activeSale!.endDate.difference(now),
+                              ),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 8,
@@ -180,7 +183,10 @@ class ProductGridCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           const Text(
                             "•",
-                            style: TextStyle(fontSize: 9, color: Color(0xFFBDC3C7)),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Color(0xFFBDC3C7),
+                            ),
                           ),
                           const SizedBox(width: 5),
                         ],

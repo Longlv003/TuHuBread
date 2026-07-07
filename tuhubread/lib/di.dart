@@ -36,4 +36,3 @@ Future<void> init() async {
     () => ProductDetailCubit(repository: getIt<HomeRepository>()),
   );
 }
-

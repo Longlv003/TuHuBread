@@ -2,8 +2,8 @@ import '../../models/category.model.dart';
 import '../../models/product.model.dart';
 import '../../models/product_sale.model.dart';
 import '../../models/shop.model.dart';
-import '../../models/voucher.model.dart';
 import '../../models/shop_category.model.dart';
+import '../../models/voucher.model.dart';
 
 abstract class HomeState {
   const HomeState();

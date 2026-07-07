@@ -58,8 +58,6 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   // Set tracking voucher IDs user đã save (mock local state)
   final Set<String> _savedVoucherIds = {};
 
-
-
   @override
   void initState() {
     super.initState();

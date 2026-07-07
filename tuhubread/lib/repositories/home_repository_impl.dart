@@ -3,11 +3,11 @@ import 'package:logger/logger.dart';
 import '../core/result.dart';
 import '../models/category.model.dart';
 import '../models/product.model.dart';
+import '../models/product_detail.model.dart';
 import '../models/product_sale.model.dart';
 import '../models/shop.model.dart';
-import '../models/voucher.model.dart';
-import '../models/product_detail.model.dart';
 import '../models/shop_category.model.dart';
+import '../models/voucher.model.dart';
 import '../services/api_service.dart';
 import 'home_repository.dart';
 
@@ -183,7 +183,9 @@ class HomeRepositoryImpl implements HomeRepository {
     try {
       final res = await apiService.get('/api/products/$id');
       if (res['data'] != null) {
-        final detail = ProductDetailModel.fromJson(res['data'] as Map<String, dynamic>);
+        final detail = ProductDetailModel.fromJson(
+          res['data'] as Map<String, dynamic>,
+        );
         return Success(detail);
       }
       return Failure(res['msg'] ?? 'Không thể tải chi tiết sản phẩm');
@@ -194,7 +196,9 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<Result<List<ShopCategoryModel>>> fetchShopCategories(String shopId) async {
+  Future<Result<List<ShopCategoryModel>>> fetchShopCategories(
+    String shopId,
+  ) async {
     try {
       final res = await apiService.get('/api/shops/$shopId/categories');
       final cats = _parseList(

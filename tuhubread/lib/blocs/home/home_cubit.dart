@@ -2,8 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/result.dart';
-import '../../models/voucher.model.dart';
 import '../../models/shop_category.model.dart';
+import '../../models/voucher.model.dart';
 import '../../repositories/home_repository.dart';
 import 'home_state.dart';
 
