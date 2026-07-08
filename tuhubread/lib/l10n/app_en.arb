@@ -92,5 +92,22 @@
   "detailNoReviews": "No reviews yet for this product",
   "detailShopPhone": "Branch Hotline: {phone}",
   "detailNoRatingYet": "No ratings yet",
-  "detailOtherShopsSection": "Other branches selling this"
+  "detailOtherShopsSection": "Other branches selling this",
+  "cartSubtotal": "Subtotal",
+  "cartCheckout": "Checkout",
+  "cartRemove": "Remove",
+  "cartVariantLabel": "Size",
+  "cartOptionsLabel": "Options",
+  "cartItemsCount": "{count} items",
+  "@cartItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "cartClearAll": "Clear All",
+  "cartClearAllConfirm": "Are you sure you want to clear your cart?",
+  "cartCancel": "Cancel",
+  "cartCheckoutComingSoon": "Checkout feature coming soon!"
 }

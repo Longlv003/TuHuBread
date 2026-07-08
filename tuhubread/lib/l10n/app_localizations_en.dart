@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -309,4 +308,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailOtherShopsSection => 'Other branches selling this';
+
+  @override
+  String get cartSubtotal => 'Subtotal';
+
+  @override
+  String get cartCheckout => 'Checkout';
+
+  @override
+  String get cartRemove => 'Remove';
+
+  @override
+  String get cartVariantLabel => 'Size';
+
+  @override
+  String get cartOptionsLabel => 'Options';
+
+  @override
+  String cartItemsCount(String count) {
+    return '$count items';
+  }
+
+  @override
+  String get cartClearAll => 'Clear All';
+
+  @override
+  String get cartClearAllConfirm => 'Are you sure you want to clear your cart?';
+
+  @override
+  String get cartCancel => 'Cancel';
+
+  @override
+  String get cartCheckoutComingSoon => 'Checkout feature coming soon!';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
+import 'package:tuhubread/blocs/cart/cart_cubit.dart';
 import 'package:tuhubread/configs/system.dart';
 import 'package:tuhubread/di.dart';
 import 'package:tuhubread/l10n/app_localizations.dart';
@@ -14,8 +15,11 @@ class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) => BlocProvider<AuthCubit>(
-        create: (context) => getIt<AuthCubit>(),
+  Widget build(BuildContext context) => MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthCubit>(create: (context) => getIt<AuthCubit>()),
+          BlocProvider<CartCubit>(create: (context) => getIt<CartCubit>()),
+        ],
         child: GetMaterialApp(
           title: F.title,
           debugShowCheckedModeBanner: false,
