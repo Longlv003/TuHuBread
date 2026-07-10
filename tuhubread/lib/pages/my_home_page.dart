@@ -4,7 +4,7 @@ import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../blocs/home/home_cubit.dart';
-import '../blocs/home/home_state.dart';
+import '../data/mock_notifications.dart';
 import '../di.dart';
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
@@ -12,6 +12,7 @@ import '../models/user.model.dart';
 import '../routes/routes.dart';
 import '../widgets/customer_bottom_nav.dart';
 import '../widgets/customer_header.dart';
+import 'notifications_page.dart';
 import 'tabs/cart_tab.dart';
 import 'tabs/history_tab.dart';
 import 'tabs/home_tab.dart';
@@ -26,14 +27,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  int _unreadNotifications = 3; // Demo notification count
 
-  void _onBellPressed() {
-    if (_unreadNotifications > 0) {
-      setState(() {
-        _unreadNotifications--;
-      });
-    }
+  Future<void> _onBellPressed() async {
+    await getx.Get.to(() => const NotificationsPage());
+    // Cập nhật lại badge số lượng chưa đọc sau khi rời màn thông báo
+    if (mounted) setState(() {});
   }
 
   @override
@@ -61,53 +59,41 @@ class _MyHomePageState extends State<MyHomePage> {
 
             return BlocProvider<HomeCubit>(
               create: (_) => getIt<HomeCubit>()..loadHomeData(),
-              child: BlocBuilder<HomeCubit, HomeState>(
-                builder: (context, homeState) {
-                  if ((homeState is HomeLoading || homeState is HomeInitial) && _currentIndex == 0) {
-                    return const Scaffold(
-                      backgroundColor: Color(0xFFFDFBF7),
-                      body: Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFE67E22),
+              // Không chặn màn Home bằng spinner toàn màn nữa — vào thẳng
+              // giao diện chính, HomeTab tự lo phần loading/rỗng riêng của nó.
+              child: Scaffold(
+                backgroundColor: const Color(0xFFFDFBF7),
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      // Extracted Reusable Header Customer
+                      CustomerHeader(
+                        user: user,
+                        titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                        unreadNotifications: MockNotifications.unreadCount,
+                        onNotificationTap: _onBellPressed,
+                      ),
+                      const Divider(height: 1, color: Color(0xFFF1EAE1)),
+                      // Active Tab View Content — IndexedStack giữ nguyên state của
+                      // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
+                      Expanded(
+                        child: IndexedStack(
+                          index: _currentIndex,
+                          children: tabViews,
                         ),
                       ),
-                    );
-                  }
-
-                  return Scaffold(
-                    backgroundColor: const Color(0xFFFDFBF7),
-                    body: SafeArea(
-                      child: Column(
-                        children: [
-                          // Extracted Reusable Header Customer
-                          CustomerHeader(
-                            user: user,
-                            titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                            unreadNotifications: _unreadNotifications,
-                            onNotificationTap: _onBellPressed,
-                          ),
-                          const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                          // Active Tab View Content
-                          Expanded(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: tabViews[_currentIndex],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Extracted Reusable Bottom Navigation Bar
-                    bottomNavigationBar: CustomerBottomNav(
-                      currentIndex: _currentIndex,
-                      onTap: (index) {
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
+                // Extracted Reusable Bottom Navigation Bar
+                bottomNavigationBar: CustomerBottomNav(
+                  currentIndex: _currentIndex,
+                  onTap: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                ),
               ),
             );
           }

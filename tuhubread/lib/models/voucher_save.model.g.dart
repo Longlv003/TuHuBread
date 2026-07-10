@@ -9,8 +9,9 @@ part of 'voucher_save.model.dart';
 VoucherSaveModel _$VoucherSaveModelFromJson(Map<String, dynamic> json) =>
     VoucherSaveModel(
       id: json['_id'] as String,
-      voucherId: json['voucher_id'] as String,
-      userId: json['user_id'] as String,
+      voucher: json['voucher_id'] == null
+          ? null
+          : VoucherModel.fromJson(json['voucher_id'] as Map<String, dynamic>),
       voucherCode: json['voucher_code'] as String,
       expiresAt: DateTime.parse(json['expires_at'] as String),
       status: json['status'] as String,
@@ -23,8 +24,7 @@ VoucherSaveModel _$VoucherSaveModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$VoucherSaveModelToJson(VoucherSaveModel instance) =>
     <String, dynamic>{
       '_id': instance.id,
-      'voucher_id': instance.voucherId,
-      'user_id': instance.userId,
+      'voucher_id': instance.voucher,
       'voucher_code': instance.voucherCode,
       'expires_at': instance.expiresAt.toIso8601String(),
       'status': instance.status,

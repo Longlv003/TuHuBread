@@ -11,7 +11,9 @@ import 'package:tuhubread/routes/routes.dart';
 import 'flavors.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final Locale? initialLocale;
+
+  const App({super.key, this.initialLocale});
 
   @override
   Widget build(BuildContext context) => BlocProvider<AuthCubit>(
@@ -23,6 +25,7 @@ class App extends StatelessWidget {
           navigatorKey: System.navigatorKey,
           getPages: AppRoutes().routes,
           initialRoute: Routes.splashPage,
+          locale: initialLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
