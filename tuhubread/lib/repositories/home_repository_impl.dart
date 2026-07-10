@@ -188,7 +188,8 @@ class HomeRepositoryImpl implements HomeRepository {
         );
         return Success(detail);
       }
-      return Failure(res['msg'] ?? 'Không thể tải chi tiết sản phẩm');
+      final msg = res['msg']?.toString() ?? 'Không thể tải chi tiết sản phẩm';
+      return Failure(msg);
     } catch (e, s) {
       _log.e('[fetchProductDetail] Failed', error: e, stackTrace: s);
       return const Failure('Lỗi kết nối máy chủ');

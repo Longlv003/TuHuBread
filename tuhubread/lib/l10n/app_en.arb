@@ -109,5 +109,6 @@
   "cartClearAll": "Clear All",
   "cartClearAllConfirm": "Are you sure you want to clear your cart?",
   "cartCancel": "Cancel",
-  "cartCheckoutComingSoon": "Checkout feature coming soon!"
+  "cartCheckoutComingSoon": "Checkout feature coming soon!",
+  "cartAddFailed": "Could not add to cart"
 }

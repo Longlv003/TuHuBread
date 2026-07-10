@@ -721,6 +721,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checkout feature coming soon!'**
   String get cartCheckoutComingSoon;
+
+  /// No description provided for @cartAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to cart'**
+  String get cartAddFailed;
 }
 
 class _AppLocalizationsDelegate

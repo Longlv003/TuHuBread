@@ -343,4 +343,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get cartCheckoutComingSoon => 'Chức năng thanh toán sẽ sớm ra mắt!';
+
+  @override
+  String get cartAddFailed => 'Không thể thêm vào giỏ hàng';
 }

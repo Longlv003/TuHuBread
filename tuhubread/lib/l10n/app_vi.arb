@@ -109,5 +109,6 @@
   "cartClearAll": "Xóa tất cả",
   "cartClearAllConfirm": "Bạn có chắc muốn xóa toàn bộ giỏ hàng?",
   "cartCancel": "Hủy",
-  "cartCheckoutComingSoon": "Chức năng thanh toán sẽ sớm ra mắt!"
+  "cartCheckoutComingSoon": "Chức năng thanh toán sẽ sớm ra mắt!",
+  "cartAddFailed": "Không thể thêm vào giỏ hàng"
 }

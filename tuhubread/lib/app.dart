@@ -15,20 +15,20 @@ class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) => MultiBlocProvider(
-        providers: [
-          BlocProvider<AuthCubit>(create: (context) => getIt<AuthCubit>()),
-          BlocProvider<CartCubit>(create: (context) => getIt<CartCubit>()),
-        ],
-        child: GetMaterialApp(
-          title: F.title,
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) => Material(child: child),
-          navigatorKey: System.navigatorKey,
-          getPages: AppRoutes().routes,
-          initialRoute: Routes.splashPage,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
+  Widget build(BuildContext context) => GetMaterialApp(
+        title: F.title,
+        debugShowCheckedModeBanner: false,
+        builder: (context, child) => MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
+            BlocProvider<CartCubit>.value(value: getIt<CartCubit>()),
+          ],
+          child: Material(child: child),
         ),
+        navigatorKey: System.navigatorKey,
+        getPages: AppRoutes().routes,
+        initialRoute: Routes.splashPage,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       );
 }

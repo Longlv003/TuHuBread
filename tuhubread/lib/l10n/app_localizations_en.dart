@@ -340,4 +340,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartCheckoutComingSoon => 'Checkout feature coming soon!';
+
+  @override
+  String get cartAddFailed => 'Could not add to cart';
 }

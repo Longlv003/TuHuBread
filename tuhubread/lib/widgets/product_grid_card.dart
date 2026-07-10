@@ -226,7 +226,8 @@ class ProductGridCard extends StatelessWidget {
                           ],
                         ),
                         GestureDetector(
-                          onTap: onAddToCart,
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => onAddToCart?.call(),
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
