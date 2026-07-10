@@ -661,6 +661,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other branches selling this'**
   String get detailOtherShopsSection;
+
+  /// No description provided for @cartSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get cartSubtotal;
+
+  /// No description provided for @cartCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get cartCheckout;
+
+  /// No description provided for @cartRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemove;
+
+  /// No description provided for @cartVariantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get cartVariantLabel;
+
+  /// No description provided for @cartOptionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get cartOptionsLabel;
+
+  /// No description provided for @cartItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String cartItemsCount(String count);
+
+  /// No description provided for @cartClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get cartClearAll;
+
+  /// No description provided for @cartClearAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear your cart?'**
+  String get cartClearAllConfirm;
+
+  /// No description provided for @cartCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cartCancel;
+
+  /// No description provided for @cartCheckoutComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout feature coming soon!'**
+  String get cartCheckoutComingSoon;
+
+  /// No description provided for @cartAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to cart'**
+  String get cartAddFailed;
 }
 
 class _AppLocalizationsDelegate

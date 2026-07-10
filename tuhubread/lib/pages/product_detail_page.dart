@@ -10,6 +10,7 @@ import '../models/product_option.model.dart';
 import '../models/product_variant.model.dart';
 import '../models/product_review.model.dart';
 import '../models/product_detail.model.dart';
+import '../helpers/cart_action_helper.dart';
 import '../utils/currency_formatter.dart';
 
 class ProductDetailPage extends StatelessWidget {
@@ -923,6 +924,7 @@ class _ProductDetailContent extends StatelessWidget {
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
+                  CartActionHelper.addCurrentProductToCart(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.detailAddedToCart),

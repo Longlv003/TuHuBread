@@ -92,5 +92,23 @@
   "detailNoReviews": "Chưa có đánh giá nào cho sản phẩm này",
   "detailShopPhone": "Hotline chi nhánh: {phone}",
   "detailNoRatingYet": "Chưa có đánh giá",
-  "detailOtherShopsSection": "Các chi nhánh khác cùng bán"
+  "detailOtherShopsSection": "Các chi nhánh khác cùng bán",
+  "cartSubtotal": "Tạm tính",
+  "cartCheckout": "Thanh toán",
+  "cartRemove": "Xóa",
+  "cartVariantLabel": "Kích cỡ",
+  "cartOptionsLabel": "Tùy chọn",
+  "cartItemsCount": "{count} món",
+  "@cartItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "cartClearAll": "Xóa tất cả",
+  "cartClearAllConfirm": "Bạn có chắc muốn xóa toàn bộ giỏ hàng?",
+  "cartCancel": "Hủy",
+  "cartCheckoutComingSoon": "Chức năng thanh toán sẽ sớm ra mắt!",
+  "cartAddFailed": "Không thể thêm vào giỏ hàng"
 }

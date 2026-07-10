@@ -15,6 +15,7 @@ import '../../models/shop.model.dart';
 import '../../models/shop_category.model.dart';
 import '../../models/user.model.dart';
 import '../../models/voucher.model.dart';
+import '../../helpers/cart_action_helper.dart';
 import '../../routes/routes.dart';
 import '../../utils/currency_formatter.dart';
 import '../../widgets/horizontal_product_card.dart';
@@ -895,6 +896,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     HomeLoaded state, {
     bool showDiscountBadge = false,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return HorizontalProductCard(
       product: product,
       activeSale: _getActiveSale(state, product.id),
@@ -902,6 +905,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       showDiscountBadge: showDiscountBadge,
       onTap: () =>
           getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
+      onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
+        context,
+        product.id,
+        successMessage: l10n.detailAddedToCart,
+        failureFallback: l10n.cartAddFailed,
+      ),
     );
   }
 
@@ -1131,6 +1140,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             onTap: () => getx.Get.toNamed(
               Routes.productDetailPage,
               arguments: product.id,
+            ),
+            onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
+              context,
+              product.id,
+              successMessage: l10n.detailAddedToCart,
+              failureFallback: l10n.cartAddFailed,
             ),
           );
         },

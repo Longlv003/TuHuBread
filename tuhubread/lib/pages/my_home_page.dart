@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
+import '../blocs/cart/cart_cubit.dart';
+import '../blocs/cart/cart_state.dart';
 import '../blocs/home/home_cubit.dart';
 import '../blocs/home/home_state.dart';
 import '../di.dart';
@@ -98,13 +100,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     // Extracted Reusable Bottom Navigation Bar
-                    bottomNavigationBar: CustomerBottomNav(
-                      currentIndex: _currentIndex,
-                      onTap: (index) {
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
+                    bottomNavigationBar: BlocBuilder<CartCubit, CartState>(
+                      builder: (context, cartState) => CustomerBottomNav(
+                        currentIndex: _currentIndex,
+                        cartItemCount: cartState.totalQuantity,
+                        onTap: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                      ),
                     ),
                   );
                 },

@@ -9,6 +9,7 @@ class HorizontalProductCard extends StatelessWidget {
   final DateTime now;
   final bool showDiscountBadge;
   final VoidCallback? onTap;
+  final VoidCallback? onAddToCart;
 
   const HorizontalProductCard({
     super.key,
@@ -17,6 +18,7 @@ class HorizontalProductCard extends StatelessWidget {
     required this.now,
     this.showDiscountBadge = false,
     this.onTap,
+    this.onAddToCart,
   });
 
   String _formatCountdown(Duration d) {
@@ -187,16 +189,20 @@ class HorizontalProductCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE67E22),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 13,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => onAddToCart?.call(),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE67E22),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 13,
+                            ),
                           ),
                         ),
                       ],

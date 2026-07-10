@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+import 'package:tuhubread/blocs/cart/cart_cubit.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
 import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
@@ -35,4 +36,7 @@ Future<void> init() async {
   getIt.registerFactory<ProductDetailCubit>(
     () => ProductDetailCubit(repository: getIt<HomeRepository>()),
   );
+
+  // ─── Cart ─────────────────────────────────────────────────────────────────
+  getIt.registerLazySingleton<CartCubit>(() => CartCubit());
 }

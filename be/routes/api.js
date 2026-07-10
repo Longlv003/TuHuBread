@@ -18,6 +18,7 @@ router.get("/shops/:shopId/categories", catCtrl.getShopCategories);
 // Product Routes
 router.get("/products/best-sellers", prodCtrl.getBestSellers);
 router.get("/products/sales", prodCtrl.getSaleProducts);
+router.get("/products/:id", prodCtrl.getProductDetail);
 router.get("/products", prodCtrl.getProducts);
 
 const { firebaseAuth, optionalAuth } = require("../middlewares/auth.middlewares");

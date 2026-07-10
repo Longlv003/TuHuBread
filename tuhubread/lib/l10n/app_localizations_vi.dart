@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -312,4 +311,39 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get detailOtherShopsSection => 'Các chi nhánh khác cùng bán';
+
+  @override
+  String get cartSubtotal => 'Tạm tính';
+
+  @override
+  String get cartCheckout => 'Thanh toán';
+
+  @override
+  String get cartRemove => 'Xóa';
+
+  @override
+  String get cartVariantLabel => 'Kích cỡ';
+
+  @override
+  String get cartOptionsLabel => 'Tùy chọn';
+
+  @override
+  String cartItemsCount(String count) {
+    return '$count món';
+  }
+
+  @override
+  String get cartClearAll => 'Xóa tất cả';
+
+  @override
+  String get cartClearAllConfirm => 'Bạn có chắc muốn xóa toàn bộ giỏ hàng?';
+
+  @override
+  String get cartCancel => 'Hủy';
+
+  @override
+  String get cartCheckoutComingSoon => 'Chức năng thanh toán sẽ sớm ra mắt!';
+
+  @override
+  String get cartAddFailed => 'Không thể thêm vào giỏ hàng';
 }
