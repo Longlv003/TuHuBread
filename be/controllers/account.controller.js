@@ -56,3 +56,66 @@ exports.verifyFirebaseUser = async (req, res) => {
     return res.status(401).json(dataRes);
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+  try {
+    const { uid } = req.user; // Lấy từ middleware firebaseAuth
+    const { fullName } = req.body;
+
+    if (!fullName || fullName.trim().length === 0) {
+      dataRes.msg = "Họ tên không được để trống";
+      return res.status(400).json(dataRes);
+    }
+
+    let user = await userModel.findOne({ firebase_uid: uid });
+    if (!user) {
+      dataRes.msg = "Không tìm thấy người dùng";
+      return res.status(404).json(dataRes);
+    }
+
+    user.full_name = fullName;
+    await user.save();
+
+    dataRes.msg = "Cập nhật hồ sơ thành công";
+    dataRes.data = user;
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("updateProfile error:", err.message);
+    dataRes.msg = err.message || "Lỗi cập nhật hồ sơ";
+    return res.status(500).json(dataRes);
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+  try {
+    const { uid } = req.user; // Lấy từ middleware firebaseAuth
+    if (!req.file) {
+      dataRes.msg = "Vui lòng chọn một file ảnh";
+      return res.status(400).json(dataRes);
+    }
+
+    let user = await userModel.findOne({ firebase_uid: uid });
+    if (!user) {
+      dataRes.msg = "Không tìm thấy người dùng";
+      return res.status(404).json(dataRes);
+    }
+
+    const filename = req.file.filename;
+    const baseUrl = req.protocol + "://" + req.get("host");
+    const avatarUrl = `${baseUrl}/images/avatars/${filename}`;
+
+    user.avatar = avatarUrl;
+    await user.save();
+
+    dataRes.msg = "Cập nhật ảnh đại diện thành công";
+    dataRes.data = user;
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("uploadAvatar error:", err.message);
+    dataRes.msg = err.message || "Lỗi tải lên ảnh đại diện";
+    return res.status(500).json(dataRes);
+  }
+};
+

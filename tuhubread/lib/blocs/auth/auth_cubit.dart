@@ -324,6 +324,63 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthInitial());
   }
 
+  Future<UserModel> updateProfileApi(String fullName) async {
+    final response = await apiService.put('/api/users/profile', {'fullName': fullName});
+    if (response['data'] != null) {
+      final updatedUser = UserModel.fromJson(response['data'] as Map<String, dynamic>);
+      emit(AuthSuccess(updatedUser));
+      return updatedUser;
+    } else {
+      throw Exception(response['msg'] ?? 'Lỗi cập nhật hồ sơ');
+    }
+  }
+
+  Future<UserModel> uploadAvatarApi(String filePath) async {
+    final fileName = filePath.split('/').last;
+    final formData = FormData.fromMap({
+      'avatar': await MultipartFile.fromFile(
+        filePath,
+        filename: fileName,
+      ),
+    });
+    final response = await apiService.request(
+      '/api/users/profile/avatar',
+      method: 'POST',
+      data: formData,
+    );
+    if (response['data'] != null) {
+      final updatedUser = UserModel.fromJson(response['data'] as Map<String, dynamic>);
+      emit(AuthSuccess(updatedUser));
+      return updatedUser;
+    } else {
+      throw Exception(response['msg'] ?? 'Lỗi tải ảnh đại diện');
+    }
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('Người dùng chưa đăng nhập hoặc không có email');
+    }
+
+    final cred = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPassword);
+  }
+
+  void updateCurrentUser(UserModel updatedUser) {
+    if (state is AuthSuccess) {
+      emit(AuthSuccess(updatedUser));
+    }
+  }
+
   void reset() {
     emit(const AuthInitial());
   }
