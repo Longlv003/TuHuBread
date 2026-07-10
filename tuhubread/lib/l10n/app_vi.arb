@@ -92,5 +92,17 @@
   "detailNoReviews": "Chưa có đánh giá nào cho sản phẩm này",
   "detailShopPhone": "Hotline chi nhánh: {phone}",
   "detailNoRatingYet": "Chưa có đánh giá",
-  "detailOtherShopsSection": "Các chi nhánh khác cùng bán"
+  "detailOtherShopsSection": "Các chi nhánh khác cùng bán",
+  "profileAvatarUpdated": "Đã cập nhật ảnh đại diện!",
+  "profileUpdateSuccess": "Đã cập nhật thông tin cá nhân!",
+  "changePasswordTitle": "Đổi mật khẩu",
+  "currentPasswordHint": "Mật khẩu hiện tại",
+  "newPasswordHint": "Mật khẩu mới",
+  "confirmNewPasswordHint": "Xác nhận mật khẩu mới",
+  "changePasswordSuccess": "Đổi mật khẩu thành công!",
+  "selectImageSource": "Chọn nguồn ảnh",
+  "cameraSource": "Máy ảnh",
+  "gallerySource": "Thư viện ảnh",
+  "saveButton": "Lưu thay đổi",
+  "updating": "Đang cập nhật..."
 }

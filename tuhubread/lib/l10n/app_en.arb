@@ -92,5 +92,17 @@
   "detailNoReviews": "No reviews yet for this product",
   "detailShopPhone": "Branch Hotline: {phone}",
   "detailNoRatingYet": "No ratings yet",
-  "detailOtherShopsSection": "Other branches selling this"
+  "detailOtherShopsSection": "Other branches selling this",
+  "profileAvatarUpdated": "Avatar updated successfully!",
+  "profileUpdateSuccess": "Profile updated successfully!",
+  "changePasswordTitle": "Change Password",
+  "currentPasswordHint": "Current Password",
+  "newPasswordHint": "New Password",
+  "confirmNewPasswordHint": "Confirm New Password",
+  "changePasswordSuccess": "Password changed successfully!",
+  "selectImageSource": "Select Image Source",
+  "cameraSource": "Camera",
+  "gallerySource": "Gallery",
+  "saveButton": "Save Changes",
+  "updating": "Updating..."
 }
