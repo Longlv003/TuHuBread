@@ -42,23 +42,4 @@ Future<void> init() async {
   getIt.registerFactory<ProductDetailCubit>(
     () => ProductDetailCubit(repository: getIt<HomeRepository>()),
   );
-
-  // ─── Addresses ────────────────────────────────────────────────────────────
-  getIt.registerLazySingleton<AddressRepository>(
-    () => AddressRepositoryImpl(apiService: getIt<ApiService>()),
-  );
-  getIt.registerFactory<AddressCubit>(
-    () => AddressCubit(repository: getIt<AddressRepository>()),
-  );
-  getIt.registerLazySingleton<VietnamAddressService>(
-    () => VietnamAddressService(),
-  );
-
-  // ─── Vouchers ─────────────────────────────────────────────────────────────
-  getIt.registerLazySingleton<VoucherRepository>(
-    () => VoucherRepositoryImpl(apiService: getIt<ApiService>()),
-  );
-  getIt.registerFactory<VoucherCubit>(
-    () => VoucherCubit(repository: getIt<VoucherRepository>()),
-  );
 }
