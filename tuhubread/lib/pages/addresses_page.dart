@@ -31,6 +31,8 @@ class _AddressesContent extends StatelessWidget {
         value: cubit,
         child: AddressFormPage(address: address),
       ),
+      routeName: '/addresses/address-form',
+      preventDuplicates: false,
     );
   }
 
@@ -167,22 +169,25 @@ class _AddressesContent extends StatelessWidget {
                         },
                       ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openForm(context),
-                    icon: const Icon(Icons.add_rounded, color: Colors.white),
-                    label: Text(
-                      l10n.addressAddButton,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE67E22),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openForm(context),
+                      icon: const Icon(Icons.add_rounded, color: Colors.white),
+                      label: Text(
+                        l10n.addressAddButton,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE67E22),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 ),

@@ -37,6 +37,9 @@ class AddressRepositoryImpl implements AddressRepository {
     required String receiverPhone,
     required String addressDetail,
     bool isDefault = false,
+    String label = 'other',
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final res = await apiService.post('/api/addresses', {
@@ -44,10 +47,15 @@ class AddressRepositoryImpl implements AddressRepository {
         'receiver_phone': receiverPhone,
         'address_detail': addressDetail,
         'is_default': isDefault,
+        'label': label,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
       });
 
       if (res['data'] != null) {
-        return Success(AddressModel.fromJson(res['data'] as Map<String, dynamic>));
+        return Success(
+          AddressModel.fromJson(res['data'] as Map<String, dynamic>),
+        );
       }
       return Failure(res['msg'] ?? 'Không thể thêm địa chỉ');
     } catch (e, s) {
@@ -63,6 +71,9 @@ class AddressRepositoryImpl implements AddressRepository {
     String? receiverPhone,
     String? addressDetail,
     bool? isDefault,
+    String? label,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final res = await apiService.put('/api/addresses/$id', {
@@ -70,10 +81,15 @@ class AddressRepositoryImpl implements AddressRepository {
         if (receiverPhone != null) 'receiver_phone': receiverPhone,
         if (addressDetail != null) 'address_detail': addressDetail,
         if (isDefault != null) 'is_default': isDefault,
+        if (label != null) 'label': label,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
       });
 
       if (res['data'] != null) {
-        return Success(AddressModel.fromJson(res['data'] as Map<String, dynamic>));
+        return Success(
+          AddressModel.fromJson(res['data'] as Map<String, dynamic>),
+        );
       }
       return Failure(res['msg'] ?? 'Không thể cập nhật địa chỉ');
     } catch (e, s) {

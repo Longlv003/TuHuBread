@@ -69,16 +69,35 @@ class ApiService {
     } on DioException catch (e) {
       final errData = e.response?.data;
       String errorMsg = e.message ?? "Request failed";
+
       if (errData is Map<String, dynamic>) {
-        errorMsg = errData['msg'] ?? errData['message'] ?? errorMsg;
+        errorMsg = errData['msg']?.toString() ?? errorMsg;
       } else if (errData is String && errData.isNotEmpty) {
-        errorMsg = errData;
+        errorMsg = _sanitizeErrorMessage(errData, e.response?.statusCode);
+      } else if (e.response?.statusCode == 404) {
+        errorMsg = 'Không tìm thấy dữ liệu yêu cầu';
       }
+
       return {
         "msg": errorMsg,
         "data": null,
       };
     }
+  }
+
+  /// Chuyển HTML/plain-text lỗi từ server thành thông báo thân thiện.
+  String _sanitizeErrorMessage(String raw, int? statusCode) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('<!doctype html') || lower.contains('<html')) {
+      if (lower.contains('cannot get')) {
+        return 'API chưa được cấu hình hoặc không tồn tại';
+      }
+      if (statusCode == 404) {
+        return 'Không tìm thấy dữ liệu yêu cầu';
+      }
+      return 'Lỗi kết nối máy chủ';
+    }
+    return raw;
   }
 
   Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? query}) {

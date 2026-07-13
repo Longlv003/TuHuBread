@@ -157,6 +157,140 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartEmptySub => 'Add some crispy breads to start shopping.';
 
   @override
+  String get cartAddFailed => 'Failed to add item to cart';
+
+  @override
+  String cartItemsCount(String count) {
+    return '$count items';
+  }
+
+  @override
+  String get cartClearAll => 'Clear All';
+
+  @override
+  String get cartClearAllConfirm =>
+      'Are you sure you want to remove all items from your cart?';
+
+  @override
+  String get cartCancel => 'Cancel';
+
+  @override
+  String get cartSubtotal => 'Subtotal';
+
+  @override
+  String get cartCheckout => 'Checkout';
+
+  @override
+  String get cartVariantLabel => 'Variant';
+
+  @override
+  String get cartOptionsLabel => 'Options';
+
+  @override
+  String get cartRemove => 'Remove';
+
+  @override
+  String get cartSuggestionTitle => 'Add a drink to your order?';
+
+  @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get checkoutAddressSectionTitle => 'Delivery Address';
+
+  @override
+  String get checkoutChangeAddress => 'Change';
+
+  @override
+  String get checkoutNoAddressTitle => 'No delivery address';
+
+  @override
+  String get checkoutAddAddressButton => 'Add delivery address';
+
+  @override
+  String get checkoutDeliveryOptionSectionTitle => 'Delivery Option';
+
+  @override
+  String get checkoutOrderSectionTitle => 'Order Items';
+
+  @override
+  String get checkoutSubtotal => 'Subtotal';
+
+  @override
+  String get checkoutDeliveryFee => 'Delivery Fee';
+
+  @override
+  String get checkoutTotal => 'Total';
+
+  @override
+  String get checkoutContinueButton => 'Continue to Payment';
+
+  @override
+  String get checkoutSelectAddressError => 'Please select a delivery address';
+
+  @override
+  String get deliveryOptionPriorityLabel => 'Priority';
+
+  @override
+  String get deliveryOptionPriorityDesc => 'Fastest, within 30 minutes';
+
+  @override
+  String get deliveryOptionStandardLabel => 'Fast';
+
+  @override
+  String get deliveryOptionStandardDesc => 'Delivered within 1 hour';
+
+  @override
+  String get deliveryOptionSavingLabel => 'Saving';
+
+  @override
+  String get deliveryOptionSavingDesc =>
+      'Delivered in 2-3 hours, free shipping';
+
+  @override
+  String get paymentTitle => 'Payment Method';
+
+  @override
+  String get paymentMethodSectionTitle => 'Select Payment Method';
+
+  @override
+  String get paymentMethodCash => 'Cash on Delivery';
+
+  @override
+  String get paymentMethodMomo => 'MoMo Wallet';
+
+  @override
+  String get paymentMethodZalopay => 'ZaloPay Wallet';
+
+  @override
+  String get paymentMethodOnlineNote =>
+      'Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.';
+
+  @override
+  String get paymentOrderNoteLabel => 'Note for the shop (optional)';
+
+  @override
+  String get paymentOrderNoteHint =>
+      'E.g. leave at the door, call before arriving...';
+
+  @override
+  String get paymentPlaceOrderButton => 'Place Order';
+
+  @override
+  String get paymentOrderSuccessTitle => 'Order placed successfully!';
+
+  @override
+  String paymentOrderSuccessMessage(String code) {
+    return 'Your order $code has been placed.';
+  }
+
+  @override
+  String get paymentOrderFailed => 'Failed to place order';
+
+  @override
+  String get paymentBackToHome => 'Back to Home';
+
+  @override
   String get historyTitle => 'Order History';
 
   @override
@@ -432,6 +566,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addressStreetHint => 'House number, street name';
+
+  @override
+  String get addressLabelHome => 'Home';
+
+  @override
+  String get addressLabelCompany => 'Company';
+
+  @override
+  String get addressLabelOther => 'Other';
+
+  @override
+  String get addressUseCurrentLocation => 'Use current location';
+
+  @override
+  String get addressLocationDetecting => 'Detecting your location...';
+
+  @override
+  String get addressLocationServiceDisabled =>
+      'Please enable location services (GPS)';
+
+  @override
+  String get addressLocationPermissionDenied =>
+      'Location permission is required';
+
+  @override
+  String get addressLocationPermissionDeniedForever =>
+      'Location permission was permanently denied, please enable it in Settings';
+
+  @override
+  String get addressLocationFailed =>
+      'Could not detect your location, please try again';
+
+  @override
+  String get addressLocationDetected =>
+      'Location detected, please review the details';
+
+  @override
+  String get selectAddressTitle => 'Delivery Address';
+
+  @override
+  String get selectAddressSearchHint => 'Search location';
+
+  @override
+  String get selectAddressSavedTitle => 'Saved Addresses';
+
+  @override
+  String get selectAddressEmpty => 'No saved addresses yet';
 
   @override
   String get notificationsTitle => 'Notifications';

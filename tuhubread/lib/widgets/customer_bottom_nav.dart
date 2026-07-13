@@ -4,11 +4,13 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 class CustomerBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final int cartItemCount;
 
   const CustomerBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.cartItemCount = 0,
   });
 
   @override
@@ -113,6 +115,21 @@ class _NavItem extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCartIcon(int count) {
+    if (count <= 0) {
+      return const Icon(Icons.shopping_cart_rounded);
+    }
+
+    return Badge(
+      label: Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(fontSize: 10),
+      ),
+      backgroundColor: const Color(0xFFE74C3C),
+      child: const Icon(Icons.shopping_cart_rounded),
     );
   }
 }

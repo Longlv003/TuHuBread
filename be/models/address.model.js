@@ -10,6 +10,11 @@ const addressSchema = new db.mongoose.Schema(
     receiver_name: { type: String, required: true },
     receiver_phone: { type: String, required: true },
     address_detail: { type: String, required: true },
+    label: {
+      type: String,
+      enum: ["home", "company", "other"],
+      default: "other",
+    },
     location: {
       type: {
         type: String,

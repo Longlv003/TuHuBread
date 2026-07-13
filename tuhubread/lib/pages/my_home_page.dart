@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
+import '../blocs/cart/cart_cubit.dart';
+import '../blocs/cart/cart_state.dart';
 import '../blocs/home/home_cubit.dart';
 import '../data/mock_notifications.dart';
 import '../di.dart';
@@ -66,14 +68,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 body: SafeArea(
                   child: Column(
                     children: [
-                      // Extracted Reusable Header Customer
-                      CustomerHeader(
-                        user: user,
-                        titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                        unreadNotifications: MockNotifications.unreadCount,
-                        onNotificationTap: _onBellPressed,
-                      ),
-                      const Divider(height: 1, color: Color(0xFFF1EAE1)),
+                      // Extracted Reusable Header Customer — ẩn ở tab Giỏ hàng
+                      // để nhường thêm diện tích cho danh sách sản phẩm.
+                      if (_currentIndex != 1) ...[
+                        CustomerHeader(
+                          user: user,
+                          titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                          unreadNotifications: MockNotifications.unreadCount,
+                          onNotificationTap: _onBellPressed,
+                        ),
+                        const Divider(height: 1, color: Color(0xFFF1EAE1)),
+                      ],
                       // Active Tab View Content — IndexedStack giữ nguyên state của
                       // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
                       Expanded(

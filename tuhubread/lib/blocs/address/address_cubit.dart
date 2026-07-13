@@ -31,12 +31,18 @@ class AddressCubit extends Cubit<AddressState> {
     required String receiverPhone,
     required String addressDetail,
     bool isDefault = false,
+    String label = 'other',
+    double? latitude,
+    double? longitude,
   }) async {
     final res = await repository.createAddress(
       receiverName: receiverName,
       receiverPhone: receiverPhone,
       addressDetail: addressDetail,
       isDefault: isDefault,
+      label: label,
+      latitude: latitude,
+      longitude: longitude,
     );
 
     if (res is Success<AddressModel>) {
@@ -53,6 +59,9 @@ class AddressCubit extends Cubit<AddressState> {
     String? receiverPhone,
     String? addressDetail,
     bool? isDefault,
+    String? label,
+    double? latitude,
+    double? longitude,
   }) async {
     final res = await repository.updateAddress(
       id: id,
@@ -60,6 +69,9 @@ class AddressCubit extends Cubit<AddressState> {
       receiverPhone: receiverPhone,
       addressDetail: addressDetail,
       isDefault: isDefault,
+      label: label,
+      latitude: latitude,
+      longitude: longitude,
     );
 
     if (res is Success<AddressModel>) {
@@ -78,7 +90,9 @@ class AddressCubit extends Cubit<AddressState> {
 
     // Optimistic update: xoá khỏi UI ngay, khôi phục nếu API lỗi
     final previous = current.addresses;
-    emit(current.copyWith(addresses: previous.where((a) => a.id != id).toList()));
+    emit(
+      current.copyWith(addresses: previous.where((a) => a.id != id).toList()),
+    );
 
     final res = await repository.deleteAddress(id);
     if (res is Failure<bool>) {

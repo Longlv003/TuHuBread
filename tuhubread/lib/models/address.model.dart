@@ -11,6 +11,8 @@ class AddressModel {
   final String addressDetail;
   @JsonKey(defaultValue: false)
   final bool isDefault;
+  @JsonKey(defaultValue: 'other')
+  final String label;
 
   AddressModel({
     required this.id,
@@ -18,6 +20,7 @@ class AddressModel {
     required this.receiverPhone,
     required this.addressDetail,
     required this.isDefault,
+    this.label = 'other',
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) =>

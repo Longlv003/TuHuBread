@@ -9,6 +9,9 @@ abstract class AddressRepository {
     required String receiverPhone,
     required String addressDetail,
     bool isDefault,
+    String label,
+    double? latitude,
+    double? longitude,
   });
 
   Future<Result<AddressModel>> updateAddress({
@@ -17,6 +20,9 @@ abstract class AddressRepository {
     String? receiverPhone,
     String? addressDetail,
     bool? isDefault,
+    String? label,
+    double? latitude,
+    double? longitude,
   });
 
   Future<Result<bool>> deleteAddress(String id);

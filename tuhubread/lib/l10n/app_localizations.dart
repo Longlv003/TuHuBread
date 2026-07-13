@@ -386,6 +386,258 @@ abstract class AppLocalizations {
   /// **'Add some crispy breads to start shopping.'**
   String get cartEmptySub;
 
+  /// No description provided for @cartAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add item to cart'**
+  String get cartAddFailed;
+
+  /// No description provided for @cartItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String cartItemsCount(String count);
+
+  /// No description provided for @cartClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get cartClearAll;
+
+  /// No description provided for @cartClearAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove all items from your cart?'**
+  String get cartClearAllConfirm;
+
+  /// No description provided for @cartCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cartCancel;
+
+  /// No description provided for @cartSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get cartSubtotal;
+
+  /// No description provided for @cartCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get cartCheckout;
+
+  /// No description provided for @cartVariantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant'**
+  String get cartVariantLabel;
+
+  /// No description provided for @cartOptionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get cartOptionsLabel;
+
+  /// No description provided for @cartRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemove;
+
+  /// No description provided for @cartSuggestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a drink to your order?'**
+  String get cartSuggestionTitle;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkoutTitle;
+
+  /// No description provided for @checkoutAddressSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get checkoutAddressSectionTitle;
+
+  /// No description provided for @checkoutChangeAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get checkoutChangeAddress;
+
+  /// No description provided for @checkoutNoAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No delivery address'**
+  String get checkoutNoAddressTitle;
+
+  /// No description provided for @checkoutAddAddressButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add delivery address'**
+  String get checkoutAddAddressButton;
+
+  /// No description provided for @checkoutDeliveryOptionSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Option'**
+  String get checkoutDeliveryOptionSectionTitle;
+
+  /// No description provided for @checkoutOrderSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Items'**
+  String get checkoutOrderSectionTitle;
+
+  /// No description provided for @checkoutSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get checkoutSubtotal;
+
+  /// No description provided for @checkoutDeliveryFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Fee'**
+  String get checkoutDeliveryFee;
+
+  /// No description provided for @checkoutTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get checkoutTotal;
+
+  /// No description provided for @checkoutContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Payment'**
+  String get checkoutContinueButton;
+
+  /// No description provided for @checkoutSelectAddressError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a delivery address'**
+  String get checkoutSelectAddressError;
+
+  /// No description provided for @deliveryOptionPriorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get deliveryOptionPriorityLabel;
+
+  /// No description provided for @deliveryOptionPriorityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest, within 30 minutes'**
+  String get deliveryOptionPriorityDesc;
+
+  /// No description provided for @deliveryOptionStandardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get deliveryOptionStandardLabel;
+
+  /// No description provided for @deliveryOptionStandardDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered within 1 hour'**
+  String get deliveryOptionStandardDesc;
+
+  /// No description provided for @deliveryOptionSavingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving'**
+  String get deliveryOptionSavingLabel;
+
+  /// No description provided for @deliveryOptionSavingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered in 2-3 hours, free shipping'**
+  String get deliveryOptionSavingDesc;
+
+  /// No description provided for @paymentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentTitle;
+
+  /// No description provided for @paymentMethodSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Payment Method'**
+  String get paymentMethodSectionTitle;
+
+  /// No description provided for @paymentMethodCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on Delivery'**
+  String get paymentMethodCash;
+
+  /// No description provided for @paymentMethodMomo.
+  ///
+  /// In en, this message translates to:
+  /// **'MoMo Wallet'**
+  String get paymentMethodMomo;
+
+  /// No description provided for @paymentMethodZalopay.
+  ///
+  /// In en, this message translates to:
+  /// **'ZaloPay Wallet'**
+  String get paymentMethodZalopay;
+
+  /// No description provided for @paymentMethodOnlineNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.'**
+  String get paymentMethodOnlineNote;
+
+  /// No description provided for @paymentOrderNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for the shop (optional)'**
+  String get paymentOrderNoteLabel;
+
+  /// No description provided for @paymentOrderNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. leave at the door, call before arriving...'**
+  String get paymentOrderNoteHint;
+
+  /// No description provided for @paymentPlaceOrderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Place Order'**
+  String get paymentPlaceOrderButton;
+
+  /// No description provided for @paymentOrderSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed successfully!'**
+  String get paymentOrderSuccessTitle;
+
+  /// No description provided for @paymentOrderSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order {code} has been placed.'**
+  String paymentOrderSuccessMessage(String code);
+
+  /// No description provided for @paymentOrderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to place order'**
+  String get paymentOrderFailed;
+
+  /// No description provided for @paymentBackToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get paymentBackToHome;
+
   /// No description provided for @historyTitle.
   ///
   /// In en, this message translates to:
@@ -901,6 +1153,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'House number, street name'**
   String get addressStreetHint;
+
+  /// No description provided for @addressLabelHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get addressLabelHome;
+
+  /// No description provided for @addressLabelCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get addressLabelCompany;
+
+  /// No description provided for @addressLabelOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get addressLabelOther;
+
+  /// No description provided for @addressUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get addressUseCurrentLocation;
+
+  /// No description provided for @addressLocationDetecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Detecting your location...'**
+  String get addressLocationDetecting;
+
+  /// No description provided for @addressLocationServiceDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable location services (GPS)'**
+  String get addressLocationServiceDisabled;
+
+  /// No description provided for @addressLocationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is required'**
+  String get addressLocationPermissionDenied;
+
+  /// No description provided for @addressLocationPermissionDeniedForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was permanently denied, please enable it in Settings'**
+  String get addressLocationPermissionDeniedForever;
+
+  /// No description provided for @addressLocationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not detect your location, please try again'**
+  String get addressLocationFailed;
+
+  /// No description provided for @addressLocationDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location detected, please review the details'**
+  String get addressLocationDetected;
+
+  /// No description provided for @selectAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get selectAddressTitle;
+
+  /// No description provided for @selectAddressSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search location'**
+  String get selectAddressSearchHint;
+
+  /// No description provided for @selectAddressSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Addresses'**
+  String get selectAddressSavedTitle;
+
+  /// No description provided for @selectAddressEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved addresses yet'**
+  String get selectAddressEmpty;
 
   /// No description provided for @notificationsTitle.
   ///

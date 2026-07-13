@@ -27,7 +27,13 @@ const orderSchema = new db.mongoose.Schema(
     payment_method: {
       type: String,
       required: true,
-      enum: ["cash", "momo", "bank", "vnpay"],
+      enum: ["cash", "momo", "zalopay", "bank", "vnpay"],
+    },
+    delivery_option: {
+      type: String,
+      required: true,
+      enum: ["priority", "standard", "saving"],
+      default: "standard",
     },
     payment_status: {
       type: String,

@@ -160,6 +160,139 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thêm các sản phẩm bánh mì giòn ngon để bắt đầu mua sắm.';
 
   @override
+  String get cartAddFailed => 'Thêm vào giỏ hàng thất bại';
+
+  @override
+  String cartItemsCount(String count) {
+    return '$count sản phẩm';
+  }
+
+  @override
+  String get cartClearAll => 'Xóa tất cả';
+
+  @override
+  String get cartClearAllConfirm =>
+      'Bạn có chắc muốn xóa toàn bộ sản phẩm trong giỏ hàng không?';
+
+  @override
+  String get cartCancel => 'Hủy';
+
+  @override
+  String get cartSubtotal => 'Tạm tính';
+
+  @override
+  String get cartCheckout => 'Thanh toán';
+
+  @override
+  String get cartVariantLabel => 'Phân loại';
+
+  @override
+  String get cartOptionsLabel => 'Tùy chọn';
+
+  @override
+  String get cartRemove => 'Xóa';
+
+  @override
+  String get cartSuggestionTitle => 'Thêm đồ uống cho đơn hàng?';
+
+  @override
+  String get checkoutTitle => 'Thanh toán';
+
+  @override
+  String get checkoutAddressSectionTitle => 'Địa chỉ giao hàng';
+
+  @override
+  String get checkoutChangeAddress => 'Thay đổi';
+
+  @override
+  String get checkoutNoAddressTitle => 'Chưa có địa chỉ giao hàng';
+
+  @override
+  String get checkoutAddAddressButton => 'Thêm địa chỉ giao hàng';
+
+  @override
+  String get checkoutDeliveryOptionSectionTitle => 'Tùy chọn giao hàng';
+
+  @override
+  String get checkoutOrderSectionTitle => 'Sản phẩm đã chọn';
+
+  @override
+  String get checkoutSubtotal => 'Tạm tính';
+
+  @override
+  String get checkoutDeliveryFee => 'Phí giao hàng';
+
+  @override
+  String get checkoutTotal => 'Tổng cộng';
+
+  @override
+  String get checkoutContinueButton => 'Tiếp tục thanh toán';
+
+  @override
+  String get checkoutSelectAddressError => 'Vui lòng chọn địa chỉ giao hàng';
+
+  @override
+  String get deliveryOptionPriorityLabel => 'Ưu tiên';
+
+  @override
+  String get deliveryOptionPriorityDesc =>
+      'Giao nhanh nhất, trong vòng 30 phút';
+
+  @override
+  String get deliveryOptionStandardLabel => 'Nhanh';
+
+  @override
+  String get deliveryOptionStandardDesc => 'Giao trong vòng 1 giờ';
+
+  @override
+  String get deliveryOptionSavingLabel => 'Tiết kiệm';
+
+  @override
+  String get deliveryOptionSavingDesc => 'Giao trong 2-3 giờ, miễn phí ship';
+
+  @override
+  String get paymentTitle => 'Phương thức thanh toán';
+
+  @override
+  String get paymentMethodSectionTitle => 'Chọn phương thức thanh toán';
+
+  @override
+  String get paymentMethodCash => 'Tiền mặt khi nhận hàng';
+
+  @override
+  String get paymentMethodMomo => 'Ví MoMo';
+
+  @override
+  String get paymentMethodZalopay => 'Ví ZaloPay';
+
+  @override
+  String get paymentMethodOnlineNote =>
+      'Cổng thanh toán trực tuyến đang được phát triển. Đơn hàng vẫn được tạo, bạn có thể thanh toán khi nhận hàng.';
+
+  @override
+  String get paymentOrderNoteLabel => 'Ghi chú cho cửa hàng (không bắt buộc)';
+
+  @override
+  String get paymentOrderNoteHint => 'VD: để trước cửa, gọi trước khi tới...';
+
+  @override
+  String get paymentPlaceOrderButton => 'Đặt hàng';
+
+  @override
+  String get paymentOrderSuccessTitle => 'Đặt hàng thành công!';
+
+  @override
+  String paymentOrderSuccessMessage(String code) {
+    return 'Đơn hàng $code của bạn đã được đặt.';
+  }
+
+  @override
+  String get paymentOrderFailed => 'Đặt hàng thất bại';
+
+  @override
+  String get paymentBackToHome => 'Về trang chủ';
+
+  @override
   String get historyTitle => 'Lịch sử đặt hàng';
 
   @override
@@ -434,6 +567,53 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get addressStreetHint => 'Số nhà, tên đường';
+
+  @override
+  String get addressLabelHome => 'Nhà';
+
+  @override
+  String get addressLabelCompany => 'Công ty';
+
+  @override
+  String get addressLabelOther => 'Khác';
+
+  @override
+  String get addressUseCurrentLocation => 'Dùng vị trí hiện tại';
+
+  @override
+  String get addressLocationDetecting => 'Đang xác định vị trí...';
+
+  @override
+  String get addressLocationServiceDisabled =>
+      'Vui lòng bật dịch vụ định vị (GPS)';
+
+  @override
+  String get addressLocationPermissionDenied =>
+      'Ứng dụng cần quyền truy cập vị trí';
+
+  @override
+  String get addressLocationPermissionDeniedForever =>
+      'Quyền vị trí đã bị từ chối vĩnh viễn, vui lòng bật trong Cài đặt';
+
+  @override
+  String get addressLocationFailed =>
+      'Không thể xác định vị trí, vui lòng thử lại';
+
+  @override
+  String get addressLocationDetected =>
+      'Đã xác định vị trí, vui lòng kiểm tra lại thông tin';
+
+  @override
+  String get selectAddressTitle => 'Địa chỉ giao hàng';
+
+  @override
+  String get selectAddressSearchHint => 'Tìm vị trí';
+
+  @override
+  String get selectAddressSavedTitle => 'Địa chỉ đã lưu';
+
+  @override
+  String get selectAddressEmpty => 'Chưa có địa chỉ đã lưu';
 
   @override
   String get notificationsTitle => 'Thông báo';

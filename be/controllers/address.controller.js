@@ -40,7 +40,15 @@ exports.createAddress = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const { receiver_name, receiver_phone, address_detail, is_default } = req.body;
+    const {
+      receiver_name,
+      receiver_phone,
+      address_detail,
+      is_default,
+      label,
+      latitude,
+      longitude,
+    } = req.body;
 
     if (!receiver_name || !receiver_phone || !address_detail) {
       dataRes.msg = "Thiếu thông tin địa chỉ";
@@ -56,7 +64,12 @@ exports.createAddress = async (req, res) => {
       receiver_name,
       receiver_phone,
       address_detail,
+      label: ["home", "company", "other"].includes(label) ? label : "other",
       is_default: !!is_default,
+      location:
+        typeof latitude === "number" && typeof longitude === "number"
+          ? { type: "Point", coordinates: [longitude, latitude] }
+          : undefined,
     });
 
     dataRes.data = address;
@@ -90,11 +103,23 @@ exports.updateAddress = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const { receiver_name, receiver_phone, address_detail, is_default } = req.body;
+    const {
+      receiver_name,
+      receiver_phone,
+      address_detail,
+      is_default,
+      label,
+      latitude,
+      longitude,
+    } = req.body;
 
     if (receiver_name !== undefined) address.receiver_name = receiver_name;
     if (receiver_phone !== undefined) address.receiver_phone = receiver_phone;
     if (address_detail !== undefined) address.address_detail = address_detail;
+    if (["home", "company", "other"].includes(label)) address.label = label;
+    if (typeof latitude === "number" && typeof longitude === "number") {
+      address.location = { type: "Point", coordinates: [longitude, latitude] };
+    }
 
     if (is_default === true) {
       await addressModel.updateMany({ user_id: user._id }, { is_default: false });
