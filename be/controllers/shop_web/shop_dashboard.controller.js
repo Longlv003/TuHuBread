@@ -22,7 +22,9 @@ class ShopDashboardController {
         stats,
         firebaseConfig,
         shop: req.shop,
-        user: req.user
+        user: req.user,
+        title: "Bảng Điều Khiển",
+        activeTab: "dashboard"
       });
     } catch (err) {
       console.error("Dashboard controller error:", err.message);
