@@ -37,22 +37,22 @@
         <table>
           <thead>
             <tr>
-              <th>Icon</th>
-              <th>Tên danh mục</th>
-              <th>Thứ tự</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
+              <th class="col-icon">Icon</th>
+              <th class="col-name">Tên danh mục</th>
+              <th class="col-order">Thứ tự</th>
+              <th class="col-status">Trạng thái</th>
+              <th class="col-actions">Hành động</th>
             </tr>
           </thead>
           <tbody id="categoriesTableBody">
             <% categories.forEach(cat => { %>
               <tr id="row-<%= cat._id %>" data-name="<%= cat.category_name %>" data-status="<%= cat.deleted_at ? 'deleted' : cat.status %>" <% if (cat.deleted_at) { %> style="opacity: 0.5; background: rgba(231, 76, 60, 0.02);" <% } %>>
-                <td class="cat-icon-cell" style="width: 70px; text-align: center;">
-                  <img src="<%= cat.category_icon ? cat.category_icon : 'https://placehold.co/50' %>" alt="icon" onerror="this.src='https://placehold.co/50'" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; display: block; margin: 0 auto; border: 1px solid var(--glass-border);">
+                <td class="col-icon">
+                  <img src="<%= cat.category_icon ? cat.category_icon : 'https://placehold.co/50' %>" alt="icon" onerror="this.src='https://placehold.co/50'">
                 </td>
-                <td><strong><%= cat.category_name %></strong></td>
-                <td><%= cat.sort_order %></td>
-                <td>
+                <td class="col-name"><strong><%= cat.category_name %></strong></td>
+                <td class="col-order"><%= cat.sort_order %></td>
+                <td class="col-status">
                   <% if (cat.deleted_at) { %>
                     <span class="status-badge" style="background: rgba(149, 165, 166, 0.15); color: #BDC3C7;">Đã xóa</span>
                   <% } else { %>
@@ -61,7 +61,7 @@
                     </span>
                   <% } %>
                 </td>
-                <td class="actions-cell">
+                <td class="col-actions">
                   <div class="actions-wrap">
                     <% if (cat.deleted_at) { %>
                       <span class="btn-action" style="opacity: 0.5; cursor: not-allowed; border-style: dashed;">

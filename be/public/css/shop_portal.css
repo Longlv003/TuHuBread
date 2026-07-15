@@ -206,7 +206,7 @@ table {
 }
 
 th, td {
-  padding: 16px 20px;
+  padding: 14px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   vertical-align: middle;
 }
@@ -217,6 +217,50 @@ th {
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.5px;
+}
+
+/* Categories table column layout */
+.col-icon {
+  width: 64px;
+  text-align: center;
+  padding-left: 4px;
+  padding-right: 8px;
+}
+
+.col-icon img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid var(--glass-border);
+}
+
+.col-name {
+  width: auto;
+  text-align: left;
+  padding-left: 8px;
+}
+
+.col-order {
+  width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.col-status {
+  width: 120px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.col-actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+  padding-left: 12px;
+  padding-right: 4px;
 }
 
 .status-badge {
@@ -231,16 +275,11 @@ th {
 .status-active { background: rgba(46, 204, 113, 0.15); color: var(--success); }
 .status-inactive { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
 
-.actions-cell {
-  white-space: nowrap;
-  min-width: 160px;
-}
-
-.actions-cell .actions-wrap {
+.actions-wrap {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  vertical-align: middle;
+  justify-content: flex-end;
 }
 
 .btn-action {
@@ -424,12 +463,4 @@ th {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-}
-
-.cat-icon-cell img {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid var(--glass-border);
 }
