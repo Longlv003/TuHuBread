@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Điều Khiển Shop - TuHuBread</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #E67E22;
+      --primary-dark: #D35400;
+      --success: #2ECC71;
+      --warning: #F1C40F;
+      --danger: #E74C3C;
+      --bg-gradient: linear-gradient(135deg, #1A252F 0%, #111921 100%);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-card: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.07);
+      --text: #ECF0F1;
+      --text-muted: #95A5A6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text);
+      display: flex;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 260px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+      z-index: 10;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .logo-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      cursor: pointer;
+    }
+
+    .logo-container img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      object-fit: cover;
+      transition: all 0.3s ease;
+    }
+
+    .logo-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border: 3px solid transparent;
+    }
+
+    .logo-container:hover .logo-overlay {
+      opacity: 1;
+    }
+
+    .logo-overlay i {
+      color: white;
+      font-size: 20px;
+    }
+
+    .sidebar-brand h3 {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(to right, #FFB347, #E67E22);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+
+    .nav-item.active a, .nav-item a:hover {
+      color: var(--text);
+      background: var(--glass-card);
+      border: 1px solid var(--glass-border);
+    }
+
+    .nav-item a i {
+      font-size: 18px;
+      color: var(--primary);
+    }
+
+    .logout-btn {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      color: var(--danger);
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+
+    .logout-btn:hover {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: rgba(231, 76, 60, 0.2);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 40px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .welcome-text h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .welcome-text p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .shop-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--glass-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+
+    .shop-badge .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+
+    /* KPI Grid Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: var(--glass-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.3s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .kpi-info h4 {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .kpi-info h2 {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .kpi-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: rgba(230, 126, 34, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .kpi-card:nth-child(2) .kpi-icon { background: rgba(46, 204, 113, 0.1); color: var(--success); }
+    .kpi-card:nth-child(3) .kpi-icon { background: rgba(241, 196, 15, 0.1); color: var(--warning); }
+    .kpi-card:nth-child(4) .kpi-icon { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+
+    /* Orders Section & Table */
+    .section-card {
+      background: var(--glass-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .status-pending { background: rgba(241, 196, 15, 0.15); color: var(--warning); }
+    .status-completed { background: rgba(46, 204, 113, 0.15); color: var(--success); }
+    .status-cancelled { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+    .status-processing { background: rgba(52, 152, 219, 0.15); color: #3498DB; }
+
+    /* Real-time alert banner */
+    .realtime-banner {
+      background: linear-gradient(to right, var(--success), #27AE60);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2);
+      margin-bottom: 30px;
+      animation: slideInDown 0.5s ease-out;
+      display: none;
+    }
+
+    @keyframes slideInDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-container" onclick="document.getElementById('logoUploadInput').click()">
+        <img id="shopLogoImg" src="<%= shop.logo ? shop.logo : 'https://placehold.co/100' %>" alt="Shop logo" onerror="this.src='https://placehold.co/100'">
+        <div class="logo-overlay">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+      </div>
+      <input type="file" id="logoUploadInput" accept="image/*" style="display:none">
+      <h3><%= shop.shop_name %></h3>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item active">
+        <a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý đơn hàng đang phát triển!')"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý sản phẩm đang phát triển!')"><i class="fa-solid fa-burger"></i> Sản phẩm</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý danh mục đang phát triển!')"><i class="fa-solid fa-tags"></i> Danh mục shop</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý thuộc tính topping đang phát triển!')"><i class="fa-solid fa-cubes"></i> Topping & Size</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý khuyến mãi đang phát triển!')"><i class="fa-solid fa-percent"></i> Khuyến mãi</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Quản lý mã giảm giá đang phát triển!')"><i class="fa-solid fa-ticket-simple"></i> Mã giảm giá</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" onclick="alert('Tính năng Xem đánh giá khách hàng đang phát triển!')"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá (Reviews)</a>
+      </li>
+    </ul>
+    <a href="/shop/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="realtime-banner" id="alertBanner">
+      <span><i class="fa-solid fa-bell fa-bounce"></i> <span id="bannerText">Có đơn hàng mới vừa được đặt!</span></span>
+      <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">&times;</button>
+    </div>
+
+    <div class="header-bar">
+      <div class="welcome-text">
+        <h1>Xin chào, <%= user.full_name %></h1>
+        <p>Bảng điều khiển thông tin hoạt động kinh doanh realtime</p>
+      </div>
+      <div class="shop-badge">
+        <div class="status-dot"></div>
+        <span style="font-size: 13px; font-weight: 600; color: var(--success);" id="connectionStatus">Realtime Connected</span>
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h4>Doanh thu (VND)</h4>
+          <h2 id="revenueText"><%= stats.totalRevenue.toLocaleString('vi-VN') %>đ</h2>
+        </div>
+        <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h4>Tổng số đơn</h4>
+          <h2 id="totalOrdersText"><%= stats.totalOrdersCount %></h2>
+        </div>
+        <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h4>Đơn chờ xử lý</h4>
+          <h2 id="pendingText"><%= stats.pendingOrders %></h2>
+        </div>
+        <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h4>Đơn thành công</h4>
+          <h2 id="completedText"><%= stats.completedOrders %></h2>
+        </div>
+        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+      </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách đơn hàng gần đây</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã đơn hàng</th>
+              <th>Khách hàng</th>
+              <th>Phương thức</th>
+              <th>Thanh toán</th>
+              <th>Trạng thái</th>
+              <th>Tổng tiền</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <% stats.recentOrders.forEach(order => { %>
+              <tr>
+                <td><strong>#<%= order.order_code %></strong></td>
+                <td><%= order.user_id ? order.user_id.full_name : 'N/A' %></td>
+                <td><%= order.payment_method.toUpperCase() %></td>
+                <td>
+                  <span class="status-badge <%= order.payment_status === 'paid' ? 'status-completed' : 'status-pending' %>">
+                    <%= order.payment_status %>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge <%= order.order_status === 'completed' ? 'status-completed' : (order.order_status === 'cancelled' ? 'status-danger' : 'status-processing') %>">
+                    <%= order.order_status %>
+                  </span>
+                </td>
+                <td><%= order.total_amount.toLocaleString('vi-VN') %>đ</td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Web SDK (Compat v9) to get ID Token -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- Socket.IO client CDN -->
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "<%= firebaseConfig.apiKey %>",
+      authDomain: "<%= firebaseConfig.authDomain %>",
+      projectId: "<%= firebaseConfig.projectId %>",
+      storageBucket: "<%= firebaseConfig.storageBucket %>",
+      messagingSenderId: "<%= firebaseConfig.messagingSenderId %>",
+      appId: "<%= firebaseConfig.appId %>"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    let socket;
+
+    // Listen on Firebase Auth State
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          // 1. Get JWT ID Token from Firebase Client Auth
+          const token = await user.getIdToken(true);
+
+          // 2. Initialize Socket.IO connection with Auth token
+          socket = io({
+            auth: { token }
+          });
+
+          // Register connection events
+          socket.on("connect", () => {
+            document.getElementById("connectionStatus").innerText = "Realtime Active";
+            document.getElementById("connectionStatus").style.color = "var(--success)";
+          });
+
+          socket.on("connect_error", (err) => {
+            document.getElementById("connectionStatus").innerText = "Connection Failed";
+            document.getElementById("connectionStatus").style.color = "var(--danger)";
+            console.error("Socket connection failed:", err.message);
+          });
+
+          // Listeners for realtime data changes
+          socket.on("new_order", (order) => {
+            showRealtimeAlert(`Có đơn hàng mới #${order.order_code} vừa được tạo!`);
+            playAlertSound();
+            refreshDashboardData();
+          });
+
+          socket.on("order_updated", (order) => {
+            showRealtimeAlert(`Đơn hàng #${order.order_code} đã thay đổi trạng thái sang: ${order.order_status}`);
+            refreshDashboardData();
+          });
+
+          socket.on("dashboard_updated", () => {
+            refreshDashboardData();
+          });
+
+        } catch (err) {
+          console.error("Error setting up socket auth:", err);
+        }
+      }
+    });
+
+    function showRealtimeAlert(text) {
+      const banner = document.getElementById("alertBanner");
+      document.getElementById("bannerText").innerText = text;
+      banner.style.display = "flex";
+      setTimeout(() => {
+        banner.style.display = "none";
+      }, 7000);
+    }
+
+    function playAlertSound() {
+      // In browser fallback sound
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3);
+      } catch (e) {
+        console.warn("Could not play synthesized sound:", e.message);
+      }
+    }
+
+    // Async Fetch Dashboard Stats without reloading page
+    async function refreshDashboardData() {
+      try {
+        // Fetch current EJS page and parse HTML elements to refresh cards (KISS approach)
+        const response = await fetch(window.location.href);
+        const text = await response.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+
+        // Update elements
+        document.getElementById("revenueText").innerHTML = doc.getElementById("revenueText").innerHTML;
+        document.getElementById("totalOrdersText").innerHTML = doc.getElementById("totalOrdersText").innerHTML;
+        document.getElementById("pendingText").innerHTML = doc.getElementById("pendingText").innerHTML;
+        document.getElementById("completedText").innerHTML = doc.getElementById("completedText").innerHTML;
+        document.getElementById("ordersTableBody").innerHTML = doc.getElementById("ordersTableBody").innerHTML;
+      } catch (err) {
+        console.error("Failed to refresh dashboard:", err);
+      }
+    }
+
+    // Logo upload AJAX handler
+    const logoUploadInput = document.getElementById("logoUploadInput");
+    const shopLogoImg = document.getElementById("shopLogoImg");
+
+    logoUploadInput.addEventListener("change", async () => {
+      const file = logoUploadInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      try {
+        const response = await fetch("/shop/update-logo", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+        if (result.status === "success") {
+          shopLogoImg.src = result.logoUrl;
+          if (socket) {
+            socket.emit("dashboard_updated");
+          }
+          alert("Cập nhật logo cửa hàng thành công!");
+        } else {
+          alert(result.msg || "Tải ảnh lên thất bại");
+        }
+      } catch (err) {
+        console.error("Upload logo error:", err);
+        alert("Có lỗi xảy ra khi cập nhật ảnh logo!");
+      }
+    });
+  </script>
+</body>
+</html>
