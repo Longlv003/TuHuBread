@@ -66,9 +66,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutButton => 'Sign Out';
 
   @override
-  String get roleLabel => 'Role: ';
-
-  @override
   String get emptyFieldsError => 'Please fill in all fields';
 
   @override
@@ -158,6 +155,140 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartEmptySub => 'Add some crispy breads to start shopping.';
+
+  @override
+  String get cartAddFailed => 'Failed to add item to cart';
+
+  @override
+  String cartItemsCount(String count) {
+    return '$count items';
+  }
+
+  @override
+  String get cartClearAll => 'Clear All';
+
+  @override
+  String get cartClearAllConfirm =>
+      'Are you sure you want to remove all items from your cart?';
+
+  @override
+  String get cartCancel => 'Cancel';
+
+  @override
+  String get cartSubtotal => 'Subtotal';
+
+  @override
+  String get cartCheckout => 'Checkout';
+
+  @override
+  String get cartVariantLabel => 'Variant';
+
+  @override
+  String get cartOptionsLabel => 'Options';
+
+  @override
+  String get cartRemove => 'Remove';
+
+  @override
+  String get cartSuggestionTitle => 'Add a drink to your order?';
+
+  @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get checkoutAddressSectionTitle => 'Delivery Address';
+
+  @override
+  String get checkoutChangeAddress => 'Change';
+
+  @override
+  String get checkoutNoAddressTitle => 'No delivery address';
+
+  @override
+  String get checkoutAddAddressButton => 'Add delivery address';
+
+  @override
+  String get checkoutDeliveryOptionSectionTitle => 'Delivery Option';
+
+  @override
+  String get checkoutOrderSectionTitle => 'Order Items';
+
+  @override
+  String get checkoutSubtotal => 'Subtotal';
+
+  @override
+  String get checkoutDeliveryFee => 'Delivery Fee';
+
+  @override
+  String get checkoutTotal => 'Total';
+
+  @override
+  String get checkoutContinueButton => 'Continue to Payment';
+
+  @override
+  String get checkoutSelectAddressError => 'Please select a delivery address';
+
+  @override
+  String get deliveryOptionPriorityLabel => 'Priority';
+
+  @override
+  String get deliveryOptionPriorityDesc => 'Fastest, within 30 minutes';
+
+  @override
+  String get deliveryOptionStandardLabel => 'Fast';
+
+  @override
+  String get deliveryOptionStandardDesc => 'Delivered within 1 hour';
+
+  @override
+  String get deliveryOptionSavingLabel => 'Saving';
+
+  @override
+  String get deliveryOptionSavingDesc =>
+      'Delivered in 2-3 hours, free shipping';
+
+  @override
+  String get paymentTitle => 'Payment Method';
+
+  @override
+  String get paymentMethodSectionTitle => 'Select Payment Method';
+
+  @override
+  String get paymentMethodCash => 'Cash on Delivery';
+
+  @override
+  String get paymentMethodMomo => 'MoMo Wallet';
+
+  @override
+  String get paymentMethodZalopay => 'ZaloPay Wallet';
+
+  @override
+  String get paymentMethodOnlineNote =>
+      'Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.';
+
+  @override
+  String get paymentOrderNoteLabel => 'Note for the shop (optional)';
+
+  @override
+  String get paymentOrderNoteHint =>
+      'E.g. leave at the door, call before arriving...';
+
+  @override
+  String get paymentPlaceOrderButton => 'Place Order';
+
+  @override
+  String get paymentOrderSuccessTitle => 'Order placed successfully!';
+
+  @override
+  String paymentOrderSuccessMessage(String code) {
+    return 'Your order $code has been placed.';
+  }
+
+  @override
+  String get paymentOrderFailed => 'Failed to place order';
+
+  @override
+  String get paymentBackToHome => 'Back to Home';
 
   @override
   String get historyTitle => 'Order History';
@@ -310,37 +441,362 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailOtherShopsSection => 'Other branches selling this';
 
   @override
-  String get cartSubtotal => 'Subtotal';
+  String get profileMyOrders => 'My Orders';
 
   @override
-  String get cartCheckout => 'Checkout';
+  String get profileMyOrdersSub => 'Track and manage your orders';
 
   @override
-  String get cartRemove => 'Remove';
+  String get profileAddresses => 'Shipping Addresses';
 
   @override
-  String get cartVariantLabel => 'Size';
+  String get profileAddressesSub => 'Manage your delivery addresses';
 
   @override
-  String get cartOptionsLabel => 'Options';
+  String get profileMyVouchers => 'My Vouchers';
 
   @override
-  String cartItemsCount(String count) {
-    return '$count items';
+  String get profileMyVouchersSub => 'View saved discount codes';
+
+  @override
+  String get profileEditProfile => 'Edit Profile';
+
+  @override
+  String get profileEditProfileSub => 'Update your personal information';
+
+  @override
+  String get profileChangePassword => 'Change Password';
+
+  @override
+  String get profileChangePasswordSub => 'Keep your account secure';
+
+  @override
+  String get profileSettings => 'Settings';
+
+  @override
+  String get profileSettingsSub => 'Notifications, language and more';
+
+  @override
+  String get profileHelpCenter => 'Help Center';
+
+  @override
+  String get profileHelpCenterSub => 'FAQs and customer support';
+
+  @override
+  String get profileLogoutConfirmTitle => 'Sign Out';
+
+  @override
+  String get profileLogoutConfirmMessage =>
+      'Are you sure you want to sign out?';
+
+  @override
+  String get profileCancel => 'Cancel';
+
+  @override
+  String get editProfileTitle => 'Edit Profile';
+
+  @override
+  String get editProfilePhoneHint => 'Phone Number';
+
+  @override
+  String get editProfileChangePhoto => 'Change Photo';
+
+  @override
+  String get editProfileSaveButton => 'Save Changes';
+
+  @override
+  String get editProfileSaveSuccess => 'Profile updated successfully';
+
+  @override
+  String get editProfileSaveError =>
+      'Failed to update profile, please try again';
+
+  @override
+  String get editProfileAvatarError =>
+      'Failed to update avatar, please try again';
+
+  @override
+  String get addressesTitle => 'Shipping Addresses';
+
+  @override
+  String get addressesEmptyTitle => 'No addresses yet';
+
+  @override
+  String get addressesEmptySubtitle => 'Add a delivery address to get started';
+
+  @override
+  String get addressAddButton => 'Add New Address';
+
+  @override
+  String get addressDefaultLabel => 'Default';
+
+  @override
+  String get addressSetDefaultAction => 'Set as default';
+
+  @override
+  String get addressEditAction => 'Edit';
+
+  @override
+  String get addressDeleteAction => 'Delete';
+
+  @override
+  String get addressDeleteConfirmTitle => 'Delete Address';
+
+  @override
+  String get addressDeleteConfirmMessage =>
+      'Are you sure you want to delete this address?';
+
+  @override
+  String get addressFormAddTitle => 'Add Address';
+
+  @override
+  String get addressFormEditTitle => 'Edit Address';
+
+  @override
+  String get addressReceiverNameHint => 'Receiver Name';
+
+  @override
+  String get addressReceiverPhoneHint => 'Receiver Phone';
+
+  @override
+  String get addressProvinceHint => 'Province / City';
+
+  @override
+  String get addressWardHint => 'Ward / Commune';
+
+  @override
+  String get addressStreetHint => 'House number, street name';
+
+  @override
+  String get addressLabelHome => 'Home';
+
+  @override
+  String get addressLabelCompany => 'Company';
+
+  @override
+  String get addressLabelOther => 'Other';
+
+  @override
+  String get addressUseCurrentLocation => 'Use current location';
+
+  @override
+  String get addressLocationDetecting => 'Detecting your location...';
+
+  @override
+  String get addressLocationServiceDisabled =>
+      'Please enable location services (GPS)';
+
+  @override
+  String get addressLocationPermissionDenied =>
+      'Location permission is required';
+
+  @override
+  String get addressLocationPermissionDeniedForever =>
+      'Location permission was permanently denied, please enable it in Settings';
+
+  @override
+  String get addressLocationFailed =>
+      'Could not detect your location, please try again';
+
+  @override
+  String get addressLocationDetected =>
+      'Location detected, please review the details';
+
+  @override
+  String get selectAddressTitle => 'Delivery Address';
+
+  @override
+  String get selectAddressSearchHint => 'Search location';
+
+  @override
+  String get selectAddressSavedTitle => 'Saved Addresses';
+
+  @override
+  String get selectAddressEmpty => 'No saved addresses yet';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsFilterAll => 'All';
+
+  @override
+  String get notificationsFilterOrder => 'Orders';
+
+  @override
+  String get notificationsFilterPromotion => 'Promotions';
+
+  @override
+  String get notificationsFilterSystem => 'System';
+
+  @override
+  String get notificationsEmptyTitle => 'No notifications';
+
+  @override
+  String get notificationsEmptySubtitle => 'New notifications will appear here';
+
+  @override
+  String get notificationsJustNow => 'Just now';
+
+  @override
+  String notificationsMinutesAgo(int count) {
+    return '${count}m ago';
   }
 
   @override
-  String get cartClearAll => 'Clear All';
+  String notificationsHoursAgo(int count) {
+    return '${count}h ago';
+  }
 
   @override
-  String get cartClearAllConfirm => 'Are you sure you want to clear your cart?';
+  String notificationsDaysAgo(int count) {
+    return '${count}d ago';
+  }
 
   @override
-  String get cartCancel => 'Cancel';
+  String get addressSetDefaultLabel => 'Set as default address';
 
   @override
-  String get cartCheckoutComingSoon => 'Checkout feature coming soon!';
+  String get addressSaveButton => 'Save Address';
 
   @override
-  String get cartAddFailed => 'Could not add to cart';
+  String get addressSaveError => 'Failed to save address, please try again';
+
+  @override
+  String get addressDeleteError => 'Failed to delete address, please try again';
+
+  @override
+  String get myVouchersTitle => 'My Vouchers';
+
+  @override
+  String get myVouchersEmptyTitle => 'No vouchers saved yet';
+
+  @override
+  String get myVouchersEmptySubtitle =>
+      'Save vouchers from the home page to see them here';
+
+  @override
+  String get myVouchersUsedLabel => 'Used';
+
+  @override
+  String get myVouchersExpiredLabel => 'Expired';
+
+  @override
+  String get myVouchersAvailableLabel => 'Available';
+
+  @override
+  String get voucherEnterCodeHint => 'Enter voucher code';
+
+  @override
+  String get voucherRedeemSuccess => 'Voucher applied successfully';
+
+  @override
+  String get voucherDiscountLabel => 'DISCOUNT';
+
+  @override
+  String get voucherFreeShipLabel => 'FREE\nSHIP';
+
+  @override
+  String voucherMinOrder(String amount) {
+    return 'Min. order $amount';
+  }
+
+  @override
+  String get voucherUseNowButton => 'Use now';
+
+  @override
+  String get voucherUseAtCheckoutMsg =>
+      'This voucher will be applied at checkout';
+
+  @override
+  String get voucherAvailableSection => 'Available Vouchers';
+
+  @override
+  String get voucherSaveButton => 'Save';
+
+  @override
+  String myVouchersExpiresOn(String date) {
+    return 'Expires on $date';
+  }
+
+  @override
+  String get changePasswordNotApplicable =>
+      'Change password is not available for accounts signed in with Google/Facebook';
+
+  @override
+  String get changePasswordCurrentHint => 'Current Password';
+
+  @override
+  String get changePasswordNewHint => 'New Password';
+
+  @override
+  String get changePasswordConfirmHint => 'Confirm New Password';
+
+  @override
+  String get changePasswordSaveButton => 'Update Password';
+
+  @override
+  String get changePasswordSuccess => 'Password updated successfully';
+
+  @override
+  String get changePasswordWrongCurrent => 'Current password is incorrect';
+
+  @override
+  String get changePasswordWeak => 'New password is too weak';
+
+  @override
+  String get changePasswordDefaultError =>
+      'Failed to update password, please try again';
+
+  @override
+  String get settingsLanguageSection => 'Language';
+
+  @override
+  String get settingsLanguageVietnamese => 'Vietnamese';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get helpCenterFaqSection => 'Frequently Asked Questions';
+
+  @override
+  String get helpCenterContactSection => 'Contact Support';
+
+  @override
+  String get helpCenterFaq1Question => 'How do I place an order?';
+
+  @override
+  String get helpCenterFaq1Answer =>
+      'Browse a shop\'s menu, add items to your cart, choose a delivery address and payment method, then confirm your order.';
+
+  @override
+  String get helpCenterFaq2Question => 'How can I track my order?';
+
+  @override
+  String get helpCenterFaq2Answer =>
+      'Open the History tab to see the status of your current and past orders.';
+
+  @override
+  String get helpCenterFaq3Question => 'How do I use a voucher?';
+
+  @override
+  String get helpCenterFaq3Answer =>
+      'Save a voucher from the home page or My Vouchers screen, then select it at checkout to apply the discount.';
+
+  @override
+  String get helpCenterFaq4Question => 'How do I change my delivery address?';
+
+  @override
+  String get helpCenterFaq4Answer =>
+      'Go to Profile > Shipping Addresses to add, edit or set a default delivery address.';
+
+  @override
+  String get helpCenterCallSupport => 'Call Support';
+
+  @override
+  String get helpCenterEmailSupport => 'Email Support';
 }

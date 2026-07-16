@@ -56,3 +56,60 @@ exports.verifyFirebaseUser = async (req, res) => {
     return res.status(401).json(dataRes);
   }
 };
+
+// PUT /api/account/profile
+exports.updateProfile = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+
+  try {
+    const user = await userModel.findOne({ firebase_uid: req.user.uid });
+
+    if (!user) {
+      dataRes.msg = "Không tìm thấy user";
+      return res.status(404).json(dataRes);
+    }
+
+    const { full_name, phone } = req.body;
+
+    if (full_name !== undefined) user.full_name = full_name;
+    if (phone !== undefined) user.phone = phone;
+
+    await user.save();
+
+    dataRes.data = user;
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("Update profile error:", err.message);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};
+
+// POST /api/account/avatar
+exports.uploadAvatar = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+
+  try {
+    if (!req.file) {
+      dataRes.msg = "Không có file ảnh nào được gửi lên";
+      return res.status(400).json(dataRes);
+    }
+
+    const user = await userModel.findOne({ firebase_uid: req.user.uid });
+
+    if (!user) {
+      dataRes.msg = "Không tìm thấy user";
+      return res.status(404).json(dataRes);
+    }
+
+    user.avatar = `${req.protocol}://${req.get("host")}/images/avatars/${req.file.filename}`;
+    await user.save();
+
+    dataRes.data = user;
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("Upload avatar error:", err.message);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};

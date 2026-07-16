@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuhubread/configs/system.dart';
 
 class ApiService {
@@ -11,6 +12,27 @@ class ApiService {
         connectTimeout: const Duration(milliseconds: System.connectionTimeout),
         receiveTimeout: const Duration(milliseconds: System.receiveTimeout),
         headers: System.header(),
+      ),
+    );
+
+    // Luôn lấy ID token mới nhất từ Firebase trước mỗi request — tránh lỗi
+    // 401 "Invalid token" khi token cũ (set 1 lần lúc đăng nhập) đã hết hạn
+    // sau 1 giờ. Firebase SDK tự cache & chỉ refresh khi cần, nên không tốn
+    // thêm round-trip network trong phần lớn trường hợp.
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            try {
+              final freshToken = await user.getIdToken();
+              options.headers['Authorization'] = 'Bearer $freshToken';
+            } catch (_) {
+              // Giữ header cũ (nếu có) nếu không lấy được token mới
+            }
+          }
+          handler.next(options);
+        },
       ),
     );
 

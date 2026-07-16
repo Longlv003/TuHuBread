@@ -12,7 +12,9 @@ import 'package:tuhubread/routes/routes.dart';
 import 'flavors.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final Locale? initialLocale;
+
+  const App({super.key, this.initialLocale});
 
   @override
   Widget build(BuildContext context) => GetMaterialApp(

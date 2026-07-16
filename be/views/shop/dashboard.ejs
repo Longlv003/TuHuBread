@@ -1,0 +1,173 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="realtime-banner" id="alertBanner">
+    <span><i class="fa-solid fa-bell fa-bounce"></i> <span id="bannerText">Có đơn hàng mới vừa được đặt!</span></span>
+    <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">&times;</button>
+  </div>
+
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Xin chào, <%= user.full_name %></h1>
+      <p>Bảng điều khiển thông tin hoạt động kinh doanh realtime</p>
+    </div>
+    <div class="shop-badge">
+      <div class="status-dot"></div>
+      <span style="font-size: 13px; font-weight: 600; color: var(--success);" id="connectionStatus">Realtime Connected</span>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Doanh thu (VND)</h4>
+        <h2 id="revenueText"><%= stats.totalRevenue.toLocaleString('vi-VN') %>đ</h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Tổng số đơn</h4>
+        <h2 id="totalOrdersText"><%= stats.totalOrdersCount %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Đơn chờ xử lý</h4>
+        <h2 id="pendingText"><%= stats.pendingOrders %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Đơn thành công</h4>
+        <h2 id="completedText"><%= stats.completedOrders %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="section-card">
+    <div class="section-header">
+      <h3>Danh sách đơn hàng gần đây</h3>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã đơn hàng</th>
+            <th>Khách hàng</th>
+            <th>Phương thức</th>
+            <th>Thanh toán</th>
+            <th>Trạng thái</th>
+            <th>Tổng tiền</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <% stats.recentOrders.forEach(order => { %>
+            <tr>
+              <td><strong>#<%= order.order_code %></strong></td>
+              <td><%= order.user_id ? order.user_id.full_name : 'N/A' %></td>
+              <td><%= order.payment_method.toUpperCase() %></td>
+              <td>
+                <span class="status-badge <%= order.payment_status === 'paid' ? 'status-completed' : 'status-pending' %>">
+                  <%= order.payment_status %>
+                </span>
+              </td>
+              <td>
+                <span class="status-badge <%= order.order_status === 'completed' ? 'status-completed' : (order.order_status === 'cancelled' ? 'status-danger' : 'status-processing') %>">
+                  <%= order.order_status %>
+                </span>
+              </td>
+              <td><%= order.total_amount.toLocaleString('vi-VN') %>đ</td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Page-specific socket events
+  function onSocketConnected(socket) {
+    document.getElementById("connectionStatus").innerText = "Realtime Active";
+    document.getElementById("connectionStatus").style.color = "var(--success)";
+
+    socket.on("connect_error", (err) => {
+      document.getElementById("connectionStatus").innerText = "Connection Failed";
+      document.getElementById("connectionStatus").style.color = "var(--danger)";
+    });
+
+    socket.on("new_order", (order) => {
+      showRealtimeAlert(`Có đơn hàng mới #${order.order_code} vừa được tạo!`);
+      playAlertSound();
+      refreshDashboardData();
+    });
+
+    socket.on("order_updated", (order) => {
+      showRealtimeAlert(`Đơn hàng #${order.order_code} đã thay đổi trạng thái sang: ${order.order_status}`);
+      refreshDashboardData();
+    });
+
+    socket.on("dashboard_updated", () => {
+      refreshDashboardData();
+    });
+  }
+
+  function showRealtimeAlert(text) {
+    const banner = document.getElementById("alertBanner");
+    document.getElementById("bannerText").innerText = text;
+    banner.style.display = "flex";
+    setTimeout(() => {
+      banner.style.display = "none";
+    }, 7000);
+  }
+
+  function playAlertSound() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {
+      console.warn("Could not play synthesized sound:", e.message);
+    }
+  }
+
+  async function refreshDashboardData() {
+    try {
+      const response = await fetch(window.location.href);
+      const text = await response.text();
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+
+      document.getElementById("revenueText").innerHTML = doc.getElementById("revenueText").innerHTML;
+      document.getElementById("totalOrdersText").innerHTML = doc.getElementById("totalOrdersText").innerHTML;
+      document.getElementById("pendingText").innerHTML = doc.getElementById("pendingText").innerHTML;
+      document.getElementById("completedText").innerHTML = doc.getElementById("completedText").innerHTML;
+      document.getElementById("ordersTableBody").innerHTML = doc.getElementById("ordersTableBody").innerHTML;
+    } catch (err) {
+      console.error("Failed to refresh dashboard:", err);
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

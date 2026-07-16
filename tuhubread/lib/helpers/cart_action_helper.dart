@@ -7,20 +7,10 @@ import '../blocs/product_detail/product_detail_state.dart';
 import '../core/result.dart';
 import '../di.dart';
 import '../models/product_detail.model.dart';
+import '../models/product_variant.model.dart';
 import '../repositories/home_repository.dart';
 import '../utils/cart_price_calculator.dart';
-
-class QuickAddResult {
-  final bool success;
-  final String? errorMessage;
-
-  const QuickAddResult._({required this.success, this.errorMessage});
-
-  const QuickAddResult.success() : this._(success: true);
-
-  const QuickAddResult.failure(String message)
-      : this._(success: false, errorMessage: message);
-}
+import '../widgets/size_select_bottom_sheet.dart';
 
 /// Helper thêm sản phẩm hiện tại vào giỏ hàng mà không cần sửa logic ProductDetailCubit.
 class CartActionHelper {
@@ -34,60 +24,69 @@ class CartActionHelper {
     return true;
   }
 
-  /// Thêm nhanh từ danh sách: dùng variant mặc định, không tùy chọn thêm, số lượng 1.
-  static Future<QuickAddResult> quickAddProduct(String productId) async {
-    final repository = getIt<HomeRepository>();
-    final res = await repository.fetchProductDetail(productId);
-
-    if (res is Failure<ProductDetailModel>) {
-      return QuickAddResult.failure(
-        res.errorOrNull ?? 'Không thể thêm vào giỏ hàng',
-      );
-    }
-
-    final detail = (res as Success<ProductDetailModel>).data;
-    if (detail.variants.isEmpty) {
-      return const QuickAddResult.failure('Sản phẩm chưa có phiên bản bán ra');
-    }
-
-    final defaultVariant = detail.variants.first;
-    const selectedOptions = <String>{};
-    final unitPrice = CartPriceCalculator.calculateUnitPrice(
-      detail,
-      defaultVariant,
-      selectedOptions,
-    );
-
-    getIt<CartCubit>().addFromProductDetail(
-      ProductDetailLoaded(
-        productDetail: detail,
-        selectedVariant: defaultVariant,
-        selectedOptionIds: selectedOptions,
-        quantity: 1,
-        totalPrice: unitPrice,
-      ),
-    );
-
-    return const QuickAddResult.success();
-  }
-
+  /// Thêm nhanh từ danh sách (Home, gợi ý trong giỏ hàng...): nếu sản phẩm
+  /// chỉ có một phiên bản thì thêm thẳng, ngược lại mở bottom sheet cho
+  /// người dùng chọn size trước khi thêm vào giỏ.
   static Future<void> quickAddProductWithFeedback(
     BuildContext context,
     String productId, {
     required String successMessage,
     required String failureFallback,
   }) async {
-    final result = await quickAddProduct(productId);
+    final repository = getIt<HomeRepository>();
+    final res = await repository.fetchProductDetail(productId);
     if (!context.mounted) return;
 
+    if (res is Failure<ProductDetailModel>) {
+      _showSnackBar(context, false, res.errorOrNull ?? failureFallback);
+      return;
+    }
+
+    final detail = (res as Success<ProductDetailModel>).data;
+    if (detail.variants.isEmpty) {
+      _showSnackBar(context, false, 'Sản phẩm chưa có phiên bản bán ra');
+      return;
+    }
+
+    ProductVariantModel variant;
+    if (detail.variants.length == 1) {
+      variant = detail.variants.first;
+    } else {
+      final picked = await showSizeSelectBottomSheet(context, detail);
+      if (picked == null) return;
+      if (!context.mounted) return;
+      variant = picked;
+    }
+
+    const selectedOptions = <String>{};
+    final unitPrice = CartPriceCalculator.calculateUnitPrice(
+      detail,
+      variant,
+      selectedOptions,
+    );
+
+    getIt<CartCubit>().addFromProductDetail(
+      ProductDetailLoaded(
+        productDetail: detail,
+        selectedVariant: variant,
+        selectedOptionIds: selectedOptions,
+        quantity: 1,
+        totalPrice: unitPrice,
+      ),
+    );
+
+    _showSnackBar(context, true, successMessage);
+  }
+
+  static void _showSnackBar(
+    BuildContext context,
+    bool success,
+    String message,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          result.success
-              ? successMessage
-              : (result.errorMessage ?? failureFallback),
-        ),
-        backgroundColor: result.success
+        content: Text(message),
+        backgroundColor: success
             ? const Color(0xFF27AE60)
             : const Color(0xFFE74C3C),
         behavior: SnackBarBehavior.floating,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -300,6 +302,59 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e, s) {
       _log.e('[handleGoogleAuth] Unexpected error', error: e, stackTrace: s);
       emit(AuthFailure(e.toString()));
+    }
+  }
+
+  /// Cập nhật tên/số điện thoại. Trả về null nếu thành công, ngược lại trả
+  /// về thông báo lỗi. Không emit AuthLoading/AuthFailure để tránh làm
+  /// MyHomePage (đang lắng nghe AuthCubit toàn app) rơi về màn loading.
+  Future<String?> updateProfile({
+    String? fullName,
+    String? phone,
+    required String defaultErrorMsg,
+  }) async {
+    final currentState = state;
+    if (currentState is! AuthSuccess) return defaultErrorMsg;
+
+    try {
+      final response = await apiService.put('/api/account/profile', {
+        if (fullName != null) 'full_name': fullName,
+        if (phone != null) 'phone': phone,
+      });
+
+      if (response['data'] != null) {
+        final user = UserModel.fromJson(response['data'] as Map<String, dynamic>);
+        emit(AuthSuccess(user));
+        return null;
+      }
+      return response['msg'] ?? defaultErrorMsg;
+    } catch (e, s) {
+      _log.e('[updateProfile] Unexpected error', error: e, stackTrace: s);
+      return defaultErrorMsg;
+    }
+  }
+
+  /// Tải ảnh đại diện mới. Trả về null nếu thành công, ngược lại trả về
+  /// thông báo lỗi.
+  Future<String?> uploadAvatar(File file, {required String defaultErrorMsg}) async {
+    final currentState = state;
+    if (currentState is! AuthSuccess) return defaultErrorMsg;
+
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(file.path),
+      });
+      final response = await apiService.post('/api/account/avatar', formData);
+
+      if (response['data'] != null) {
+        final user = UserModel.fromJson(response['data'] as Map<String, dynamic>);
+        emit(AuthSuccess(user));
+        return null;
+      }
+      return response['msg'] ?? defaultErrorMsg;
+    } catch (e, s) {
+      _log.e('[uploadAvatar] Unexpected error', error: e, stackTrace: s);
+      return defaultErrorMsg;
     }
   }
 

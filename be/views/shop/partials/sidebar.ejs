@@ -1,0 +1,39 @@
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-container" onclick="document.getElementById('logoUploadInput').click()">
+      <img id="shopLogoImg" src="<%= shop.logo ? shop.logo : 'https://placehold.co/100' %>" alt="Shop logo" onerror="this.src='https://placehold.co/100'">
+      <div class="logo-overlay">
+        <i class="fa-solid fa-camera"></i>
+      </div>
+    </div>
+    <input type="file" id="logoUploadInput" accept="image/*" style="display:none">
+    <h3><%= shop.shop_name %></h3>
+  </div>
+  <ul class="nav-menu">
+    <li class="nav-item <%= activeTab === 'dashboard' ? 'active' : '' %>">
+      <a href="/shop/dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'orders' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Quản lý đơn hàng đang phát triển!')"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'products' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Quản lý sản phẩm đang phát triển!')"><i class="fa-solid fa-burger"></i> Sản phẩm</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'categories' ? 'active' : '' %>">
+      <a href="/shop/categories"><i class="fa-solid fa-tags"></i> Danh mục shop</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'toppings' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Quản lý thuộc tính topping đang phát triển!')"><i class="fa-solid fa-cubes"></i> Topping & Size</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'sales' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Quản lý khuyến mãi đang phát triển!')"><i class="fa-solid fa-percent"></i> Khuyến mãi</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'vouchers' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Quản lý mã giảm giá đang phát triển!')"><i class="fa-solid fa-ticket-simple"></i> Mã giảm giá</a>
+    </li>
+    <li class="nav-item <%= activeTab === 'reviews' ? 'active' : '' %>">
+      <a href="#" onclick="alert('Tính năng Xem đánh giá khách hàng đang phát triển!')"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá (Reviews)</a>
+    </li>
+  </ul>
+  <a href="/shop/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+</div>
