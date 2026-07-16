@@ -1,0 +1,360 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý danh mục cửa hàng</h1>
+      <p>Thêm mới, sửa đổi, sắp xếp danh mục sản phẩm của shop</p>
+    </div>
+  </div>
+
+  <div class="search-filter-bar" style="margin-bottom: 24px;">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="catSearchInput" placeholder="Tìm kiếm danh mục...">
+    </div>
+    <div class="filter-box">
+      <select id="catFilterStatus">
+        <option value="all">Tất cả danh mục</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="inactive">Tạm ngưng</option>
+        <option value="deleted">Đã xóa mềm</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Cột 1: Danh sách danh mục -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách phân loại sản phẩm</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-icon">Icon</th>
+              <th class="col-name">Tên danh mục</th>
+              <th class="col-order">Thứ tự</th>
+              <th class="col-status">Trạng thái</th>
+              <th class="col-actions">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="categoriesTableBody">
+            <% categories.forEach(cat => { %>
+              <tr id="row-<%= cat._id %>" data-name="<%= cat.category_name %>" data-status="<%= cat.deleted_at ? 'deleted' : cat.status %>" <% if (cat.deleted_at) { %> style="opacity: 0.5; background: rgba(231, 76, 60, 0.02);" <% } %>>
+                <td class="col-icon">
+                  <img src="<%= cat.category_icon ? cat.category_icon : 'https://placehold.co/50' %>" alt="icon" onerror="this.src='https://placehold.co/50'">
+                </td>
+                <td class="col-name"><strong><%= cat.category_name %></strong></td>
+                <td class="col-order"><%= cat.sort_order %></td>
+                <td class="col-status">
+                  <% if (cat.deleted_at) { %>
+                    <span class="status-badge" style="background: rgba(149, 165, 166, 0.15); color: #BDC3C7;">Đã xóa</span>
+                  <% } else { %>
+                    <span class="status-badge <%= cat.status === 'active' ? 'status-active' : 'status-inactive' %>">
+                      <%= cat.status %>
+                    </span>
+                  <% } %>
+                </td>
+                <td class="col-actions">
+                  <div class="actions-wrap">
+                    <% if (cat.deleted_at) { %>
+                      <span class="btn-action" style="opacity: 0.5; cursor: not-allowed; border-style: dashed;">
+                        <i class="fa-solid fa-ban"></i> Đã xóa
+                      </span>
+                    <% } else { %>
+                      <button type="button" class="btn-action" onclick="onEditCategory('<%= cat._id %>', '<%= cat.category_name %>', '<%= cat.sort_order %>', '<%= cat.status %>', '<%= cat.category_icon %>')">Sửa</button>
+                      <button type="button" class="btn-action btn-delete" onclick="onDeleteCategory('<%= cat._id %>')">Xóa</button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cột 2: Form Thêm/Sửa -->
+    <div>
+      <!-- Form Thêm mới -->
+      <div class="section-card" id="addCard">
+        <div class="section-header">
+          <h3>Thêm danh mục mới</h3>
+        </div>
+        <form id="addCategoryForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="addCategoryName">Tên danh mục *</label>
+            <input type="text" id="addCategoryName" required placeholder="Ví dụ: Bánh Mì Đặc Biệt">
+          </div>
+          <div class="form-group" style="display: none;">
+            <label for="addSortOrder">Thứ tự hiển thị</label>
+            <input type="number" id="addSortOrder" value="0" min="0">
+          </div>
+          <div class="form-group" style="display: none;">
+            <label for="addStatus">Trạng thái</label>
+            <select id="addStatus">
+              <option value="active" selected>Active (Hoạt động)</option>
+              <option value="inactive">Inactive (Tạm ngưng)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="addIcon">Ảnh Icon</label>
+            <input type="file" id="addIcon" accept="image/*" onchange="previewImage(this, 'addPreview')">
+            <img id="addPreview" class="preview-box">
+          </div>
+          <button type="submit" class="btn-submit">Lưu danh mục</button>
+        </form>
+      </div>
+
+      <!-- Form Chỉnh sửa (Ẩn mặc định) -->
+      <div class="section-card" id="editCard" style="display: none;">
+        <div class="section-header">
+          <h3>Cập nhật danh mục</h3>
+        </div>
+        <form id="editCategoryForm" enctype="multipart/form-data">
+          <input type="hidden" id="editCategoryId">
+          <div class="form-group">
+            <label for="editCategoryName">Tên danh mục *</label>
+            <input type="text" id="editCategoryName" required>
+          </div>
+          <div class="form-group">
+            <label for="editSortOrder">Thứ tự hiển thị</label>
+            <input type="number" id="editSortOrder" min="0">
+          </div>
+          <div class="form-group">
+            <label for="editStatus">Trạng thái</label>
+            <select id="editStatus">
+              <option value="active">Active (Hoạt động)</option>
+              <option value="inactive">Inactive (Tạm ngưng)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editIcon">Thay đổi Icon</label>
+            <input type="file" id="editIcon" accept="image/*" onchange="previewImage(this, 'editPreview')">
+            <img id="editPreview" class="preview-box">
+          </div>
+          <button type="submit" class="btn-submit">Lưu</button>
+          <button type="button" class="btn-cancel" onclick="cancelEdit()">Hủy bỏ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Image preview helper
+  function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Add category handler
+  const addForm = document.getElementById("addCategoryForm");
+  addForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("addCategoryName").value.trim();
+    const sortOrder = document.getElementById("addSortOrder").value;
+    const status = document.getElementById("addStatus").value;
+    const iconFile = document.getElementById("addIcon").files[0];
+    const submitBtn = addForm.querySelector(".btn-submit");
+
+    const formData = new FormData();
+    formData.append("categoryName", name);
+    formData.append("sortOrder", sortOrder);
+    formData.append("status", status);
+    if (iconFile) {
+      formData.append("categoryIcon", iconFile);
+    }
+
+    // Disable button & show loading status
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang lưu...";
+
+    try {
+      const response = await fetch("/shop/categories/add", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Thêm danh mục mới thành công!");
+        addForm.reset();
+        document.getElementById("addPreview").style.display = "none";
+        await refreshCategoriesTable();
+      } else {
+        alert(result.msg || "Thêm mới thất bại");
+      }
+    } catch (err) {
+      console.error("Add category error:", err);
+      alert("Lỗi khi thêm danh mục!");
+    } finally {
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Lưu danh mục";
+    }
+  });
+
+  // Reload categories table dynamically via AJAX (no page refresh)
+  async function refreshCategoriesTable() {
+    try {
+      const response = await fetch(window.location.href);
+      const text = await response.text();
+      
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      
+      document.getElementById("categoriesTableBody").innerHTML = doc.getElementById("categoriesTableBody").innerHTML;
+      
+      // Re-apply client-side search and filters after HTML update
+      if (typeof filterCategories === "function") {
+        filterCategories();
+      }
+    } catch (err) {
+      console.error("Failed to refresh categories table:", err);
+    }
+  }
+
+  // Sửa danh mục handler (chuyển đổi card)
+  function onEditCategory(id, name, sortOrder, status, iconUrl) {
+    document.getElementById("addCard").style.display = "none";
+    document.getElementById("editCard").style.display = "block";
+
+    document.getElementById("editCategoryId").value = id;
+    document.getElementById("editCategoryName").value = name;
+    document.getElementById("editSortOrder").value = sortOrder;
+    document.getElementById("editStatus").value = status;
+
+    const preview = document.getElementById("editPreview");
+    if (iconUrl && iconUrl !== 'null') {
+      preview.src = iconUrl;
+      preview.style.display = "block";
+    } else {
+      preview.style.display = "none";
+    }
+  }
+
+  function cancelEdit() {
+    document.getElementById("editCard").style.display = "none";
+    document.getElementById("addCard").style.display = "block";
+  }
+
+  // Submit edit category
+  const editForm = document.getElementById("editCategoryForm");
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("editCategoryId").value;
+    const name = document.getElementById("editCategoryName").value.trim();
+    const sortOrder = document.getElementById("editSortOrder").value;
+    const status = document.getElementById("editStatus").value;
+    const iconFile = document.getElementById("editIcon").files[0];
+    const submitBtn = editForm.querySelector(".btn-submit");
+
+    const formData = new FormData();
+    formData.append("categoryName", name);
+    formData.append("sortOrder", sortOrder);
+    formData.append("status", status);
+    if (iconFile) {
+      formData.append("categoryIcon", iconFile);
+    }
+
+    if (!confirm("Bạn có chắc chắn muốn lưu các thay đổi này không?")) {
+      return;
+    }
+
+    // Disable button & show loading status
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang lưu...";
+
+    try {
+      const response = await fetch(`/shop/categories/edit/${id}`, {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Cập nhật danh mục thành công!");
+        cancelEdit();
+        await refreshCategoriesTable();
+      } else {
+        alert(result.msg || "Cập nhật thất bại");
+      }
+    } catch (err) {
+      console.error("Edit category error:", err);
+      alert("Lỗi khi cập nhật danh mục!");
+    } finally {
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Lưu";
+    }
+  });
+
+  // Delete category handler (Xóa mềm)
+  async function onDeleteCategory(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
+
+    try {
+      const response = await fetch(`/shop/categories/delete/${id}`, {
+        method: "POST"
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Xóa danh mục thành công!");
+        await refreshCategoriesTable();
+      } else {
+        alert(result.msg || "Xóa thất bại");
+      }
+    } catch (err) {
+      console.error("Delete category error:", err);
+    }
+  }
+
+  // Client-side search and filter logic
+  const catSearchInput = document.getElementById("catSearchInput");
+  const catFilterStatus = document.getElementById("catFilterStatus");
+
+  function filterCategories() {
+    const query = catSearchInput.value.toLowerCase().trim();
+    const statusFilter = catFilterStatus.value;
+    const rows = document.querySelectorAll("#categoriesTableBody tr");
+
+    rows.forEach(row => {
+      const name = row.getAttribute("data-name").toLowerCase();
+      const status = row.getAttribute("data-status");
+
+      const matchesSearch = name.includes(query);
+      const matchesStatus = (statusFilter === "all") || (status === statusFilter);
+
+      if (matchesSearch && matchesStatus) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  if (catSearchInput && catFilterStatus) {
+    catSearchInput.addEventListener("input", filterCategories);
+    catFilterStatus.addEventListener("change", filterCategories);
+  }
+</script>
+
+<%- include('partials/footer') %>

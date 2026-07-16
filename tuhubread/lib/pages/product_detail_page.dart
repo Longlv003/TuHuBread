@@ -6,11 +6,11 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 import '../blocs/product_detail/product_detail_cubit.dart';
 import '../blocs/product_detail/product_detail_state.dart';
 import '../di.dart';
-import '../models/product_option.model.dart';
-import '../models/product_variant.model.dart';
-import '../models/product_review.model.dart';
 import '../models/product_detail.model.dart';
 import '../helpers/cart_action_helper.dart';
+import '../models/product_option.model.dart';
+import '../models/product_review.model.dart';
+import '../models/product_variant.model.dart';
 import '../utils/currency_formatter.dart';
 
 class ProductDetailPage extends StatelessWidget {
@@ -41,9 +41,7 @@ class _ProductDetailContent extends StatelessWidget {
           return const Scaffold(
             backgroundColor: Color(0xFFFDFBF7),
             body: Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFE67E22),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFFE67E22)),
             ),
           );
         }
@@ -55,7 +53,10 @@ class _ProductDetailContent extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2C3E50)),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF2C3E50),
+                ),
                 onPressed: () => getx.Get.back(),
               ),
             ),
@@ -65,18 +66,27 @@ class _ProductDetailContent extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded, size: 54, color: Color(0xFFE74C3C)),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 54,
+                      color: Color(0xFFE74C3C),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       state.error,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFF7F8C8D)),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF7F8C8D),
+                      ),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         final String productId = getx.Get.arguments as String;
-                        context.read<ProductDetailCubit>().loadProductDetail(productId);
+                        context.read<ProductDetailCubit>().loadProductDetail(
+                          productId,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE67E22),
@@ -96,7 +106,8 @@ class _ProductDetailContent extends StatelessWidget {
 
         if (state is ProductDetailLoaded) {
           final detail = state.productDetail;
-          final hasSale = detail.activeSale != null && detail.activeSale!.isActiveNow;
+          final hasSale =
+              detail.activeSale != null && detail.activeSale!.isActiveNow;
 
           return Scaffold(
             backgroundColor: const Color(0xFFFDFBF7),
@@ -115,7 +126,11 @@ class _ProductDetailContent extends StatelessWidget {
                     child: CircleAvatar(
                       backgroundColor: Colors.black.withOpacity(0.4),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         onPressed: () => getx.Get.back(),
                       ),
                     ),
@@ -179,14 +194,21 @@ class _ProductDetailContent extends StatelessWidget {
                               const SizedBox(width: 8),
                               if (detail.rating > 0)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFDF0E5),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.star_rounded, color: Color(0xFFF1C40F), size: 16),
+                                      const Icon(
+                                        Icons.star_rounded,
+                                        color: Color(0xFFF1C40F),
+                                        size: 16,
+                                      ),
                                       const SizedBox(width: 3),
                                       Text(
                                         "${detail.rating}",
@@ -201,7 +223,10 @@ class _ProductDetailContent extends StatelessWidget {
                                 )
                               else
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF5F5F5),
                                     borderRadius: BorderRadius.circular(8),
@@ -218,32 +243,54 @@ class _ProductDetailContent extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
 
-                          // Giá tạm tính (Hiển thị đỏ to dưới tên sản phẩm)
-                          Text(
-                            CurrencyFormatter.formatVND(state.totalPrice),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFE74C3C),
-                            ),
+                          // Giá tạm tính & Bộ chọn số lượng (Cùng 1 Row, giá bên trái, chọn số lượng bên phải)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                CurrencyFormatter.formatVND(state.totalPrice),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFE74C3C),
+                                ),
+                              ),
+                              _buildQuantitySelectorOnly(context, state.quantity),
+                            ],
                           ),
                           const SizedBox(height: 12),
 
                           // Thời gian chuẩn bị & Prep Time tag
                           Row(
                             children: [
-                              const Icon(Icons.access_time_rounded, size: 14, color: Color(0xFF7F8C8D)),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: Color(0xFF7F8C8D),
+                              ),
                               const SizedBox(width: 4),
                               Text(
-                                l10n.detailPrepTime(detail.preparationTimeMinutes.toString()),
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+                                l10n.detailPrepTime(
+                                  detail.preparationTimeMinutes.toString(),
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF7F8C8D),
+                                ),
                               ),
                               const SizedBox(width: 12),
-                              const Icon(Icons.shopping_bag_outlined, size: 14, color: Color(0xFF7F8C8D)),
+                              const Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 14,
+                                color: Color(0xFF7F8C8D),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 "Đã bán ${detail.salesCount}",
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF7F8C8D),
+                                ),
                               ),
                             ],
                           ),
@@ -257,7 +304,11 @@ class _ProductDetailContent extends StatelessWidget {
 
                           // ─────────── 3b. CÁC CHI NHÁNH KHÁC CÙNG BÁN MÓN NÀY ───────────
                           if (detail.otherShops.isNotEmpty) ...[
-                            _buildOtherShopsSection(context, detail.otherShops, l10n),
+                            _buildOtherShopsSection(
+                              context,
+                              detail.otherShops,
+                              l10n,
+                            ),
                             const Divider(height: 32, color: Color(0xFFF1EAE1)),
                           ],
 
@@ -282,21 +333,35 @@ class _ProductDetailContent extends StatelessWidget {
                           const Divider(height: 32, color: Color(0xFFF1EAE1)),
 
                           // 5. Chọn kích cỡ (Variants)
-                          _buildVariantsSection(context, detail.variants, state.selectedVariant, hasSale, l10n),
+                          _buildVariantsSection(
+                            context,
+                            detail.variants,
+                            state.selectedVariant,
+                            hasSale,
+                            l10n,
+                          ),
                           const Divider(height: 32, color: Color(0xFFF1EAE1)),
 
-                          // 6. Chọn số lượng mua (Quantity)
-                          _buildQuantitySection(context, state.quantity, l10n),
-                          const Divider(height: 32, color: Color(0xFFF1EAE1)),
+
 
                           // 7. Tùy chọn thêm (Options)
                           if (detail.options.isNotEmpty) ...[
-                            _buildOptionsSection(context, detail.options, state.selectedOptionIds, l10n),
+                            _buildOptionsSection(
+                              context,
+                              detail.options,
+                              state.selectedOptionIds,
+                              l10n,
+                            ),
                             const Divider(height: 32, color: Color(0xFFF1EAE1)),
                           ],
 
                           // ─────────── 8. ĐÁNH GIÁ & BÌNH LUẬN (REVIEWS) ───────────
-                          _buildReviewsSection(context, detail.reviews ?? [], detail.totalReviews ?? 0, l10n),
+                          _buildReviewsSection(
+                            context,
+                            detail.reviews ?? [],
+                            detail.totalReviews ?? 0,
+                            l10n,
+                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
@@ -318,7 +383,11 @@ class _ProductDetailContent extends StatelessWidget {
 
   // ─────────── HIỂN THỊ THÔNG TIN CỬA HÀNG ───────────
 
-  Widget _buildShopSection(BuildContext context, dynamic shop, AppLocalizations l10n) {
+  Widget _buildShopSection(
+    BuildContext context,
+    dynamic shop,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -387,7 +456,11 @@ class _ProductDetailContent extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF7F8C8D)),
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: Color(0xFF7F8C8D),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -403,7 +476,11 @@ class _ProductDetailContent extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF7F8C8D)),
+                        const Icon(
+                          Icons.phone_outlined,
+                          size: 14,
+                          color: Color(0xFF7F8C8D),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           l10n.detailShopPhone(shop.phoneNumber),
@@ -444,6 +521,7 @@ class _ProductDetailContent extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ListView.separated(
+          padding: EdgeInsets.zero,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: otherShops.length,
@@ -455,11 +533,16 @@ class _ProductDetailContent extends StatelessWidget {
             return InkWell(
               onTap: () {
                 // Tải lại chi tiết sản phẩm của cửa hàng khác
-                context.read<ProductDetailCubit>().loadProductDetail(other.productId);
+                context.read<ProductDetailCubit>().loadProductDetail(
+                  other.productId,
+                );
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFAFAFA),
                   borderRadius: BorderRadius.circular(12),
@@ -467,10 +550,34 @@ class _ProductDetailContent extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.storefront_rounded,
-                      color: Color(0xFF7F8C8D),
-                      size: 20,
+                    ClipOval(
+                      child: other.logo != null
+                          ? Image.network(
+                              other.logo!,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                              errorBuilder: (c, e, s) => Container(
+                                width: 32,
+                                height: 32,
+                                color: const Color(0xFFFDF0E5),
+                                child: const Icon(
+                                  Icons.storefront_rounded,
+                                  color: Color(0xFFE67E22),
+                                  size: 16,
+                                ),
+                              ),
+                            )
+                          : Container(
+                              width: 32,
+                              height: 32,
+                              color: const Color(0xFFFDF0E5),
+                              child: const Icon(
+                                Icons.storefront_rounded,
+                                color: Color(0xFFE67E22),
+                                size: 16,
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -514,7 +621,10 @@ class _ProductDetailContent extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE67E22),
                         borderRadius: BorderRadius.circular(20),
@@ -538,49 +648,46 @@ class _ProductDetailContent extends StatelessWidget {
     );
   }
 
-  // ─────────── BỘ TĂNG GIẢM SỐ LƯỢNG ───────────
-
-  Widget _buildQuantitySection(BuildContext context, int quantity, AppLocalizations l10n) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          l10n.detailQuantity,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C3E50),
+  Widget _buildQuantitySelectorOnly(BuildContext context, int quantity) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1EAE1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(
+              Icons.remove_rounded,
+              color: Color(0xFFE67E22),
+              size: 18,
+            ),
+            onPressed: () =>
+                context.read<ProductDetailCubit>().decrementQuantity(),
           ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1EAE1),
-            borderRadius: BorderRadius.circular(16),
+          Text(
+            "$quantity",
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+            ),
           ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove_rounded, color: Color(0xFFE67E22), size: 18),
-                onPressed: () => context.read<ProductDetailCubit>().decrementQuantity(),
-              ),
-              Text(
-                "$quantity",
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add_rounded, color: Color(0xFFE67E22), size: 18),
-                onPressed: () => context.read<ProductDetailCubit>().incrementQuantity(),
-              ),
-            ],
+          IconButton(
+            icon: const Icon(
+              Icons.add_rounded,
+              color: Color(0xFFE67E22),
+              size: 18,
+            ),
+            onPressed: () =>
+                context.read<ProductDetailCubit>().incrementQuantity(),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
+
 
   // ─────────── CHỌN KÍCH CỠ (VARIANTS) ───────────
 
@@ -608,29 +715,39 @@ class _ProductDetailContent extends StatelessWidget {
           children: variants.map((variant) {
             final isSelected = variant.id == selected.id;
             final hasSale = variant.salePrice != null || hasSaleProduct;
-            
+
             double originalPrice = variant.price;
             double displayPrice = originalPrice;
             if (variant.salePrice != null) {
               displayPrice = variant.salePrice!;
             } else if (hasSaleProduct) {
-              final loadedState = context.read<ProductDetailCubit>().state as ProductDetailLoaded;
+              final loadedState =
+                  context.read<ProductDetailCubit>().state
+                      as ProductDetailLoaded;
               final activeSale = loadedState.productDetail.activeSale;
-              if (activeSale != null && (activeSale.variantId == null || activeSale.variantId == variant.id)) {
+              if (activeSale != null &&
+                  (activeSale.variantId == null ||
+                      activeSale.variantId == variant.id)) {
                 displayPrice = activeSale.salePrice;
               }
             }
 
             return GestureDetector(
-              onTap: () => context.read<ProductDetailCubit>().selectVariant(variant),
+              onTap: () =>
+                  context.read<ProductDetailCubit>().selectVariant(variant),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFFFDF0E5) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1),
+                    color: isSelected
+                        ? const Color(0xFFE67E22)
+                        : const Color(0xFFF1EAE1),
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
@@ -641,8 +758,12 @@ class _ProductDetailContent extends StatelessWidget {
                       variant.variantName,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFFD35400) : const Color(0xFF2C3E50),
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? const Color(0xFFD35400)
+                            : const Color(0xFF2C3E50),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -665,7 +786,9 @@ class _ProductDetailContent extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? const Color(0xFFD35400) : const Color(0xFFE67E22),
+                            color: isSelected
+                                ? const Color(0xFFD35400)
+                                : const Color(0xFFE67E22),
                           ),
                         ),
                       ],
@@ -704,31 +827,44 @@ class _ProductDetailContent extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: options.length,
-          separatorBuilder: (c, i) => const Divider(height: 1, color: Color(0xFFFDF9F3)),
+          separatorBuilder: (c, i) =>
+              const Divider(height: 1, color: Color(0xFFFDF9F3)),
           itemBuilder: (context, idx) {
             final option = options[idx];
             final isChecked = selectedIds.contains(option.id);
 
             return InkWell(
-              onTap: () => context.read<ProductDetailCubit>().toggleOption(option.id),
+              onTap: () =>
+                  context.read<ProductDetailCubit>().toggleOption(option.id),
               borderRadius: BorderRadius.circular(8),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 4.0,
+                ),
                 child: Row(
                   children: [
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: isChecked ? const Color(0xFFE67E22) : Colors.transparent,
+                        color: isChecked
+                            ? const Color(0xFFE67E22)
+                            : Colors.transparent,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isChecked ? const Color(0xFFE67E22) : const Color(0xFFBDC3C7),
+                          color: isChecked
+                              ? const Color(0xFFE67E22)
+                              : const Color(0xFFBDC3C7),
                           width: 1.5,
                         ),
                       ),
                       child: isChecked
-                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                          ? const Icon(
+                              Icons.check_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            )
                           : const SizedBox(width: 14, height: 14),
                     ),
                     const SizedBox(width: 12),
@@ -798,7 +934,8 @@ class _ProductDetailContent extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: reviews.length,
-            separatorBuilder: (c, i) => const Divider(height: 24, color: Color(0xFFF1EAE1)),
+            separatorBuilder: (c, i) =>
+                const Divider(height: 24, color: Color(0xFFF1EAE1)),
             itemBuilder: (context, idx) {
               final review = reviews[idx];
 
@@ -815,18 +952,27 @@ class _ProductDetailContent extends StatelessWidget {
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  width: 36,
-                                  height: 36,
-                                  color: const Color(0xFFF1EAE1),
-                                  child: const Icon(Icons.person, color: Color(0xFF7F8C8D), size: 18),
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      color: const Color(0xFFF1EAE1),
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: Color(0xFF7F8C8D),
+                                        size: 18,
+                                      ),
+                                    ),
                               )
                             : Container(
                                 width: 36,
                                 height: 36,
                                 color: const Color(0xFFF1EAE1),
-                                child: const Icon(Icons.person, color: Color(0xFF7F8C8D), size: 18),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Color(0xFF7F8C8D),
+                                  size: 18,
+                                ),
                               ),
                       ),
                       const SizedBox(width: 10),
@@ -901,10 +1047,7 @@ class _ProductDetailContent extends StatelessWidget {
 
   // ─────────── BOTTOM BAR MUA HÀNG ───────────
 
-  Widget _buildBottomActionBar(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildBottomActionBar(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(

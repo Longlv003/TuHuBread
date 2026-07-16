@@ -1,0 +1,72 @@
+  <!-- Firebase Web SDK (Compat v9) to get ID Token -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- Socket.IO client CDN -->
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "<%= firebaseConfig.apiKey %>",
+      authDomain: "<%= firebaseConfig.authDomain %>",
+      projectId: "<%= firebaseConfig.projectId %>",
+      storageBucket: "<%= firebaseConfig.storageBucket %>",
+      messagingSenderId: "<%= firebaseConfig.messagingSenderId %>",
+      appId: "<%= firebaseConfig.appId %>"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    let socket;
+
+    // Listen on Firebase Auth State
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken(true);
+          socket = io({ auth: { token } });
+          
+          // Trigger socket connected callback if page-specific handler exists
+          if (typeof onSocketConnected === "function") {
+            onSocketConnected(socket);
+          }
+        } catch (err) {
+          console.error("Error setting up socket auth:", err);
+        }
+      }
+    });
+
+    // Logo upload AJAX handler (Sidebar logo)
+    const logoUploadInput = document.getElementById("logoUploadInput");
+    const shopLogoImg = document.getElementById("shopLogoImg");
+
+    if (logoUploadInput && shopLogoImg) {
+      logoUploadInput.addEventListener("change", async () => {
+        const file = logoUploadInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("logo", file);
+
+        try {
+          const response = await fetch("/shop/update-logo", {
+            method: "POST",
+            body: formData
+          });
+
+          const result = await response.json();
+          if (result.status === "success") {
+            shopLogoImg.src = result.logoUrl;
+            alert("Cập nhật logo cửa hàng thành công!");
+          } else {
+            alert(result.msg || "Tải ảnh lên thất bại");
+          }
+        } catch (err) {
+          console.error("Upload logo error:", err);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
