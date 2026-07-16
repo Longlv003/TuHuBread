@@ -5,6 +5,7 @@ var catCtrl = require("../controllers/category.controller");
 var prodCtrl = require("../controllers/product.controller");
 var voucherCtrl = require("../controllers/voucher.controller");
 var shopCtrl = require("../controllers/shop.controller");
+var orderCtrl = require("../controllers/order.controller");
 
 router.post("/auth/firebase", accCtrl.verifyFirebaseUser);
 
@@ -25,5 +26,10 @@ const { firebaseAuth, optionalAuth } = require("../middlewares/auth.middlewares"
 // Voucher Routes
 router.get("/vouchers", optionalAuth, voucherCtrl.getVouchers);
 router.post("/vouchers/:id/save", firebaseAuth, voucherCtrl.saveVoucher);
+
+// Order Routes
+router.get("/orders", firebaseAuth, orderCtrl.getOrders);
+router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
+router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
 
 module.exports = router;

@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
 import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
+import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
 import 'package:tuhubread/repositories/home_repository_impl.dart';
@@ -34,5 +35,10 @@ Future<void> init() async {
   // ─── Product Detail ───────────────────────────────────────────────────────
   getIt.registerFactory<ProductDetailCubit>(
     () => ProductDetailCubit(repository: getIt<HomeRepository>()),
+  );
+
+  // ─── Order ────────────────────────────────────────────────────────────────
+  getIt.registerFactory<OrderCubit>(
+    () => OrderCubit(apiService: getIt<ApiService>()),
   );
 }
