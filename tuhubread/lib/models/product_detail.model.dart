@@ -98,6 +98,7 @@ class ProductDetailOtherShopModel {
   final String productId;
   final String shopId;
   final String shopName;
+  final String? logo;
   final double price;
   final double? salePrice;
 
@@ -105,6 +106,7 @@ class ProductDetailOtherShopModel {
     required this.productId,
     required this.shopId,
     required this.shopName,
+    this.logo,
     required this.price,
     this.salePrice,
   });

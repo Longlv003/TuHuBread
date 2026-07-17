@@ -12,6 +12,8 @@ class UserModel {
 
   final String? email;
 
+  final String? phone;
+
   @JsonKey(name: 'avatar')
   final String? avatarUrl;
 
@@ -25,6 +27,7 @@ class UserModel {
     required this.firebaseUid,
     required this.fullName,
     this.email,
+    this.phone,
     this.avatarUrl,
     required this.role,
     required this.status,

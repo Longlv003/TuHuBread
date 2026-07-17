@@ -212,12 +212,6 @@ abstract class AppLocalizations {
   /// **'Sign Out'**
   String get logoutButton;
 
-  /// No description provided for @roleLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Role: '**
-  String get roleLabel;
-
   /// No description provided for @emptyFieldsError.
   ///
   /// In en, this message translates to:
@@ -391,6 +385,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add some crispy breads to start shopping.'**
   String get cartEmptySub;
+
+  /// No description provided for @cartAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add item to cart'**
+  String get cartAddFailed;
+
+  /// No description provided for @cartItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String cartItemsCount(String count);
+
+  /// No description provided for @cartClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get cartClearAll;
+
+  /// No description provided for @cartClearAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove all items from your cart?'**
+  String get cartClearAllConfirm;
+
+  /// No description provided for @cartCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cartCancel;
+
+  /// No description provided for @cartSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get cartSubtotal;
+
+  /// No description provided for @cartCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get cartCheckout;
+
+  /// No description provided for @cartVariantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant'**
+  String get cartVariantLabel;
+
+  /// No description provided for @cartOptionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get cartOptionsLabel;
+
+  /// No description provided for @cartRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemove;
+
+  /// No description provided for @cartSuggestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a drink to your order?'**
+  String get cartSuggestionTitle;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkoutTitle;
+
+  /// No description provided for @checkoutAddressSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get checkoutAddressSectionTitle;
+
+  /// No description provided for @checkoutChangeAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get checkoutChangeAddress;
+
+  /// No description provided for @checkoutNoAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No delivery address'**
+  String get checkoutNoAddressTitle;
+
+  /// No description provided for @checkoutAddAddressButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add delivery address'**
+  String get checkoutAddAddressButton;
+
+  /// No description provided for @checkoutDeliveryOptionSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Option'**
+  String get checkoutDeliveryOptionSectionTitle;
+
+  /// No description provided for @checkoutOrderSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Items'**
+  String get checkoutOrderSectionTitle;
+
+  /// No description provided for @checkoutSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get checkoutSubtotal;
+
+  /// No description provided for @checkoutDeliveryFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Fee'**
+  String get checkoutDeliveryFee;
+
+  /// No description provided for @checkoutTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get checkoutTotal;
+
+  /// No description provided for @checkoutContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Payment'**
+  String get checkoutContinueButton;
+
+  /// No description provided for @checkoutSelectAddressError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a delivery address'**
+  String get checkoutSelectAddressError;
+
+  /// No description provided for @deliveryOptionPriorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get deliveryOptionPriorityLabel;
+
+  /// No description provided for @deliveryOptionPriorityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest, within 30 minutes'**
+  String get deliveryOptionPriorityDesc;
+
+  /// No description provided for @deliveryOptionStandardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get deliveryOptionStandardLabel;
+
+  /// No description provided for @deliveryOptionStandardDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered within 1 hour'**
+  String get deliveryOptionStandardDesc;
+
+  /// No description provided for @deliveryOptionSavingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving'**
+  String get deliveryOptionSavingLabel;
+
+  /// No description provided for @deliveryOptionSavingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered in 2-3 hours, free shipping'**
+  String get deliveryOptionSavingDesc;
+
+  /// No description provided for @paymentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentTitle;
+
+  /// No description provided for @paymentMethodSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Payment Method'**
+  String get paymentMethodSectionTitle;
+
+  /// No description provided for @paymentMethodCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on Delivery'**
+  String get paymentMethodCash;
+
+  /// No description provided for @paymentMethodMomo.
+  ///
+  /// In en, this message translates to:
+  /// **'MoMo Wallet'**
+  String get paymentMethodMomo;
+
+  /// No description provided for @paymentMethodZalopay.
+  ///
+  /// In en, this message translates to:
+  /// **'ZaloPay Wallet'**
+  String get paymentMethodZalopay;
+
+  /// No description provided for @paymentMethodOnlineNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.'**
+  String get paymentMethodOnlineNote;
+
+  /// No description provided for @paymentOrderNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for the shop (optional)'**
+  String get paymentOrderNoteLabel;
+
+  /// No description provided for @paymentOrderNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. leave at the door, call before arriving...'**
+  String get paymentOrderNoteHint;
+
+  /// No description provided for @paymentPlaceOrderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Place Order'**
+  String get paymentPlaceOrderButton;
+
+  /// No description provided for @paymentOrderSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed successfully!'**
+  String get paymentOrderSuccessTitle;
+
+  /// No description provided for @paymentOrderSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order {code} has been placed.'**
+  String paymentOrderSuccessMessage(String code);
+
+  /// No description provided for @paymentOrderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to place order'**
+  String get paymentOrderFailed;
+
+  /// No description provided for @paymentBackToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get paymentBackToHome;
 
   /// No description provided for @historyTitle.
   ///
@@ -788,18 +1034,6 @@ abstract class AppLocalizations {
   /// **'Total Amount'**
   String get totalAmountLabel;
 
-  /// No description provided for @paymentMethodCash.
-  ///
-  /// In en, this message translates to:
-  /// **'Cash'**
-  String get paymentMethodCash;
-
-  /// No description provided for @paymentMethodMomo.
-  ///
-  /// In en, this message translates to:
-  /// **'MoMo Wallet'**
-  String get paymentMethodMomo;
-
   /// No description provided for @paymentMethodBank.
   ///
   /// In en, this message translates to:
@@ -829,6 +1063,672 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refunded'**
   String get paymentStatusRefunded;
+
+  /// No description provided for @profileMyOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'My Orders'**
+  String get profileMyOrders;
+
+  /// No description provided for @profileMyOrdersSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Track and manage your orders'**
+  String get profileMyOrdersSub;
+
+  /// No description provided for @profileAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping Addresses'**
+  String get profileAddresses;
+
+  /// No description provided for @profileAddressesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your delivery addresses'**
+  String get profileAddressesSub;
+
+  /// No description provided for @profileMyVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'My Vouchers'**
+  String get profileMyVouchers;
+
+  /// No description provided for @profileMyVouchersSub.
+  ///
+  /// In en, this message translates to:
+  /// **'View saved discount codes'**
+  String get profileMyVouchersSub;
+
+  /// No description provided for @profileEditProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get profileEditProfile;
+
+  /// No description provided for @profileEditProfileSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your personal information'**
+  String get profileEditProfileSub;
+
+  /// No description provided for @profileChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get profileChangePassword;
+
+  /// No description provided for @profileChangePasswordSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your account secure'**
+  String get profileChangePasswordSub;
+
+  /// No description provided for @profileSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get profileSettings;
+
+  /// No description provided for @profileSettingsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications, language and more'**
+  String get profileSettingsSub;
+
+  /// No description provided for @profileHelpCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center'**
+  String get profileHelpCenter;
+
+  /// No description provided for @profileHelpCenterSub.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQs and customer support'**
+  String get profileHelpCenterSub;
+
+  /// No description provided for @profileLogoutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get profileLogoutConfirmTitle;
+
+  /// No description provided for @profileLogoutConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
+  String get profileLogoutConfirmMessage;
+
+  /// No description provided for @profileCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get profileCancel;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @editProfilePhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get editProfilePhoneHint;
+
+  /// No description provided for @editProfileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Photo'**
+  String get editProfileChangePhoto;
+
+  /// No description provided for @editProfileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get editProfileSaveButton;
+
+  /// No description provided for @editProfileSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get editProfileSaveSuccess;
+
+  /// No description provided for @editProfileSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile, please try again'**
+  String get editProfileSaveError;
+
+  /// No description provided for @editProfileAvatarError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update avatar, please try again'**
+  String get editProfileAvatarError;
+
+  /// No description provided for @addressesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping Addresses'**
+  String get addressesTitle;
+
+  /// No description provided for @addressesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No addresses yet'**
+  String get addressesEmptyTitle;
+
+  /// No description provided for @addressesEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a delivery address to get started'**
+  String get addressesEmptySubtitle;
+
+  /// No description provided for @addressAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Address'**
+  String get addressAddButton;
+
+  /// No description provided for @addressDefaultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get addressDefaultLabel;
+
+  /// No description provided for @addressSetDefaultAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get addressSetDefaultAction;
+
+  /// No description provided for @addressEditAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get addressEditAction;
+
+  /// No description provided for @addressDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get addressDeleteAction;
+
+  /// No description provided for @addressDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Address'**
+  String get addressDeleteConfirmTitle;
+
+  /// No description provided for @addressDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this address?'**
+  String get addressDeleteConfirmMessage;
+
+  /// No description provided for @addressFormAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Address'**
+  String get addressFormAddTitle;
+
+  /// No description provided for @addressFormEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Address'**
+  String get addressFormEditTitle;
+
+  /// No description provided for @addressReceiverNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver Name'**
+  String get addressReceiverNameHint;
+
+  /// No description provided for @addressReceiverPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver Phone'**
+  String get addressReceiverPhoneHint;
+
+  /// No description provided for @addressProvinceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Province / City'**
+  String get addressProvinceHint;
+
+  /// No description provided for @addressWardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ward / Commune'**
+  String get addressWardHint;
+
+  /// No description provided for @addressStreetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'House number, street name'**
+  String get addressStreetHint;
+
+  /// No description provided for @addressLabelHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get addressLabelHome;
+
+  /// No description provided for @addressLabelCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get addressLabelCompany;
+
+  /// No description provided for @addressLabelOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get addressLabelOther;
+
+  /// No description provided for @addressUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get addressUseCurrentLocation;
+
+  /// No description provided for @addressLocationDetecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Detecting your location...'**
+  String get addressLocationDetecting;
+
+  /// No description provided for @addressLocationServiceDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable location services (GPS)'**
+  String get addressLocationServiceDisabled;
+
+  /// No description provided for @addressLocationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is required'**
+  String get addressLocationPermissionDenied;
+
+  /// No description provided for @addressLocationPermissionDeniedForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was permanently denied, please enable it in Settings'**
+  String get addressLocationPermissionDeniedForever;
+
+  /// No description provided for @addressLocationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not detect your location, please try again'**
+  String get addressLocationFailed;
+
+  /// No description provided for @addressLocationDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location detected, please review the details'**
+  String get addressLocationDetected;
+
+  /// No description provided for @selectAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get selectAddressTitle;
+
+  /// No description provided for @selectAddressSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search location'**
+  String get selectAddressSearchHint;
+
+  /// No description provided for @selectAddressSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Addresses'**
+  String get selectAddressSavedTitle;
+
+  /// No description provided for @selectAddressEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved addresses yet'**
+  String get selectAddressEmpty;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get notificationsMarkAllRead;
+
+  /// No description provided for @notificationsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notificationsFilterAll;
+
+  /// No description provided for @notificationsFilterOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get notificationsFilterOrder;
+
+  /// No description provided for @notificationsFilterPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotions'**
+  String get notificationsFilterPromotion;
+
+  /// No description provided for @notificationsFilterSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get notificationsFilterSystem;
+
+  /// No description provided for @notificationsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get notificationsEmptyTitle;
+
+  /// No description provided for @notificationsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New notifications will appear here'**
+  String get notificationsEmptySubtitle;
+
+  /// No description provided for @notificationsJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get notificationsJustNow;
+
+  /// No description provided for @notificationsMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String notificationsMinutesAgo(int count);
+
+  /// No description provided for @notificationsHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String notificationsHoursAgo(int count);
+
+  /// No description provided for @notificationsDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String notificationsDaysAgo(int count);
+
+  /// No description provided for @addressSetDefaultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default address'**
+  String get addressSetDefaultLabel;
+
+  /// No description provided for @addressSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Address'**
+  String get addressSaveButton;
+
+  /// No description provided for @addressSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save address, please try again'**
+  String get addressSaveError;
+
+  /// No description provided for @addressDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete address, please try again'**
+  String get addressDeleteError;
+
+  /// No description provided for @myVouchersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Vouchers'**
+  String get myVouchersTitle;
+
+  /// No description provided for @myVouchersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No vouchers saved yet'**
+  String get myVouchersEmptyTitle;
+
+  /// No description provided for @myVouchersEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save vouchers from the home page to see them here'**
+  String get myVouchersEmptySubtitle;
+
+  /// No description provided for @myVouchersUsedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get myVouchersUsedLabel;
+
+  /// No description provided for @myVouchersExpiredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get myVouchersExpiredLabel;
+
+  /// No description provided for @myVouchersAvailableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get myVouchersAvailableLabel;
+
+  /// No description provided for @voucherEnterCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter voucher code'**
+  String get voucherEnterCodeHint;
+
+  /// No description provided for @voucherRedeemSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Voucher applied successfully'**
+  String get voucherRedeemSuccess;
+
+  /// No description provided for @voucherDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCOUNT'**
+  String get voucherDiscountLabel;
+
+  /// No description provided for @voucherFreeShipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FREE\nSHIP'**
+  String get voucherFreeShipLabel;
+
+  /// No description provided for @voucherMinOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Min. order {amount}'**
+  String voucherMinOrder(String amount);
+
+  /// No description provided for @voucherUseNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Use now'**
+  String get voucherUseNowButton;
+
+  /// No description provided for @voucherUseAtCheckoutMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This voucher will be applied at checkout'**
+  String get voucherUseAtCheckoutMsg;
+
+  /// No description provided for @voucherAvailableSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Vouchers'**
+  String get voucherAvailableSection;
+
+  /// No description provided for @voucherSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get voucherSaveButton;
+
+  /// No description provided for @myVouchersExpiresOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires on {date}'**
+  String myVouchersExpiresOn(String date);
+
+  /// No description provided for @changePasswordNotApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password is not available for accounts signed in with Google/Facebook'**
+  String get changePasswordNotApplicable;
+
+  /// No description provided for @changePasswordCurrentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get changePasswordCurrentHint;
+
+  /// No description provided for @changePasswordNewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get changePasswordNewHint;
+
+  /// No description provided for @changePasswordConfirmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get changePasswordConfirmHint;
+
+  /// No description provided for @changePasswordSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Password'**
+  String get changePasswordSaveButton;
+
+  /// No description provided for @changePasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated successfully'**
+  String get changePasswordSuccess;
+
+  /// No description provided for @changePasswordWrongCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect'**
+  String get changePasswordWrongCurrent;
+
+  /// No description provided for @changePasswordWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'New password is too weak'**
+  String get changePasswordWeak;
+
+  /// No description provided for @changePasswordDefaultError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update password, please try again'**
+  String get changePasswordDefaultError;
+
+  /// No description provided for @settingsLanguageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageSection;
+
+  /// No description provided for @settingsLanguageVietnamese.
+  ///
+  /// In en, this message translates to:
+  /// **'Vietnamese'**
+  String get settingsLanguageVietnamese;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @helpCenterFaqSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently Asked Questions'**
+  String get helpCenterFaqSection;
+
+  /// No description provided for @helpCenterContactSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get helpCenterContactSection;
+
+  /// No description provided for @helpCenterFaq1Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I place an order?'**
+  String get helpCenterFaq1Question;
+
+  /// No description provided for @helpCenterFaq1Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse a shop\'s menu, add items to your cart, choose a delivery address and payment method, then confirm your order.'**
+  String get helpCenterFaq1Answer;
+
+  /// No description provided for @helpCenterFaq2Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I track my order?'**
+  String get helpCenterFaq2Question;
+
+  /// No description provided for @helpCenterFaq2Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the History tab to see the status of your current and past orders.'**
+  String get helpCenterFaq2Answer;
+
+  /// No description provided for @helpCenterFaq3Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I use a voucher?'**
+  String get helpCenterFaq3Question;
+
+  /// No description provided for @helpCenterFaq3Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a voucher from the home page or My Vouchers screen, then select it at checkout to apply the discount.'**
+  String get helpCenterFaq3Answer;
+
+  /// No description provided for @helpCenterFaq4Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I change my delivery address?'**
+  String get helpCenterFaq4Question;
+
+  /// No description provided for @helpCenterFaq4Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Shipping Addresses to add, edit or set a default delivery address.'**
+  String get helpCenterFaq4Answer;
+
+  /// No description provided for @helpCenterCallSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Support'**
+  String get helpCenterCallSupport;
+
+  /// No description provided for @helpCenterEmailSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Support'**
+  String get helpCenterEmailSupport;
 }
 
 class _AppLocalizationsDelegate

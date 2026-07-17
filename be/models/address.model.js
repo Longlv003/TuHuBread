@@ -10,11 +10,15 @@ const addressSchema = new db.mongoose.Schema(
     receiver_name: { type: String, required: true },
     receiver_phone: { type: String, required: true },
     address_detail: { type: String, required: true },
+    label: {
+      type: String,
+      enum: ["home", "company", "other"],
+      default: "other",
+    },
     location: {
       type: {
         type: String,
         enum: ["Point"],
-        default: "Point",
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
@@ -26,7 +30,8 @@ const addressSchema = new db.mongoose.Schema(
   { collection: "addresses", timestamps: true },
 );
 
-addressSchema.index({ location: "2dsphere" });
+// sparse: bỏ qua các địa chỉ chưa có toạ độ (chưa chọn trên bản đồ)
+addressSchema.index({ location: "2dsphere" }, { sparse: true });
 
 let addressModel = db.mongoose.model("addressModel", addressSchema);
 module.exports = { addressModel };

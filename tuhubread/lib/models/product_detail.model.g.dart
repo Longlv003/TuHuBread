@@ -102,6 +102,7 @@ ProductDetailOtherShopModel _$ProductDetailOtherShopModelFromJson(
   productId: json['product_id'] as String,
   shopId: json['shop_id'] as String,
   shopName: json['shop_name'] as String,
+  logo: json['logo'] as String?,
   price: (json['price'] as num).toDouble(),
   salePrice: (json['sale_price'] as num?)?.toDouble(),
 );
@@ -112,6 +113,7 @@ Map<String, dynamic> _$ProductDetailOtherShopModelToJson(
   'product_id': instance.productId,
   'shop_id': instance.shopId,
   'shop_name': instance.shopName,
+  'logo': instance.logo,
   'price': instance.price,
   'sale_price': instance.salePrice,
 };

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuhubread/configs/system.dart';
 
 class ApiService {
@@ -11,6 +12,27 @@ class ApiService {
         connectTimeout: const Duration(milliseconds: System.connectionTimeout),
         receiveTimeout: const Duration(milliseconds: System.receiveTimeout),
         headers: System.header(),
+      ),
+    );
+
+    // Luôn lấy ID token mới nhất từ Firebase trước mỗi request — tránh lỗi
+    // 401 "Invalid token" khi token cũ (set 1 lần lúc đăng nhập) đã hết hạn
+    // sau 1 giờ. Firebase SDK tự cache & chỉ refresh khi cần, nên không tốn
+    // thêm round-trip network trong phần lớn trường hợp.
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            try {
+              final freshToken = await user.getIdToken();
+              options.headers['Authorization'] = 'Bearer $freshToken';
+            } catch (_) {
+              // Giữ header cũ (nếu có) nếu không lấy được token mới
+            }
+          }
+          handler.next(options);
+        },
       ),
     );
 
@@ -47,16 +69,35 @@ class ApiService {
     } on DioException catch (e) {
       final errData = e.response?.data;
       String errorMsg = e.message ?? "Request failed";
+
       if (errData is Map<String, dynamic>) {
-        errorMsg = errData['msg'] ?? errorMsg;
+        errorMsg = errData['msg']?.toString() ?? errorMsg;
       } else if (errData is String && errData.isNotEmpty) {
-        errorMsg = errData;
+        errorMsg = _sanitizeErrorMessage(errData, e.response?.statusCode);
+      } else if (e.response?.statusCode == 404) {
+        errorMsg = 'Không tìm thấy dữ liệu yêu cầu';
       }
+
       return {
         "msg": errorMsg,
         "data": null,
       };
     }
+  }
+
+  /// Chuyển HTML/plain-text lỗi từ server thành thông báo thân thiện.
+  String _sanitizeErrorMessage(String raw, int? statusCode) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('<!doctype html') || lower.contains('<html')) {
+      if (lower.contains('cannot get')) {
+        return 'API chưa được cấu hình hoặc không tồn tại';
+      }
+      if (statusCode == 404) {
+        return 'Không tìm thấy dữ liệu yêu cầu';
+      }
+      return 'Lỗi kết nối máy chủ';
+    }
+    return raw;
   }
 
   Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? query}) {
