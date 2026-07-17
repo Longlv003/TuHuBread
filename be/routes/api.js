@@ -8,6 +8,7 @@ var shopCtrl = require("../controllers/shop.controller");
 var addressCtrl = require("../controllers/address.controller");
 var orderCtrl = require("../controllers/order.controller");
 
+
 router.post("/auth/firebase", accCtrl.verifyFirebaseUser);
 
 // Shop Routes
@@ -50,5 +51,8 @@ router.delete("/addresses/:id", firebaseAuth, addressCtrl.deleteAddress);
 
 // Order Routes
 router.post("/orders", firebaseAuth, orderCtrl.createOrder);
+router.get("/orders", firebaseAuth, orderCtrl.getOrders);
+router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
+router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
 
 module.exports = router;

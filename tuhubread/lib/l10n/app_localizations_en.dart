@@ -441,6 +441,85 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailOtherShopsSection => 'Other branches selling this';
 
   @override
+  String get orderStatusPending => 'Pending';
+
+  @override
+  String get orderStatusConfirmed => 'Confirmed';
+
+  @override
+  String get orderStatusPreparing => 'Preparing';
+
+  @override
+  String get orderStatusDelivering => 'Delivering';
+
+  @override
+  String get orderStatusCompleted => 'Completed';
+
+  @override
+  String get orderStatusCancelled => 'Cancelled';
+
+  @override
+  String get cancelOrderButton => 'Cancel Order';
+
+  @override
+  String get cancelOrderConfirmTitle => 'Confirm Cancellation';
+
+  @override
+  String get cancelOrderConfirmMessage =>
+      'Are you sure you want to cancel this order?';
+
+  @override
+  String get cancelSuccess => 'Order cancelled successfully!';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get orderCodeLabel => 'Order Code: ';
+
+  @override
+  String get orderDateLabel => 'Order Date: ';
+
+  @override
+  String get paymentMethodLabel => 'Payment Method';
+
+  @override
+  String get paymentStatusLabel => 'Payment Status';
+
+  @override
+  String get addressLabel => 'Delivery Address';
+
+  @override
+  String get itemsTotalLabel => 'Items Total';
+
+  @override
+  String get deliveryFeeLabel => 'Delivery Fee';
+
+  @override
+  String get discountLabel => 'Discount';
+
+  @override
+  String get totalAmountLabel => 'Total Amount';
+
+  @override
+  String get paymentMethodBank => 'Bank Transfer';
+
+  @override
+  String get paymentMethodVnpay => 'VNPAY';
+
+  @override
+  String get paymentStatusUnpaid => 'Unpaid';
+
+  @override
+  String get paymentStatusPaid => 'Paid';
+
+  @override
+  String get paymentStatusRefunded => 'Refunded';
+
+  @override
   String get profileMyOrders => 'My Orders';
 
   @override

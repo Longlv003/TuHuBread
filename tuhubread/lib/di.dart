@@ -5,6 +5,7 @@ import 'package:tuhubread/blocs/cart/cart_cubit.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
 import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
+import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/voucher/voucher_cubit.dart';
 import 'package:tuhubread/repositories/address_repository.dart';
@@ -73,5 +74,8 @@ Future<void> init() async {
   // ─── Order ────────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<OrderRepository>(
     () => OrderRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerFactory<OrderCubit>(
+    () => OrderCubit(apiService: getIt<ApiService>()),
   );
 }

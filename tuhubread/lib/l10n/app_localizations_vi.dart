@@ -443,6 +443,85 @@ class AppLocalizationsVi extends AppLocalizations {
   String get detailOtherShopsSection => 'Các chi nhánh khác cùng bán';
 
   @override
+  String get orderStatusPending => 'Chờ xác nhận';
+
+  @override
+  String get orderStatusConfirmed => 'Đã xác nhận';
+
+  @override
+  String get orderStatusPreparing => 'Đang chuẩn bị';
+
+  @override
+  String get orderStatusDelivering => 'Đang giao hàng';
+
+  @override
+  String get orderStatusCompleted => 'Đã hoàn thành';
+
+  @override
+  String get orderStatusCancelled => 'Đã hủy';
+
+  @override
+  String get cancelOrderButton => 'Hủy đơn hàng';
+
+  @override
+  String get cancelOrderConfirmTitle => 'Xác nhận hủy đơn';
+
+  @override
+  String get cancelOrderConfirmMessage =>
+      'Bạn có chắc chắn muốn hủy đơn hàng này không?';
+
+  @override
+  String get cancelSuccess => 'Hủy đơn hàng thành công!';
+
+  @override
+  String get yes => 'Có';
+
+  @override
+  String get no => 'Không';
+
+  @override
+  String get orderCodeLabel => 'Mã đơn: ';
+
+  @override
+  String get orderDateLabel => 'Ngày đặt: ';
+
+  @override
+  String get paymentMethodLabel => 'Phương thức thanh toán';
+
+  @override
+  String get paymentStatusLabel => 'Trạng thái thanh toán';
+
+  @override
+  String get addressLabel => 'Địa chỉ giao hàng';
+
+  @override
+  String get itemsTotalLabel => 'Tiền món';
+
+  @override
+  String get deliveryFeeLabel => 'Phí giao hàng';
+
+  @override
+  String get discountLabel => 'Giảm giá';
+
+  @override
+  String get totalAmountLabel => 'Tổng cộng';
+
+  @override
+  String get paymentMethodBank => 'Chuyển khoản';
+
+  @override
+  String get paymentMethodVnpay => 'VNPAY';
+
+  @override
+  String get paymentStatusUnpaid => 'Chưa thanh toán';
+
+  @override
+  String get paymentStatusPaid => 'Đã thanh toán';
+
+  @override
+  String get paymentStatusRefunded => 'Đã hoàn tiền';
+
+  @override
   String get profileMyOrders => 'Đơn hàng của tôi';
 
   @override
