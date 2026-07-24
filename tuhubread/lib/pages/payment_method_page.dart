@@ -11,6 +11,7 @@ import '../models/delivery_option.model.dart';
 import '../models/order_result.model.dart';
 import '../repositories/order_repository.dart';
 import '../utils/currency_formatter.dart';
+import 'vnpay_payment_page.dart';
 
 class _PaymentMethod {
   final String id;
@@ -28,6 +29,11 @@ class _PaymentMethod {
     icon: Icons.payments_rounded,
     color: Color(0xFF27AE60),
   );
+  static const vnpay = _PaymentMethod(
+    id: 'vnpay',
+    icon: Icons.account_balance_rounded,
+    color: Color(0xFF0068FF),
+  );
   static const momo = _PaymentMethod(
     id: 'momo',
     icon: Icons.account_balance_wallet_rounded,
@@ -39,7 +45,7 @@ class _PaymentMethod {
     color: Color(0xFF0068FF),
   );
 
-  static const all = [cash, momo, zalopay];
+  static const all = [cash, vnpay, momo, zalopay];
 }
 
 /// Màn hình chọn phương thức thanh toán và xác nhận đặt hàng.
@@ -76,6 +82,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
   String _methodLabel(AppLocalizations l10n, String id) {
     switch (id) {
+      case 'vnpay':
+        return l10n.paymentMethodVnpay;
       case 'momo':
         return l10n.paymentMethodMomo;
       case 'zalopay':
@@ -89,32 +97,90 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     if (_isPlacingOrder) return;
     setState(() => _isPlacingOrder = true);
 
-    final res = await getIt<OrderRepository>().createOrder(
-      addressId: widget.address.id,
-      deliveryOption: widget.deliveryOption.id,
-      paymentMethod: _selectedMethod.id,
-      items: widget.items,
-      note: _noteController.text.trim().isEmpty
-          ? null
-          : _noteController.text.trim(),
-    );
-
-    if (!mounted) return;
-    setState(() => _isPlacingOrder = false);
+    final noteText = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text.trim();
 
     final l10n = AppLocalizations.of(context)!;
 
-    if (res is Success<OrderResultModel>) {
-      getIt<CartCubit>().clearCart();
-      await _showSuccessDialog(l10n, res.data);
-    } else if (res is Failure<OrderResultModel>) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res.message),
-          backgroundColor: const Color(0xFFE74C3C),
-          behavior: SnackBarBehavior.floating,
-        ),
+    if (_selectedMethod.id == 'vnpay') {
+      // 1. Tạo thanh toán VNPay (validate trên server và lấy paymentUrl)
+      final res = await getIt<OrderRepository>().createVnpayPayment(
+        addressId: widget.address.id,
+        deliveryOption: widget.deliveryOption.id,
+        note: noteText,
       );
+
+      if (!mounted) return;
+      setState(() => _isPlacingOrder = false);
+
+      if (res is Success<OrderResultModel>) {
+        final paymentUrl = res.data.paymentUrl;
+        if (paymentUrl != null && paymentUrl.isNotEmpty) {
+          // 2. Mở WebView để thanh toán
+          final paymentResult = await getx.Get.to<bool>(
+            () => VnPayPaymentPage(paymentUrl: paymentUrl),
+          );
+
+          if (!mounted) return;
+
+          if (paymentResult == true) {
+            // Thanh toán thành công
+            getIt<CartCubit>().clearCart();
+            await _showSuccessDialog(l10n, res.data);
+          } else {
+            // Thanh toán thất bại hoặc hủy
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Thanh toán VNPay thất bại hoặc đã bị hủy'),
+                backgroundColor: Color(0xFFE74C3C),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không thể khởi tạo liên kết thanh toán VNPay'),
+              backgroundColor: Color(0xFFE74C3C),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else if (res is Failure<OrderResultModel>) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.message),
+            backgroundColor: const Color(0xFFE74C3C),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      // 2. Thanh toán COD như bình thường
+      final res = await getIt<OrderRepository>().createOrder(
+        addressId: widget.address.id,
+        deliveryOption: widget.deliveryOption.id,
+        paymentMethod: _selectedMethod.id,
+        items: widget.items,
+        note: noteText,
+      );
+
+      if (!mounted) return;
+      setState(() => _isPlacingOrder = false);
+
+      if (res is Success<OrderResultModel>) {
+        getIt<CartCubit>().clearCart();
+        await _showSuccessDialog(l10n, res.data);
+      } else if (res is Failure<OrderResultModel>) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.message),
+            backgroundColor: const Color(0xFFE74C3C),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -204,7 +270,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               onTap: () => setState(() => _selectedMethod = method),
             ),
           ),
-          if (_selectedMethod.id != 'cash') ...[
+          if (_selectedMethod.id != 'cash' && _selectedMethod.id != 'vnpay') ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),

@@ -193,6 +193,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get cartRemove => 'Xóa';
 
   @override
+  String get cartRemoveConfirmTitle => 'Xóa sản phẩm?';
+
+  @override
+  String cartRemoveConfirmMessage(String productName) {
+    return 'Bạn có chắc muốn xóa \"$productName\" khỏi giỏ hàng không?';
+  }
+
+  @override
+  String get cartRemoveConfirmBtn => 'Xóa';
+
+  @override
   String get cartSuggestionTitle => 'Thêm đồ uống cho đơn hàng?';
 
   @override
@@ -257,7 +268,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentMethodSectionTitle => 'Chọn phương thức thanh toán';
 
   @override
-  String get paymentMethodCash => 'Tiền mặt khi nhận hàng';
+  String get paymentMethodCash => 'Thanh toán khi nhận hàng';
+
+  @override
+  String get paymentMethodVnpay => 'VNPAY';
 
   @override
   String get paymentMethodMomo => 'Ví MoMo';
@@ -291,6 +305,58 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentBackToHome => 'Về trang chủ';
+
+  @override
+  String get checkoutVoucherSectionTitle => 'Ưu đãi & Voucher';
+
+  @override
+  String get checkoutVoucherChange => 'Chọn lại';
+
+  @override
+  String get checkoutVoucherSelect => 'Chọn mã';
+
+  @override
+  String checkoutVoucherEligibleCount(int count) {
+    return 'Bạn đang có $count voucher phù hợp';
+  }
+
+  @override
+  String get checkoutVoucherChoosePlaceholder => 'Chọn hoặc nhập mã giảm giá';
+
+  @override
+  String checkoutVoucherApplied(String amount) {
+    return 'Đã áp dụng giảm -$amount';
+  }
+
+  @override
+  String get checkoutVoucherNoEligible =>
+      'Không có voucher nào đủ điều kiện cho đơn hàng này';
+
+  @override
+  String checkoutVoucherDiscountPercent(num value) {
+    return 'Giảm $value%';
+  }
+
+  @override
+  String checkoutVoucherDiscountPercentMax(num value, String max) {
+    return 'Giảm $value% tối đa $max';
+  }
+
+  @override
+  String checkoutVoucherDiscountAmount(String value) {
+    return 'Giảm $value';
+  }
+
+  @override
+  String get checkoutVoucherFreeShipping => 'Miễn phí vận chuyển';
+
+  @override
+  String checkoutVoucherMinOrder(String value) {
+    return 'Đơn tối thiểu: $value';
+  }
+
+  @override
+  String get checkoutVoucherDoNotUse => 'Không sử dụng Voucher';
 
   @override
   String get historyTitle => 'Lịch sử đặt hàng';
@@ -508,9 +574,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentMethodBank => 'Chuyển khoản';
-
-  @override
-  String get paymentMethodVnpay => 'VNPAY';
 
   @override
   String get paymentStatusUnpaid => 'Chưa thanh toán';

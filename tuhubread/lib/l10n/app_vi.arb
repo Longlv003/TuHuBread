@@ -57,6 +57,16 @@
   "cartVariantLabel": "Phân loại",
   "cartOptionsLabel": "Tùy chọn",
   "cartRemove": "Xóa",
+  "cartRemoveConfirmTitle": "Xóa sản phẩm?",
+  "cartRemoveConfirmMessage": "Bạn có chắc muốn xóa \"{productName}\" khỏi giỏ hàng không?",
+  "@cartRemoveConfirmMessage": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartRemoveConfirmBtn": "Xóa",
   "cartSuggestionTitle": "Thêm đồ uống cho đơn hàng?",
   "checkoutTitle": "Thanh toán",
   "checkoutAddressSectionTitle": "Địa chỉ giao hàng",
@@ -78,7 +88,8 @@
   "deliveryOptionSavingDesc": "Giao trong 2-3 giờ, miễn phí ship",
   "paymentTitle": "Phương thức thanh toán",
   "paymentMethodSectionTitle": "Chọn phương thức thanh toán",
-  "paymentMethodCash": "Tiền mặt khi nhận hàng",
+  "paymentMethodCash": "Thanh toán khi nhận hàng",
+  "paymentMethodVnpay": "Cổng thanh toán VNPay",
   "paymentMethodMomo": "Ví MoMo",
   "paymentMethodZalopay": "Ví ZaloPay",
   "paymentMethodOnlineNote": "Cổng thanh toán trực tuyến đang được phát triển. Đơn hàng vẫn được tạo, bạn có thể thanh toán khi nhận hàng.",
@@ -89,6 +100,64 @@
   "paymentOrderSuccessMessage": "Đơn hàng {code} của bạn đã được đặt.",
   "paymentOrderFailed": "Đặt hàng thất bại",
   "paymentBackToHome": "Về trang chủ",
+  "checkoutVoucherSectionTitle": "Ưu đãi & Voucher",
+  "checkoutVoucherChange": "Chọn lại",
+  "checkoutVoucherSelect": "Chọn mã",
+  "checkoutVoucherEligibleCount": "Bạn đang có {count} voucher phù hợp",
+  "@checkoutVoucherEligibleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutVoucherChoosePlaceholder": "Chọn hoặc nhập mã giảm giá",
+  "checkoutVoucherApplied": "Đã áp dụng giảm -{amount}",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherNoEligible": "Không có voucher nào đủ điều kiện cho đơn hàng này",
+  "checkoutVoucherDiscountPercent": "Giảm {value}%",
+  "@checkoutVoucherDiscountPercent": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      }
+    }
+  },
+  "checkoutVoucherDiscountPercentMax": "Giảm {value}% tối đa {max}",
+  "@checkoutVoucherDiscountPercentMax": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDiscountAmount": "Giảm {value}",
+  "@checkoutVoucherDiscountAmount": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherFreeShipping": "Miễn phí vận chuyển",
+  "checkoutVoucherMinOrder": "Đơn tối thiểu: {value}",
+  "@checkoutVoucherMinOrder": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDoNotUse": "Không sử dụng Voucher",
   "historyTitle": "Lịch sử đặt hàng",
   "historyEmpty": "Chưa có đơn hàng nào",
   "historyEmptySub": "Lịch sử đặt bánh mì của bạn sẽ hiển thị tại tab này.",
