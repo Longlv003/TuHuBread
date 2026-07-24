@@ -231,8 +231,8 @@ exports.cancelOrder = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    if (order.order_status !== "pending") {
-      dataRes.msg = "Chỉ có thể hủy đơn hàng ở trạng thái chờ xác nhận (pending)";
+    if (order.order_status !== "pending" && order.order_status !== "confirmed") {
+      dataRes.msg = "Chỉ có thể hủy đơn hàng ở trạng thái chờ xác nhận hoặc đã xác nhận";
       return res.status(400).json(dataRes);
     }
 
