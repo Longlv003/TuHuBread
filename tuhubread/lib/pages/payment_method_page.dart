@@ -10,6 +10,7 @@ import '../models/cart_item.model.dart';
 import '../models/delivery_option.model.dart';
 import '../models/order_result.model.dart';
 import '../repositories/order_repository.dart';
+import '../routes/routes.dart';
 import '../utils/currency_formatter.dart';
 import 'vnpay_payment_page.dart';
 
@@ -210,7 +211,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => getx.Get.until((route) => route.isFirst),
+              onPressed: () => getx.Get.offAllNamed(Routes.homePage, arguments: 2),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE67E22),
                 foregroundColor: Colors.white,

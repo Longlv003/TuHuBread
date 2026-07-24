@@ -33,6 +33,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    if (getx.Get.arguments is int) {
+      _currentIndex = getx.Get.arguments as int;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CartCubit>().loadCart();
