@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
 const { userModel } = require("../models/user.model");
-const { shopModel } = require("../models/shop.model");
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { addressModel } = require("../models/address.model");
@@ -46,8 +45,8 @@ exports.getOrders = async (req, res) => {
     dataRes.data = orders.map(order => {
       const shopLogo = order.shop_id?.logo
         ? (order.shop_id.logo.startsWith("http")
-            ? order.shop_id.logo
-            : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
+          ? order.shop_id.logo
+          : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
         : null;
 
       return {
@@ -92,8 +91,8 @@ exports.getOrderById = async (req, res) => {
 
     const shopLogo = order.shop_id?.logo
       ? (order.shop_id.logo.startsWith("http")
-          ? order.shop_id.logo
-          : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
+        ? order.shop_id.logo
+        : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
       : null;
 
     dataRes.data = {
@@ -108,8 +107,8 @@ exports.getOrderById = async (req, res) => {
       items: items.map(item => {
         const itemImage = item.product_image
           ? (item.product_image.startsWith("http")
-              ? item.product_image
-              : `${req.protocol}://${req.get("host")}/images/products/${item.product_image.split("/").pop()}`)
+            ? item.product_image
+            : `${req.protocol}://${req.get("host")}/images/products/${item.product_image.split("/").pop()}`)
           : null;
         return {
           ...item.toObject(),
@@ -317,7 +316,7 @@ exports.createOrder = async (req, res) => {
     }
 
     const deliveryFee = DELIVERY_FEES[delivery_option];
-    
+
     // Tính toán lượng giảm giá tổng của voucher
     let totalDiscount = 0;
     if (appliedVoucher) {
@@ -345,7 +344,7 @@ exports.createOrder = async (req, res) => {
         0,
       );
       const shopDeliveryFee = shopIndex === 0 ? deliveryFee : 0;
-      
+
       let orderDiscount = 0;
       if (remainingDiscount > 0) {
         orderDiscount = Math.min(remainingDiscount, itemsTotal + shopDeliveryFee);

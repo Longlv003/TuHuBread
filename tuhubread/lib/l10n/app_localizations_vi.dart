@@ -576,7 +576,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentMethodBank => 'Chuyển khoản';
 
   @override
-
   String get paymentStatusUnpaid => 'Chưa thanh toán';
 
   @override

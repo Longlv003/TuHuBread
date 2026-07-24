@@ -573,7 +573,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodBank => 'Bank Transfer';
 
   @override
-
   String get paymentStatusUnpaid => 'Unpaid';
 
   @override

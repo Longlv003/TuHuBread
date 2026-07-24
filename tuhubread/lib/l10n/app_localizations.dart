@@ -1142,7 +1142,6 @@ abstract class AppLocalizations {
   /// **'Bank Transfer'**
   String get paymentMethodBank;
 
-
   /// No description provided for @paymentStatusUnpaid.
   ///
   /// In en, this message translates to:
