@@ -4,6 +4,7 @@ import 'package:tuhubread/blocs/address/address_cubit.dart';
 import 'package:tuhubread/blocs/cart/cart_cubit.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
+import 'package:tuhubread/blocs/payment/payment_cubit.dart';
 import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
 import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
@@ -16,6 +17,10 @@ import 'package:tuhubread/repositories/order_repository.dart';
 import 'package:tuhubread/repositories/order_repository_impl.dart';
 import 'package:tuhubread/repositories/voucher_repository.dart';
 import 'package:tuhubread/repositories/voucher_repository_impl.dart';
+import 'package:tuhubread/repositories/cart_repository.dart';
+import 'package:tuhubread/repositories/cart_repository_impl.dart';
+import 'package:tuhubread/repositories/payment_repository.dart';
+import 'package:tuhubread/repositories/payment_repository_impl.dart';
 import 'package:tuhubread/services/api_service.dart';
 import 'package:tuhubread/services/location_service.dart';
 import 'package:tuhubread/services/vietnam_address_service.dart';
@@ -34,11 +39,9 @@ Future<void> init() async {
   getIt.registerFactory<SplashCubit>(() => SplashCubit());
 
   // ─── Home ─────────────────────────────────────────────────────────────────
-  // Repository: LazySingleton — tái sử dụng, stateless
   getIt.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(apiService: getIt<ApiService>()),
   );
-  // Cubit: Factory — tạo mới mỗi lần vào màn Home
   getIt.registerFactory<HomeCubit>(
     () => HomeCubit(repository: getIt<HomeRepository>()),
   );
@@ -49,7 +52,12 @@ Future<void> init() async {
   );
 
   // ─── Cart ─────────────────────────────────────────────────────────────────
-  getIt.registerLazySingleton<CartCubit>(() => CartCubit());
+  getIt.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerLazySingleton<CartCubit>(
+    () => CartCubit(cartRepository: getIt<CartRepository>())..loadCart(),
+  );
 
   // ─── Voucher ──────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<VoucherRepository>(
@@ -77,5 +85,13 @@ Future<void> init() async {
   );
   getIt.registerFactory<OrderCubit>(
     () => OrderCubit(apiService: getIt<ApiService>()),
+  );
+
+  // ─── Payment ──────────────────────────────────────────────────────────────
+  getIt.registerLazySingleton<PaymentRepository>(
+    () => PaymentRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerFactory<PaymentCubit>(
+    () => PaymentCubit(repository: getIt<PaymentRepository>()),
   );
 }

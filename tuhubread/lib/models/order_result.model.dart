@@ -4,8 +4,13 @@
 class OrderResultModel {
   final List<String> orderCodes;
   final double totalAmount;
+  final String? paymentUrl;
 
-  const OrderResultModel({required this.orderCodes, required this.totalAmount});
+  const OrderResultModel({
+    required this.orderCodes,
+    required this.totalAmount,
+    this.paymentUrl,
+  });
 
   factory OrderResultModel.fromJson(Map<String, dynamic> json) {
     final orders = (json['orders'] as List? ?? [])
@@ -14,6 +19,7 @@ class OrderResultModel {
     return OrderResultModel(
       orderCodes: orders,
       totalAmount: (json['total_amount'] as num? ?? 0).toDouble(),
+      paymentUrl: json['payment_url'] as String?,
     );
   }
 }

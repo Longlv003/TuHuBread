@@ -1,8 +1,13 @@
 const { orderModel } = require("../models/order.model");
+const { orderDetailModel } = require("../models/orderDetail.model");
 
 class OrderRepository {
   async findById(id) {
     return orderModel.findById(id).populate("user_id").populate("address_id");
+  }
+
+  async findByOrderCode(orderCode) {
+    return orderModel.findOne({ order_code: orderCode, deleted_at: null });
   }
 
   async findByShopId(shopId, limit = 50) {
@@ -10,6 +15,14 @@ class OrderRepository {
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate("user_id");
+  }
+
+  async createOrder(orderData) {
+    return await orderModel.create(orderData);
+  }
+
+  async createOrderDetail(orderDetailData) {
+    return await orderDetailModel.create(orderDetailData);
   }
 
   async updateStatus(id, orderStatus, paymentStatus) {

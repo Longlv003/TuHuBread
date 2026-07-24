@@ -30,6 +30,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CartCubit>().loadCart();
+      }
+    });
+  }
+
   Future<void> _onBellPressed() async {
     await getx.Get.to(() => const NotificationsPage());
     // Cập nhật lại badge số lượng chưa đọc sau khi rời màn thông báo
@@ -61,24 +71,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
             return BlocProvider<HomeCubit>(
               create: (_) => getIt<HomeCubit>()..loadHomeData(),
-              // Không chặn màn Home bằng spinner toàn màn nữa — vào thẳng
-              // giao diện chính, HomeTab tự lo phần loading/rỗng riêng của nó.
+              // Giao diện chính, HomeTab tự lo phần loading/rỗng riêng của nó.
               child: Scaffold(
                 backgroundColor: const Color(0xFFFDFBF7),
                 body: SafeArea(
                   child: Column(
                     children: [
-                      // Extracted Reusable Header Customer — ẩn ở tab Giỏ hàng
-                      // để nhường thêm diện tích cho danh sách sản phẩm.
-                      if (_currentIndex != 1) ...[
-                        CustomerHeader(
-                          user: user,
-                          titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                          unreadNotifications: MockNotifications.unreadCount,
-                          onNotificationTap: _onBellPressed,
-                        ),
-                        const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                      ],
+                      // Hiển thị Header trên toàn bộ các tab bao gồm Giỏ hàng
+                      CustomerHeader(
+                        user: user,
+                        titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                        unreadNotifications: MockNotifications.unreadCount,
+                        onNotificationTap: _onBellPressed,
+                      ),
+                      const Divider(height: 1, color: Color(0xFFF1EAE1)),
                       // Active Tab View Content — IndexedStack giữ nguyên state của
                       // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
                       Expanded(

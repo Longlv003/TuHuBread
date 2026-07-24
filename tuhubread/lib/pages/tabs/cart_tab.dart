@@ -15,6 +15,7 @@ import '../../widgets/cart_empty_view.dart';
 import '../../widgets/cart_item_card.dart';
 import '../../widgets/cart_summary_bar.dart';
 import '../../widgets/cart_suggestion_card.dart';
+import '../../widgets/app_confirm_dialog.dart';
 
 class CartTab extends StatelessWidget {
   final UserModel user;
@@ -26,7 +27,19 @@ class CartTab extends StatelessWidget {
     return BlocBuilder<CartCubit, CartState>(
       builder: (context, cartState) {
         if (cartState.isEmpty) {
-          return const CartEmptyView();
+          return RefreshIndicator(
+            onRefresh: () => context.read<CartCubit>().loadCart(),
+            color: const Color(0xFFE67E22),
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: constraints.maxHeight,
+                  child: const CartEmptyView(),
+                ),
+              ),
+            ),
+          );
         }
 
         final l10n = AppLocalizations.of(context)!;
@@ -58,17 +71,26 @@ class CartTab extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                physics: const BouncingScrollPhysics(),
+              child: RefreshIndicator(
+                onRefresh: () => cubit.loadCart(),
+                color: const Color(0xFFE67E22),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   for (final item in cartState.items)
                     CartItemCard(
                       key: ValueKey(item.id),
                       item: item,
                       onIncrement: () => cubit.incrementQuantity(item.id),
-                      onDecrement: () => cubit.decrementQuantity(item.id),
-                      onRemove: () => cubit.removeItem(item.id),
+                      onDecrement: () => cubit.decrementQuantity(
+                        item.id,
+                        confirmShow: () => _showRemoveConfirm(context, item.productName),
+                      ),
+                      onRemove: () => cubit.removeItem(
+                        item.id,
+                        confirmShow: () => _showRemoveConfirm(context, item.productName),
+                      ),
                     ),
                   if (suggestions.isNotEmpty) ...[
                     const SizedBox(height: 8),
@@ -107,7 +129,8 @@ class CartTab extends StatelessWidget {
                 ],
               ),
             ),
-            CartSummaryBar(
+          ),
+          CartSummaryBar(
               subtotal: cartState.subtotal,
               itemCount: cartState.totalQuantity,
               onCheckout: () => getx.Get.to(
@@ -161,34 +184,35 @@ class CartTab extends StatelessWidget {
         .toList();
   }
 
+  Future<bool> _showRemoveConfirm(BuildContext context, String productName) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      type: ConfirmDialogType.danger,
+      title: l10n.cartRemoveConfirmTitle,
+      description: l10n.cartRemoveConfirmMessage(productName),
+      confirmTitle: l10n.cartRemoveConfirmBtn,
+      cancelTitle: l10n.cartCancel,
+    );
+    return confirmed == true;
+  }
+
   void _confirmClearCart(
     BuildContext context,
     CartCubit cubit,
     AppLocalizations l10n,
   ) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(l10n.cartClearAll),
-        content: Text(l10n.cartClearAllConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.cartCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              cubit.clearCart();
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(
-              l10n.cartClearAll,
-              style: const TextStyle(color: Color(0xFFE74C3C)),
-            ),
-          ),
-        ],
-      ),
-    );
+    AppConfirmDialog.show(
+      context,
+      type: ConfirmDialogType.danger,
+      title: l10n.cartClearAll,
+      description: l10n.cartClearAllConfirm,
+      confirmTitle: l10n.cartClearAll,
+      cancelTitle: l10n.cartCancel,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        cubit.clearCart();
+      }
+    });
   }
 }

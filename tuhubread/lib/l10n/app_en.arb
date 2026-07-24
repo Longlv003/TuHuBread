@@ -64,6 +64,16 @@
   "cartVariantLabel": "Variant",
   "cartOptionsLabel": "Options",
   "cartRemove": "Remove",
+  "cartRemoveConfirmTitle": "Remove item?",
+  "cartRemoveConfirmMessage": "Are you sure you want to remove \"{productName}\" from your cart?",
+  "@cartRemoveConfirmMessage": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartRemoveConfirmBtn": "Remove",
   "cartSuggestionTitle": "Add a drink to your order?",
   "checkoutTitle": "Checkout",
   "checkoutAddressSectionTitle": "Delivery Address",
@@ -85,7 +95,8 @@
   "deliveryOptionSavingDesc": "Delivered in 2-3 hours, free shipping",
   "paymentTitle": "Payment Method",
   "paymentMethodSectionTitle": "Select Payment Method",
-  "paymentMethodCash": "Cash on Delivery",
+  "paymentMethodCash": "Payment on Delivery",
+  "paymentMethodVnpay": "VNPay Payment Gateway",
   "paymentMethodMomo": "MoMo Wallet",
   "paymentMethodZalopay": "ZaloPay Wallet",
   "paymentMethodOnlineNote": "Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.",
@@ -103,6 +114,64 @@
   },
   "paymentOrderFailed": "Failed to place order",
   "paymentBackToHome": "Back to Home",
+  "checkoutVoucherSectionTitle": "Discounts & Vouchers",
+  "checkoutVoucherChange": "Change",
+  "checkoutVoucherSelect": "Select Code",
+  "checkoutVoucherEligibleCount": "You have {count} eligible vouchers",
+  "@checkoutVoucherEligibleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutVoucherChoosePlaceholder": "Select or enter promo code",
+  "checkoutVoucherApplied": "Discount applied: -{amount}",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherNoEligible": "No eligible vouchers for this order",
+  "checkoutVoucherDiscountPercent": "Get {value}% off",
+  "@checkoutVoucherDiscountPercent": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      }
+    }
+  },
+  "checkoutVoucherDiscountPercentMax": "Get {value}% off, max {max}",
+  "@checkoutVoucherDiscountPercentMax": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDiscountAmount": "Get {value} off",
+  "@checkoutVoucherDiscountAmount": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherFreeShipping": "Free shipping",
+  "checkoutVoucherMinOrder": "Min order: {value}",
+  "@checkoutVoucherMinOrder": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDoNotUse": "Do not use Voucher",
   "historyTitle": "Order History",
   "historyEmpty": "No Orders Yet",
   "historyEmptySub": "Your bread ordering history will be shown here.",
