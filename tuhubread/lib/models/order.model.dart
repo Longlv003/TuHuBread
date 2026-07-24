@@ -1,3 +1,5 @@
+import 'package:tuhubread/configs/system.dart';
+
 class OrderModel {
   final String id;
   final String orderCode;
@@ -38,8 +40,15 @@ class OrderModel {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
-    final shop = json['shop'] as Map<String, dynamic>?;
-    final address = json['address_id'] as Map<String, dynamic>?;
+    final shop = (json['shop_id'] ?? json['shop']) as Map<String, dynamic>?;
+    final addressObj = json['address_id'];
+    final address = addressObj is Map<String, dynamic> ? addressObj : null;
+
+    String? logoUrl = shop?['logo'] as String?;
+    if (logoUrl != null && !logoUrl.startsWith('http')) {
+      logoUrl = '${URL.getBaseURL()}/images/shops/${logoUrl.split('/').last}';
+    }
+
     return OrderModel(
       id: json['_id'] as String,
       orderCode: json['order_code'] as String,
@@ -53,8 +62,8 @@ class OrderModel {
       note: json['note'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       shopName: shop?['shop_name'] as String?,
-      shopLogo: shop?['logo'] as String?,
-      shopPhone: shop?['phone'] as String?,
+      shopLogo: logoUrl,
+      shopPhone: (shop?['phone_number'] ?? shop?['phone']) as String?,
       receiverName: address?['receiver_name'] as String?,
       receiverPhone: address?['receiver_phone'] as String?,
       addressDetail: address?['address_detail'] as String?,
