@@ -358,7 +358,7 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
             final order = state.order;
             final items = state.items;
             final isCancelling = state.isCancelling;
-            final showCancelButton = order.orderStatus.toLowerCase() == 'pending';
+            final showCancelButton = order.orderStatus.toLowerCase() == 'pending' || order.orderStatus.toLowerCase() == 'confirmed';
             final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt.toLocal());
 
             return Column(
@@ -641,11 +641,14 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
           label,
           style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
         ),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             style: const TextStyle(color: Color(0xFF2C3E50), fontSize: 12, fontWeight: FontWeight.bold),
             textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -656,10 +659,15 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(
@@ -667,6 +675,8 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
