@@ -54,5 +54,18 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
+// Cart Routes
+var cartCtrl = require("../controllers/cart.controller");
+router.get("/carts", firebaseAuth, cartCtrl.getCart);
+router.post("/carts/items", firebaseAuth, cartCtrl.addToCart);
+router.put("/carts/items/:itemId", firebaseAuth, cartCtrl.updateCartItem);
+router.delete("/carts/items/:itemId", firebaseAuth, cartCtrl.deleteCartItem);
+
+// Payment Routes
+var paymentCtrl = require("../controllers/payment.controller");
+router.post("/payments/vnpay", firebaseAuth, paymentCtrl.createVnpayPayment);
+router.get("/payment/vnpay-return", paymentCtrl.vnpayReturn);
+router.get("/payment/vnpay-ipn", paymentCtrl.vnpayIpn);
+router.get("/payment/vnpay-verify", firebaseAuth, paymentCtrl.verifyPayment);
 
 module.exports = router;

@@ -33,7 +33,6 @@ class _HistoryTabContent extends StatefulWidget {
 
 class _HistoryTabContentState extends State<_HistoryTabContent> {
   String _activeFilter = 'all';
-
   String _getStatusText(String status, AppLocalizations l10n) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -142,7 +141,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

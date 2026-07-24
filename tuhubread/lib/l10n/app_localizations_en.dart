@@ -190,6 +190,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartRemove => 'Remove';
 
   @override
+  String get cartRemoveConfirmTitle => 'Remove item?';
+
+  @override
+  String cartRemoveConfirmMessage(String productName) {
+    return 'Are you sure you want to remove \"$productName\" from your cart?';
+  }
+
+  @override
+  String get cartRemoveConfirmBtn => 'Remove';
+
+  @override
   String get cartSuggestionTitle => 'Add a drink to your order?';
 
   @override
@@ -254,7 +265,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodSectionTitle => 'Select Payment Method';
 
   @override
-  String get paymentMethodCash => 'Cash on Delivery';
+  String get paymentMethodCash => 'Payment on Delivery';
+
+  @override
+  String get paymentMethodVnpay => 'VNPAY';
 
   @override
   String get paymentMethodMomo => 'MoMo Wallet';
@@ -289,6 +303,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentBackToHome => 'Back to Home';
+
+  @override
+  String get checkoutVoucherSectionTitle => 'Discounts & Vouchers';
+
+  @override
+  String get checkoutVoucherChange => 'Change';
+
+  @override
+  String get checkoutVoucherSelect => 'Select Code';
+
+  @override
+  String checkoutVoucherEligibleCount(int count) {
+    return 'You have $count eligible vouchers';
+  }
+
+  @override
+  String get checkoutVoucherChoosePlaceholder => 'Select or enter promo code';
+
+  @override
+  String checkoutVoucherApplied(String amount) {
+    return 'Discount applied: -$amount';
+  }
+
+  @override
+  String get checkoutVoucherNoEligible => 'No eligible vouchers for this order';
+
+  @override
+  String checkoutVoucherDiscountPercent(num value) {
+    return 'Get $value% off';
+  }
+
+  @override
+  String checkoutVoucherDiscountPercentMax(num value, String max) {
+    return 'Get $value% off, max $max';
+  }
+
+  @override
+  String checkoutVoucherDiscountAmount(String value) {
+    return 'Get $value off';
+  }
+
+  @override
+  String get checkoutVoucherFreeShipping => 'Free shipping';
+
+  @override
+  String checkoutVoucherMinOrder(String value) {
+    return 'Min order: $value';
+  }
+
+  @override
+  String get checkoutVoucherDoNotUse => 'Do not use Voucher';
 
   @override
   String get historyTitle => 'Order History';
@@ -508,9 +573,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodBank => 'Bank Transfer';
 
   @override
-  String get paymentMethodVnpay => 'VNPAY';
 
-  @override
   String get paymentStatusUnpaid => 'Unpaid';
 
   @override

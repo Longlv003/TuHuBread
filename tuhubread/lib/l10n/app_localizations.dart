@@ -446,6 +446,24 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get cartRemove;
 
+  /// No description provided for @cartRemoveConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item?'**
+  String get cartRemoveConfirmTitle;
+
+  /// No description provided for @cartRemoveConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{productName}\" from your cart?'**
+  String cartRemoveConfirmMessage(String productName);
+
+  /// No description provided for @cartRemoveConfirmBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemoveConfirmBtn;
+
   /// No description provided for @cartSuggestionTitle.
   ///
   /// In en, this message translates to:
@@ -575,8 +593,14 @@ abstract class AppLocalizations {
   /// No description provided for @paymentMethodCash.
   ///
   /// In en, this message translates to:
-  /// **'Cash on Delivery'**
+  /// **'Payment on Delivery'**
   String get paymentMethodCash;
+
+  /// No description provided for @paymentMethodVnpay.
+  ///
+  /// In en, this message translates to:
+  /// **'VNPAY'**
+  String get paymentMethodVnpay;
 
   /// No description provided for @paymentMethodMomo.
   ///
@@ -637,6 +661,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to Home'**
   String get paymentBackToHome;
+
+  /// No description provided for @checkoutVoucherSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discounts & Vouchers'**
+  String get checkoutVoucherSectionTitle;
+
+  /// No description provided for @checkoutVoucherChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get checkoutVoucherChange;
+
+  /// No description provided for @checkoutVoucherSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Code'**
+  String get checkoutVoucherSelect;
+
+  /// No description provided for @checkoutVoucherEligibleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} eligible vouchers'**
+  String checkoutVoucherEligibleCount(int count);
+
+  /// No description provided for @checkoutVoucherChoosePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select or enter promo code'**
+  String get checkoutVoucherChoosePlaceholder;
+
+  /// No description provided for @checkoutVoucherApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount applied: -{amount}'**
+  String checkoutVoucherApplied(String amount);
+
+  /// No description provided for @checkoutVoucherNoEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible vouchers for this order'**
+  String get checkoutVoucherNoEligible;
+
+  /// No description provided for @checkoutVoucherDiscountPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value}% off'**
+  String checkoutVoucherDiscountPercent(num value);
+
+  /// No description provided for @checkoutVoucherDiscountPercentMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value}% off, max {max}'**
+  String checkoutVoucherDiscountPercentMax(num value, String max);
+
+  /// No description provided for @checkoutVoucherDiscountAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value} off'**
+  String checkoutVoucherDiscountAmount(String value);
+
+  /// No description provided for @checkoutVoucherFreeShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Free shipping'**
+  String get checkoutVoucherFreeShipping;
+
+  /// No description provided for @checkoutVoucherMinOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Min order: {value}'**
+  String checkoutVoucherMinOrder(String value);
+
+  /// No description provided for @checkoutVoucherDoNotUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not use Voucher'**
+  String get checkoutVoucherDoNotUse;
 
   /// No description provided for @historyTitle.
   ///
@@ -1040,11 +1142,6 @@ abstract class AppLocalizations {
   /// **'Bank Transfer'**
   String get paymentMethodBank;
 
-  /// No description provided for @paymentMethodVnpay.
-  ///
-  /// In en, this message translates to:
-  /// **'VNPAY'**
-  String get paymentMethodVnpay;
 
   /// No description provided for @paymentStatusUnpaid.
   ///

@@ -9,6 +9,8 @@ import 'package:logger/logger.dart';
 import '../../models/user.model.dart';
 import '../../services/api_service.dart';
 import 'auth_state.dart';
+import '../../di.dart';
+import '../cart/cart_cubit.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 2, colors: true, printEmojis: true),
@@ -32,6 +34,9 @@ class AuthCubit extends Cubit<AuthState> {
       if (response['data'] != null) {
         final user = UserModel.fromJson(response['data'] as Map<String, dynamic>);
         emit(AuthSuccess(user));
+        try {
+          getIt<CartCubit>().loadCart();
+        } catch (_) {}
       } else {
         emit(AuthFailure(response['msg'] ?? defaultLoginError));
       }
@@ -375,6 +380,10 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       _log.w('[handleLogout] Facebook logOut skipped', error: e);
     }
+
+    try {
+      getIt<CartCubit>().clearCart();
+    } catch (_) {}
 
     emit(const AuthInitial());
   }

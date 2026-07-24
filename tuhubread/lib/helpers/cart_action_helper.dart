@@ -49,16 +49,20 @@ class CartActionHelper {
     }
 
     ProductVariantModel variant;
-    if (detail.variants.length == 1) {
+    Set<String> selectedOptions = {};
+    int quantity = 1;
+
+    if (detail.variants.length == 1 && detail.options.isEmpty) {
       variant = detail.variants.first;
     } else {
       final picked = await showSizeSelectBottomSheet(context, detail);
       if (picked == null) return;
       if (!context.mounted) return;
-      variant = picked;
+      variant = picked.variant;
+      selectedOptions = picked.selectedOptionIds;
+      quantity = picked.quantity;
     }
 
-    const selectedOptions = <String>{};
     final unitPrice = CartPriceCalculator.calculateUnitPrice(
       detail,
       variant,
@@ -70,8 +74,8 @@ class CartActionHelper {
         productDetail: detail,
         selectedVariant: variant,
         selectedOptionIds: selectedOptions,
-        quantity: 1,
-        totalPrice: unitPrice,
+        quantity: quantity,
+        totalPrice: unitPrice * quantity,
       ),
     );
 
