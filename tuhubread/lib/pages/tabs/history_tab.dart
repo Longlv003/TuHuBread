@@ -17,10 +17,7 @@ class HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<OrderCubit>(
-      create: (context) => getIt<OrderCubit>()..loadOrders(),
-      child: const _HistoryTabContent(),
-    );
+    return const _HistoryTabContent();
   }
 }
 
