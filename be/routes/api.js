@@ -54,7 +54,6 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
-
 // Cart Routes
 var cartCtrl = require("../controllers/cart.controller");
 router.get("/carts", firebaseAuth, cartCtrl.getCart);

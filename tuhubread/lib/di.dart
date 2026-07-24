@@ -86,7 +86,6 @@ Future<void> init() async {
   getIt.registerFactory<OrderCubit>(
     () => OrderCubit(apiService: getIt<ApiService>()),
   );
-
   // ─── Payment ──────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<PaymentRepository>(
     () => PaymentRepositoryImpl(apiService: getIt<ApiService>()),
