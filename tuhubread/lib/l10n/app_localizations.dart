@@ -1825,6 +1825,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email Support'**
   String get helpCenterEmailSupport;
+
+  /// No description provided for @trackStatusDescPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the shop to confirm your order.'**
+  String get trackStatusDescPending;
+
+  /// No description provided for @trackStatusDescConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order has been confirmed and is waiting for preparation.'**
+  String get trackStatusDescConfirmed;
+
+  /// No description provided for @trackStatusDescPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'The shop is making fresh hot bread for you.'**
+  String get trackStatusDescPreparing;
+
+  /// No description provided for @trackStatusDescDelivering.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipper is on the way to deliver delicious bread to your address.'**
+  String get trackStatusDescDelivering;
+
+  /// No description provided for @trackStatusDescCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Order delivered successfully! Enjoy your meal.'**
+  String get trackStatusDescCompleted;
+
+  /// No description provided for @trackStatusDescCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order has been cancelled and will not be delivered.'**
+  String get trackStatusDescCancelled;
+
+  /// No description provided for @trackOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Status'**
+  String get trackOrderTitle;
+
+  /// No description provided for @trackOrderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: '**
+  String get trackOrderNote;
+
+  /// No description provided for @trackOrderReceiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver'**
+  String get trackOrderReceiver;
+
+  /// No description provided for @trackOrderSelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Items'**
+  String get trackOrderSelectedItems;
+
+  /// No description provided for @trackOrderVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant: {variantName}'**
+  String trackOrderVariant(String variantName);
+
+  /// No description provided for @historyFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get historyFilterAll;
+
+  /// No description provided for @historyNoOrdersInStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders in this status'**
+  String get historyNoOrdersInStatus;
+
+  /// No description provided for @historyTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total:'**
+  String get historyTotalLabel;
+
+  /// No description provided for @detailSoldAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold {count}'**
+  String detailSoldAmount(int count);
+
+  /// No description provided for @detailViewPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'View price'**
+  String get detailViewPrice;
+
+  /// No description provided for @paymentVnpayFailedOrCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'VNPay payment failed or was cancelled'**
+  String get paymentVnpayFailedOrCancelled;
+
+  /// No description provided for @paymentVnpayInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not initialize VNPay payment link'**
+  String get paymentVnpayInitFailed;
+
+  /// No description provided for @checkoutVnpayInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create payment link'**
+  String get checkoutVnpayInitFailed;
+
+  /// No description provided for @checkoutVnpayFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment via VNPAY was not successful.'**
+  String get checkoutVnpayFailed;
 }
 
 class _AppLocalizationsDelegate

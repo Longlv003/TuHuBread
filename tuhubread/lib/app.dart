@@ -30,6 +30,7 @@ class App extends StatelessWidget {
         navigatorKey: System.navigatorKey,
         getPages: AppRoutes().routes,
         initialRoute: Routes.splashPage,
+        locale: initialLocale ?? const Locale('vi'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       );

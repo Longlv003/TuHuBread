@@ -85,7 +85,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   Widget _buildFilterChips(AppLocalizations l10n) {
     final filters = ['all', 'pending', 'confirmed', 'preparing', 'delivering', 'completed', 'cancelled'];
     final labels = [
-      'Tất cả',
+      l10n.historyFilterAll,
       l10n.orderStatusPending,
       l10n.orderStatusConfirmed,
       l10n.orderStatusPreparing,
@@ -138,6 +138,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
         },
       ),
     );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -233,14 +234,14 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           children: [
                             SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-                            const Center(
+                            Center(
                               child: Column(
                                 children: [
-                                  Icon(Icons.receipt_long_rounded, size: 48, color: Color(0xFFBDC3C7)),
-                                  SizedBox(height: 12),
+                                  const Icon(Icons.receipt_long_rounded, size: 48, color: Color(0xFFBDC3C7)),
+                                  const SizedBox(height: 12),
                                   Text(
-                                    'Không có đơn hàng nào ở trạng thái này',
-                                    style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
+                                    l10n.historyNoOrdersInStatus,
+                                    style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
                                   ),
                                 ],
                               ),
@@ -394,10 +395,10 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                const Expanded(
+                                                Expanded(
                                                   child: Text(
-                                                    'Tổng tiền:',
-                                                    style: TextStyle(
+                                                    l10n.historyTotalLabel,
+                                                    style: const TextStyle(
                                                       fontSize: 13,
                                                       color: Color(0xFF7F8C8D),
                                                     ),
@@ -428,6 +429,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                             );
                           },
                         ),
+                ),
               ],
             );
           }

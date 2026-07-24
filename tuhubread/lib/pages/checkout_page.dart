@@ -20,7 +20,6 @@ import '../models/payment_verify_result.model.dart';
 import '../models/voucher_save.model.dart';
 import '../repositories/order_repository.dart';
 import '../routes/routes.dart';
-
 import '../utils/currency_formatter.dart';
 import '../widgets/checkout/checkout_address_section.dart';
 import '../widgets/checkout/checkout_delivery_option_tile.dart';
@@ -74,9 +73,7 @@ class CheckoutPage extends StatelessWidget {
         BlocProvider<VoucherCubit>(
           create: (_) => getIt<VoucherCubit>()..loadVouchers(),
         ),
-        BlocProvider<PaymentCubit>(
-          create: (_) => getIt<PaymentCubit>(),
-        ),
+        BlocProvider<PaymentCubit>(create: (_) => getIt<PaymentCubit>()),
       ],
       child: _CheckoutContent(items: items, subtotal: subtotal),
     );
@@ -203,10 +200,14 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                       if (voucher.maxDiscountAmount != null) {
                         discountDesc = l10n.checkoutVoucherDiscountPercentMax(
                           voucher.discountValue,
-                          CurrencyFormatter.formatVND(voucher.maxDiscountAmount!),
+                          CurrencyFormatter.formatVND(
+                            voucher.maxDiscountAmount!,
+                          ),
                         );
                       } else {
-                        discountDesc = l10n.checkoutVoucherDiscountPercent(voucher.discountValue);
+                        discountDesc = l10n.checkoutVoucherDiscountPercent(
+                          voucher.discountValue,
+                        );
                       }
                     } else if (voucher.discountType == "amount") {
                       discountDesc = l10n.checkoutVoucherDiscountAmount(
@@ -271,7 +272,11 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    l10n.checkoutVoucherMinOrder(CurrencyFormatter.formatVND(voucher.minOrderAmount)),
+                                    l10n.checkoutVoucherMinOrder(
+                                      CurrencyFormatter.formatVND(
+                                        voucher.minOrderAmount,
+                                      ),
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFF7F8C8D),
@@ -519,7 +524,8 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => getx.Get.offAllNamed(Routes.homePage, arguments: 2),
+              onPressed: () =>
+                  getx.Get.offAllNamed(Routes.homePage, arguments: 2),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE67E22),
                 foregroundColor: Colors.white,
@@ -535,10 +541,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     );
   }
 
-  Future<void> _showFailedDialog(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Future<void> _showFailedDialog(BuildContext context, AppLocalizations l10n) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -551,7 +554,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
         ),
         title: Text(l10n.paymentOrderFailed, textAlign: TextAlign.center),
         content: const Text(
-          "Thanh toán qua VNPAY không thành công. Bạn có thể kiểm tra lại trạng thái đơn hàng trong lịch sử đặt hàng.",
+          "Thanh toán qua VNPAY không thành công.",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13, color: Color(0xFF7F8C8D)),
         ),
@@ -559,7 +562,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => getx.Get.offAllNamed(Routes.homePage, arguments: 2),
+              onPressed: () => getx.Get.until((route) => route.isFirst),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE74C3C),
                 foregroundColor: Colors.white,
@@ -698,7 +701,9 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                     trailing: TextButton(
                       onPressed: () => _openSelectVoucher(context, saved),
                       child: Text(
-                        _selectedVoucher != null ? l10n.checkoutVoucherChange : l10n.checkoutVoucherSelect,
+                        _selectedVoucher != null
+                            ? l10n.checkoutVoucherChange
+                            : l10n.checkoutVoucherSelect,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFFE67E22),
@@ -719,7 +724,9 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                 Expanded(
                                   child: Text(
                                     eligibleCount > 0
-                                        ? l10n.checkoutVoucherEligibleCount(eligibleCount)
+                                        ? l10n.checkoutVoucherEligibleCount(
+                                            eligibleCount,
+                                          )
                                         : l10n.checkoutVoucherChoosePlaceholder,
                                     style: const TextStyle(
                                       fontSize: 13,
@@ -767,7 +774,11 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                     const SizedBox(height: 2),
                                     Text(
                                       l10n.checkoutVoucherApplied(
-                                        CurrencyFormatter.formatVND(_calculateVoucherDiscount(_selectedVoucher)),
+                                        CurrencyFormatter.formatVND(
+                                          _calculateVoucherDiscount(
+                                            _selectedVoucher,
+                                          ),
+                                        ),
                                       ),
                                       style: const TextStyle(
                                         fontSize: 11,
@@ -799,7 +810,8 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                         onTap: () => setState(() => _selectedMethod = method),
                       ),
                     ),
-                    if (_selectedMethod.id != 'cash' && _selectedMethod.id != 'vnpay') ...[
+                    if (_selectedMethod.id != 'cash' &&
+                        _selectedMethod.id != 'vnpay') ...[
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(12),

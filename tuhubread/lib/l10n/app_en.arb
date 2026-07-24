@@ -378,5 +378,39 @@
   "helpCenterFaq4Question": "How do I change my delivery address?",
   "helpCenterFaq4Answer": "Go to Profile > Shipping Addresses to add, edit or set a default delivery address.",
   "helpCenterCallSupport": "Call Support",
-  "helpCenterEmailSupport": "Email Support"
+  "helpCenterEmailSupport": "Email Support",
+  "trackStatusDescPending": "Waiting for the shop to confirm your order.",
+  "trackStatusDescConfirmed": "Order has been confirmed and is waiting for preparation.",
+  "trackStatusDescPreparing": "The shop is making fresh hot bread for you.",
+  "trackStatusDescDelivering": "Shipper is on the way to deliver delicious bread to your address.",
+  "trackStatusDescCompleted": "Order delivered successfully! Enjoy your meal.",
+  "trackStatusDescCancelled": "Your order has been cancelled and will not be delivered.",
+  "trackOrderTitle": "Order Status",
+  "trackOrderNote": "Note: ",
+  "trackOrderReceiver": "Receiver",
+  "trackOrderSelectedItems": "Selected Items",
+  "trackOrderVariant": "Variant: {variantName}",
+  "@trackOrderVariant": {
+    "placeholders": {
+      "variantName": {
+        "type": "String"
+      }
+    }
+  },
+  "historyFilterAll": "All",
+  "historyNoOrdersInStatus": "No orders in this status",
+  "historyTotalLabel": "Total:",
+  "detailSoldAmount": "Sold {count}",
+  "@detailSoldAmount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "detailViewPrice": "View price",
+  "paymentVnpayFailedOrCancelled": "VNPay payment failed or was cancelled",
+  "paymentVnpayInitFailed": "Could not initialize VNPay payment link",
+  "checkoutVnpayInitFailed": "Could not create payment link",
+  "checkoutVnpayFailed": "Payment via VNPAY was not successful."
 }

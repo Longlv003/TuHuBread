@@ -940,4 +940,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCenterEmailSupport => 'Email Support';
+
+  @override
+  String get trackStatusDescPending =>
+      'Waiting for the shop to confirm your order.';
+
+  @override
+  String get trackStatusDescConfirmed =>
+      'Order has been confirmed and is waiting for preparation.';
+
+  @override
+  String get trackStatusDescPreparing =>
+      'The shop is making fresh hot bread for you.';
+
+  @override
+  String get trackStatusDescDelivering =>
+      'Shipper is on the way to deliver delicious bread to your address.';
+
+  @override
+  String get trackStatusDescCompleted =>
+      'Order delivered successfully! Enjoy your meal.';
+
+  @override
+  String get trackStatusDescCancelled =>
+      'Your order has been cancelled and will not be delivered.';
+
+  @override
+  String get trackOrderTitle => 'Order Status';
+
+  @override
+  String get trackOrderNote => 'Note: ';
+
+  @override
+  String get trackOrderReceiver => 'Receiver';
+
+  @override
+  String get trackOrderSelectedItems => 'Selected Items';
+
+  @override
+  String trackOrderVariant(String variantName) {
+    return 'Variant: $variantName';
+  }
+
+  @override
+  String get historyFilterAll => 'All';
+
+  @override
+  String get historyNoOrdersInStatus => 'No orders in this status';
+
+  @override
+  String get historyTotalLabel => 'Total:';
+
+  @override
+  String detailSoldAmount(int count) {
+    return 'Sold $count';
+  }
+
+  @override
+  String get detailViewPrice => 'View price';
+
+  @override
+  String get paymentVnpayFailedOrCancelled =>
+      'VNPay payment failed or was cancelled';
+
+  @override
+  String get paymentVnpayInitFailed =>
+      'Could not initialize VNPay payment link';
+
+  @override
+  String get checkoutVnpayInitFailed => 'Could not create payment link';
+
+  @override
+  String get checkoutVnpayFailed => 'Payment via VNPAY was not successful.';
 }

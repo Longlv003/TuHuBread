@@ -942,4 +942,77 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get helpCenterEmailSupport => 'Email hỗ trợ';
+
+  @override
+  String get trackStatusDescPending =>
+      'Đang chờ cửa hàng xác nhận đơn đặt hàng của bạn.';
+
+  @override
+  String get trackStatusDescConfirmed =>
+      'Đơn hàng đã được xác nhận và đang chờ chuẩn bị.';
+
+  @override
+  String get trackStatusDescPreparing =>
+      'Cửa hàng đang thực hiện làm bánh mì nóng hổi cho bạn.';
+
+  @override
+  String get trackStatusDescDelivering =>
+      'Shipper đang trên đường giao bánh mì ngon lành đến địa chỉ của bạn.';
+
+  @override
+  String get trackStatusDescCompleted =>
+      'Đơn hàng đã giao thành công! Chúc bạn ăn ngon miệng.';
+
+  @override
+  String get trackStatusDescCancelled =>
+      'Đơn hàng của bạn đã bị hủy và sẽ không được giao.';
+
+  @override
+  String get trackOrderTitle => 'Trạng thái đơn hàng';
+
+  @override
+  String get trackOrderNote => 'Ghi chú: ';
+
+  @override
+  String get trackOrderReceiver => 'Người nhận';
+
+  @override
+  String get trackOrderSelectedItems => 'Món đã chọn';
+
+  @override
+  String trackOrderVariant(String variantName) {
+    return 'Phân loại: $variantName';
+  }
+
+  @override
+  String get historyFilterAll => 'Tất cả';
+
+  @override
+  String get historyNoOrdersInStatus =>
+      'Không có đơn hàng nào ở trạng thái này';
+
+  @override
+  String get historyTotalLabel => 'Tổng tiền:';
+
+  @override
+  String detailSoldAmount(int count) {
+    return 'Đã bán $count';
+  }
+
+  @override
+  String get detailViewPrice => 'Xem giá';
+
+  @override
+  String get paymentVnpayFailedOrCancelled =>
+      'Thanh toán VNPay thất bại hoặc đã bị hủy';
+
+  @override
+  String get paymentVnpayInitFailed =>
+      'Không thể khởi tạo liên kết thanh toán VNPay';
+
+  @override
+  String get checkoutVnpayInitFailed => 'Không thể tạo link thanh toán';
+
+  @override
+  String get checkoutVnpayFailed => 'Thanh toán qua VNPAY không thành công.';
 }

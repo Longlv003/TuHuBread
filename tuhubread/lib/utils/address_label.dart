@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../l10n/app_localizations.dart';
+import 'package:tuhubread/l10n/app_localizations.dart';
 
 /// Nhãn phân loại địa chỉ (Nhà/Công ty/Khác) — icon + text hiển thị dùng
 /// chung giữa [AddressFormPage] và [SelectAddressPage].

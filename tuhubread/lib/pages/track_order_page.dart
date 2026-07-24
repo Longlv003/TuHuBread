@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tuhubread/l10n/app_localizations.dart';
+
 import '../../blocs/order/order_cubit.dart';
 import '../../blocs/order/order_state.dart';
 import '../../di.dart';
@@ -30,20 +31,20 @@ class _TrackOrderContent extends StatefulWidget {
 }
 
 class _TrackOrderContentState extends State<_TrackOrderContent> {
-
-
-  String _getStatusDescription(String status) {
+  String _getStatusDescription(String status, AppLocalizations l10n) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'Đang chờ cửa hàng xác nhận đơn đặt hàng của bạn.';
+        return l10n.trackStatusDescPending;
       case 'confirmed':
-        return 'Đơn hàng đã được xác nhận và đang chờ chuẩn bị.';
+        return l10n.trackStatusDescConfirmed;
       case 'preparing':
-        return 'Cửa hàng đang thực hiện làm bánh mì nóng hổi cho bạn.';
+        return l10n.trackStatusDescPreparing;
       case 'delivering':
-        return 'Shipper đang trên đường giao bánh mì ngon lành đến địa chỉ của bạn.';
+        return l10n.trackStatusDescDelivering;
       case 'completed':
-        return 'Đơn hàng đã giao thành công! Chúc bạn ăn ngon miệng.';
+        return l10n.trackStatusDescCompleted;
+      case 'cancelled':
+        return l10n.trackStatusDescCancelled;
       default:
         return '';
     }
@@ -88,7 +89,11 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.cancel_rounded, color: Color(0xFFC0392B), size: 36),
+            const Icon(
+              Icons.cancel_rounded,
+              color: Color(0xFFC0392B),
+              size: 36,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -103,9 +108,12 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Đơn hàng của bạn đã bị hủy và sẽ không được giao.',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+                  Text(
+                    l10n.trackStatusDescCancelled,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF7F8C8D),
+                    ),
                   ),
                 ],
               ),
@@ -115,20 +123,26 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
       );
     }
 
-    final statuses = ['pending', 'confirmed', 'preparing', 'delivering', 'completed'];
+    final statuses = [
+      'pending',
+      'confirmed',
+      'preparing',
+      'delivering',
+      'completed',
+    ];
     final titles = [
       l10n.orderStatusPending,
       l10n.orderStatusConfirmed,
       l10n.orderStatusPreparing,
       l10n.orderStatusDelivering,
-      l10n.orderStatusCompleted
+      l10n.orderStatusCompleted,
     ];
     final icons = [
       Icons.receipt_long_rounded,
       Icons.assignment_turned_in_rounded,
       Icons.soup_kitchen_rounded,
       Icons.local_shipping_rounded,
-      Icons.check_circle_rounded
+      Icons.check_circle_rounded,
     ];
 
     int currentIndex = statuses.indexOf(currentStatus.toLowerCase());
@@ -144,9 +158,9 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Trạng thái đơn hàng',
-            style: TextStyle(
+          Text(
+            l10n.trackOrderTitle,
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2C3E50),
@@ -176,13 +190,10 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                           color: isCurrent
                               ? const Color(0xFFE67E22)
                               : isCompleted
-                                  ? const Color(0xFFFFF0E0)
-                                  : Colors.white,
+                              ? const Color(0xFFFFF0E0)
+                              : Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: color,
-                            width: 2,
-                          ),
+                          border: Border.all(color: color, width: 2),
                         ),
                         child: Icon(
                           icons[index],
@@ -216,14 +227,14 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                             color: isCurrent
                                 ? const Color(0xFFE67E22)
                                 : isCompleted
-                                    ? const Color(0xFF2C3E50)
-                                    : const Color(0xFFBDC3C7),
+                                ? const Color(0xFF2C3E50)
+                                : const Color(0xFFBDC3C7),
                           ),
                         ),
                         if (isCurrent) ...[
                           const SizedBox(height: 4),
                           Text(
-                            _getStatusDescription(currentStatus),
+                            _getStatusDescription(currentStatus, l10n),
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF7F8C8D),
@@ -242,14 +253,20 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
     );
   }
 
-  void _showCancelConfirmationDialog(BuildContext context, AppLocalizations l10n) {
+  void _showCancelConfirmationDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           l10n.cancelOrderConfirmTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         ),
         content: Text(
           l10n.cancelOrderConfirmMessage,
@@ -260,7 +277,10 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
             onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
               l10n.no,
-              style: const TextStyle(color: Color(0xFF7F8C8D), fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Color(0xFF7F8C8D),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           ElevatedButton(
@@ -281,12 +301,17 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE74C3C),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               elevation: 0,
             ),
             child: Text(
               l10n.yes,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -303,13 +328,21 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
       appBar: AppBar(
         title: Text(
           l10n.historyTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 18),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2C3E50), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF2C3E50),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         bottom: const PreferredSize(
@@ -332,19 +365,30 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE74C3C)),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: Color(0xFFE74C3C),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       state.error,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
+                      style: const TextStyle(
+                        color: Color(0xFF7F8C8D),
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => context.read<OrderCubit>().loadOrderDetail(widget.orderId),
+                      onPressed: () => context
+                          .read<OrderCubit>()
+                          .loadOrderDetail(widget.orderId),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE67E22),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(l10n.retryButton),
                     ),
@@ -358,8 +402,12 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
             final order = state.order;
             final items = state.items;
             final isCancelling = state.isCancelling;
-            final showCancelButton = order.orderStatus.toLowerCase() == 'pending' || order.orderStatus.toLowerCase() == 'confirmed';
-            final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt.toLocal());
+            final showCancelButton =
+                order.orderStatus.toLowerCase() == 'pending' ||
+                order.orderStatus.toLowerCase() == 'confirmed';
+            final dateStr = DateFormat(
+              'dd/MM/yyyy HH:mm',
+            ).format(order.createdAt.toLocal());
 
             return Column(
               children: [
@@ -380,7 +428,10 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: Color(0xFFF1EAE1), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFFF1EAE1),
+                              width: 1.5,
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
@@ -389,23 +440,50 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.receipt_long_rounded, color: Color(0xFFE67E22), size: 20),
+                                    const Icon(
+                                      Icons.receipt_long_rounded,
+                                      color: Color(0xFFE67E22),
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
                                       '${l10n.orderCodeLabel}${order.orderCode}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 14),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                const Divider(
+                                  height: 24,
+                                  color: Color(0xFFF1EAE1),
+                                ),
                                 _buildInfoRow(l10n.orderDateLabel, dateStr),
                                 const SizedBox(height: 8),
-                                _buildInfoRow(l10n.paymentMethodLabel, _getPaymentMethodText(order.paymentMethod, l10n)),
+                                _buildInfoRow(
+                                  l10n.paymentMethodLabel,
+                                  _getPaymentMethodText(
+                                    order.paymentMethod,
+                                    l10n,
+                                  ),
+                                ),
                                 const SizedBox(height: 8),
-                                _buildInfoRow(l10n.paymentStatusLabel, _getPaymentStatusText(order.paymentStatus, l10n)),
-                                if (order.note != null && order.note!.isNotEmpty) ...[
+                                _buildInfoRow(
+                                  l10n.paymentStatusLabel,
+                                  _getPaymentStatusText(
+                                    order.paymentStatus,
+                                    l10n,
+                                  ),
+                                ),
+                                if (order.note != null &&
+                                    order.note!.isNotEmpty) ...[
                                   const SizedBox(height: 8),
-                                  _buildInfoRow('Ghi chú: ', order.note!),
+                                  _buildInfoRow(
+                                    l10n.trackOrderNote,
+                                    order.note!,
+                                  ),
                                 ],
                               ],
                             ),
@@ -419,7 +497,10 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: Color(0xFFF1EAE1), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFFF1EAE1),
+                              width: 1.5,
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
@@ -428,28 +509,49 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.location_on_rounded, color: Color(0xFFE67E22), size: 20),
+                                    const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Color(0xFFE67E22),
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
                                       l10n.addressLabel,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 14),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                const Divider(
+                                  height: 24,
+                                  color: Color(0xFFF1EAE1),
+                                ),
                                 Text(
-                                  order.receiverName ?? 'Người nhận',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 13),
+                                  order.receiverName ?? l10n.trackOrderReceiver,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2C3E50),
+                                    fontSize: 13,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   order.receiverPhone ?? '',
-                                  style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Color(0xFF7F8C8D),
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   order.addressDetail ?? '',
-                                  style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Color(0xFF7F8C8D),
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
@@ -463,35 +565,54 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: Color(0xFFF1EAE1), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFFF1EAE1),
+                              width: 1.5,
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Row(
+                                Row(
                                   children: [
-                                    Icon(Icons.shopping_bag_rounded, color: Color(0xFFE67E22), size: 20),
+                                    Icon(
+                                      Icons.shopping_bag_rounded,
+                                      color: Color(0xFFE67E22),
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 8),
                                     Text(
-                                      'Món đã chọn',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 14),
+                                      l10n.trackOrderSelectedItems,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                const Divider(
+                                  height: 24,
+                                  color: Color(0xFFF1EAE1),
+                                ),
                                 ListView.separated(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: items.length,
-                                  separatorBuilder: (c, i) => const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                  separatorBuilder: (c, i) => const Divider(
+                                    height: 24,
+                                    color: Color(0xFFF1EAE1),
+                                  ),
                                   itemBuilder: (context, index) {
                                     final item = items[index];
                                     return Row(
                                       children: [
                                         ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           child: Container(
                                             width: 48,
                                             height: 48,
@@ -500,10 +621,14 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                                                 ? Image.network(
                                                     item.productImage!,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (c, e, s) => const Icon(
-                                                      Icons.bakery_dining_rounded,
-                                                      color: Color(0xFFE67E22),
-                                                    ),
+                                                    errorBuilder: (c, e, s) =>
+                                                        const Icon(
+                                                          Icons
+                                                              .bakery_dining_rounded,
+                                                          color: Color(
+                                                            0xFFE67E22,
+                                                          ),
+                                                        ),
                                                   )
                                                 : const Icon(
                                                     Icons.bakery_dining_rounded,
@@ -514,28 +639,48 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 item.productName,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 13),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF2C3E50),
+                                                  fontSize: 13,
+                                                ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                'Phân loại: ${item.variantName}',
-                                                style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 11),
+                                                l10n.trackOrderVariant(
+                                                  item.variantName,
+                                                ),
+                                                style: const TextStyle(
+                                                  color: Color(0xFF7F8C8D),
+                                                  fontSize: 11,
+                                                ),
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
                                                 'x${item.quantity}',
-                                                style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 11, fontWeight: FontWeight.bold),
+                                                style: const TextStyle(
+                                                  color: Color(0xFF7F8C8D),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
                                         Text(
-                                          CurrencyFormatter.formatVND(item.subtotal),
-                                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 13),
+                                          CurrencyFormatter.formatVND(
+                                            item.subtotal,
+                                          ),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF2C3E50),
+                                            fontSize: 13,
+                                          ),
                                         ),
                                       ],
                                     );
@@ -553,30 +698,59 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: Color(0xFFF1EAE1), width: 1.5),
+                            side: const BorderSide(
+                              color: Color(0xFFF1EAE1),
+                              width: 1.5,
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: [
-                                _buildBillRow(l10n.itemsTotalLabel, CurrencyFormatter.formatVND(order.itemsTotal)),
+                                _buildBillRow(
+                                  l10n.itemsTotalLabel,
+                                  CurrencyFormatter.formatVND(order.itemsTotal),
+                                ),
                                 const SizedBox(height: 8),
-                                _buildBillRow(l10n.deliveryFeeLabel, CurrencyFormatter.formatVND(order.deliveryFee)),
+                                _buildBillRow(
+                                  l10n.deliveryFeeLabel,
+                                  CurrencyFormatter.formatVND(
+                                    order.deliveryFee,
+                                  ),
+                                ),
                                 if (order.discountAmount > 0) ...[
                                   const SizedBox(height: 8),
-                                  _buildBillRow(l10n.discountLabel, '-${CurrencyFormatter.formatVND(order.discountAmount)}', isDiscount: true),
+                                  _buildBillRow(
+                                    l10n.discountLabel,
+                                    '-${CurrencyFormatter.formatVND(order.discountAmount)}',
+                                    isDiscount: true,
+                                  ),
                                 ],
-                                const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                const Divider(
+                                  height: 24,
+                                  color: Color(0xFFF1EAE1),
+                                ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       l10n.totalAmountLabel,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 14),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                        fontSize: 14,
+                                      ),
                                     ),
                                     Text(
-                                      CurrencyFormatter.formatVND(order.totalAmount),
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD35400), fontSize: 16),
+                                      CurrencyFormatter.formatVND(
+                                        order.totalAmount,
+                                      ),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFD35400),
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -601,22 +775,36 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
                         child: ElevatedButton.icon(
                           onPressed: isCancelling
                               ? null
-                              : () => _showCancelConfirmationDialog(context, l10n),
+                              : () => _showCancelConfirmationDialog(
+                                  context,
+                                  l10n,
+                                ),
                           icon: isCancelling
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
-                              : const Icon(Icons.cancel_outlined, color: Colors.white),
+                              : const Icon(
+                                  Icons.cancel_outlined,
+                                  color: Colors.white,
+                                ),
                           label: Text(
                             l10n.cancelOrderButton,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE74C3C),
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -645,7 +833,11 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: Color(0xFF2C3E50), fontSize: 12, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Color(0xFF2C3E50),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.end,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -671,7 +863,9 @@ class _TrackOrderContentState extends State<_TrackOrderContent> {
         Text(
           value,
           style: TextStyle(
-            color: isDiscount ? const Color(0xFF2ECC71) : const Color(0xFF2C3E50),
+            color: isDiscount
+                ? const Color(0xFF2ECC71)
+                : const Color(0xFF2C3E50),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
