@@ -2,9 +2,12 @@ const mongoose = require("mongoose");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
 const { userModel } = require("../models/user.model");
+const { shopModel } = require("../models/shop.model");
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { addressModel } = require("../models/address.model");
+const { cartModel } = require("../models/cart.model");
+const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 
@@ -40,6 +43,7 @@ exports.getOrders = async (req, res) => {
     let orders = await orderModel.find({ user_id: user._id, deleted_at: null })
       .populate("shop_id")
       .sort({ createdAt: -1 });
+
 
 
     dataRes.data = orders.map(order => {
@@ -421,6 +425,17 @@ exports.createOrder = async (req, res) => {
       dataRes.data.payment_url = paymentUrl;
     }
 
+    // Clear user's active cart in the database
+    try {
+      const cart = await cartModel.findOne({ user_id: user._id, status: "active" });
+      if (cart) {
+        await cartItemModel.deleteMany({ cart_id: cart._id });
+        cart.cart_total = 0;
+        await cart.save();
+      }
+    } catch (cartErr) {
+      console.error("Clear cart error post order:", cartErr.message);
+    }
     return res.json(dataRes);
   } catch (err) {
     console.error("Create order error:", err.message);

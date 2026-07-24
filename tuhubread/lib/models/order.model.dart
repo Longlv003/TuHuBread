@@ -1,4 +1,5 @@
 import 'package:tuhubread/configs/system.dart';
+
 class OrderModel {
   final String id;
   final String orderCode;
@@ -47,6 +48,7 @@ class OrderModel {
     if (logoUrl != null && !logoUrl.startsWith('http')) {
       logoUrl = '${URL.getBaseURL()}/images/shops/${logoUrl.split('/').last}';
     }
+
     return OrderModel(
       id: json['_id'] as String,
       orderCode: json['order_code'] as String,

@@ -6,6 +6,7 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 import '../blocs/cart/cart_cubit.dart';
 import '../blocs/cart/cart_state.dart';
 import '../blocs/home/home_cubit.dart';
+import '../blocs/order/order_cubit.dart';
 import '../data/mock_notifications.dart';
 import '../di.dart';
 import '../blocs/auth/auth_cubit.dart';
@@ -33,6 +34,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    if (getx.Get.arguments is int) {
+      _currentIndex = getx.Get.arguments as int;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CartCubit>().loadCart();
@@ -69,42 +73,55 @@ class _MyHomePageState extends State<MyHomePage> {
               ProfileTab(user: user),
             ];
 
-            return BlocProvider<HomeCubit>(
-              create: (_) => getIt<HomeCubit>()..loadHomeData(),
-              // Giao diện chính, HomeTab tự lo phần loading/rỗng riêng của nó.
-              child: Scaffold(
-                backgroundColor: const Color(0xFFFDFBF7),
-                body: SafeArea(
-                  child: Column(
-                    children: [
-                      // Hiển thị Header trên toàn bộ các tab bao gồm Giỏ hàng
-                      CustomerHeader(
-                        user: user,
-                        titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                        unreadNotifications: MockNotifications.unreadCount,
-                        onNotificationTap: _onBellPressed,
-                      ),
-                      const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                      // Active Tab View Content — IndexedStack giữ nguyên state của
-                      // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
-                      Expanded(
-                        child: IndexedStack(
-                          index: _currentIndex,
-                          children: tabViews,
-                        ),
-                      ),
-                    ],
-                  ),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<HomeCubit>(
+                  create: (_) => getIt<HomeCubit>()..loadHomeData(),
                 ),
-                // Extracted Reusable Bottom Navigation Bar
-                bottomNavigationBar: CustomerBottomNav(
-                  currentIndex: _currentIndex,
-                  onTap: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
+                BlocProvider<OrderCubit>(
+                  create: (_) => getIt<OrderCubit>()..loadOrders(),
                 ),
+              ],
+              child: Builder(
+                builder: (context) {
+                  return Scaffold(
+                    backgroundColor: const Color(0xFFFDFBF7),
+                    body: SafeArea(
+                      child: Column(
+                        children: [
+                          // Hiển thị Header trên toàn bộ các tab bao gồm Giỏ hàng
+                          CustomerHeader(
+                            user: user,
+                            titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                            unreadNotifications: MockNotifications.unreadCount,
+                            onNotificationTap: _onBellPressed,
+                          ),
+                          const Divider(height: 1, color: Color(0xFFF1EAE1)),
+                          // Active Tab View Content — IndexedStack giữ nguyên state của
+                          // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
+                          Expanded(
+                            child: IndexedStack(
+                              index: _currentIndex,
+                              children: tabViews,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Extracted Reusable Bottom Navigation Bar
+                    bottomNavigationBar: CustomerBottomNav(
+                      currentIndex: _currentIndex,
+                      onTap: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                        if (index == 2) {
+                          context.read<OrderCubit>().loadOrders();
+                        }
+                      },
+                    ),
+                  );
+                }
               ),
             );
           }

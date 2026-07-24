@@ -19,6 +19,7 @@ import '../models/order_result.model.dart';
 import '../models/payment_verify_result.model.dart';
 import '../models/voucher_save.model.dart';
 import '../repositories/order_repository.dart';
+import '../routes/routes.dart';
 
 import '../utils/currency_formatter.dart';
 import '../widgets/checkout/checkout_address_section.dart';
@@ -518,7 +519,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => getx.Get.until((route) => route.isFirst),
+              onPressed: () => getx.Get.offAllNamed(Routes.homePage, arguments: 2),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE67E22),
                 foregroundColor: Colors.white,
@@ -558,7 +559,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => getx.Get.until((route) => route.isFirst),
+              onPressed: () => getx.Get.offAllNamed(Routes.homePage, arguments: 2),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE74C3C),
                 foregroundColor: Colors.white,

@@ -17,10 +17,7 @@ class HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<OrderCubit>(
-      create: (context) => getIt<OrderCubit>()..loadOrders(),
-      child: const _HistoryTabContent(),
-    );
+    return const _HistoryTabContent();
   }
 }
 
@@ -33,6 +30,7 @@ class _HistoryTabContent extends StatefulWidget {
 
 class _HistoryTabContentState extends State<_HistoryTabContent> {
   String _activeFilter = 'all';
+
   String _getStatusText(String status, AppLocalizations l10n) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -140,70 +138,48 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
         },
       ),
     );
-  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return BlocBuilder<OrderCubit, OrderState>(
-      builder: (context, state) {
-        if (state is OrderLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFE67E22)),
-          );
-        }
+    return RefreshIndicator(
+      onRefresh: () => context.read<OrderCubit>().loadOrders(),
+      color: const Color(0xFFE67E22),
+      child: BlocBuilder<OrderCubit, OrderState>(
+        builder: (context, state) {
+          if (state is OrderLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE67E22)),
+            );
+          }
 
-        if (state is OrderFailure) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE74C3C)),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.error,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<OrderCubit>().loadOrders(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE67E22),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(l10n.retryButton),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (state is OrderLoaded) {
-          final orders = state.orders;
-
-          if (orders.isEmpty) {
-            return Center(
-              child: Padding(
+          if (state is OrderFailure) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                alignment: Alignment.center,
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.receipt_long_rounded, size: 64, color: Color(0xFFBDC3C7)),
-                    const SizedBox(height: 16),
+                    const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE74C3C)),
+                    const SizedBox(height: 12),
                     Text(
-                      l10n.historyEmpty,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7F8C8D)),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.historyEmptySub,
+                      state.error,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 12),
+                      style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<OrderCubit>().loadOrders(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE67E22),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(l10n.retryButton),
                     ),
                   ],
                 ),
@@ -211,19 +187,47 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
             );
           }
 
-          final filteredOrders = _activeFilter == 'all'
-              ? orders
-              : orders.where((o) => o.orderStatus.toLowerCase() == _activeFilter).toList();
+          if (state is OrderLoaded) {
+            final orders = state.orders;
 
-          return Column(
-            children: [
-              const SizedBox(height: 12),
-              _buildFilterChips(l10n),
-              const SizedBox(height: 8),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => context.read<OrderCubit>().loadOrders(),
-                  color: const Color(0xFFE67E22),
+            if (orders.isEmpty) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.receipt_long_rounded, size: 64, color: Color(0xFFBDC3C7)),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.historyEmpty,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7F8C8D)),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.historyEmptySub,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final filteredOrders = _activeFilter == 'all'
+                ? orders
+                : orders.where((o) => o.orderStatus.toLowerCase() == _activeFilter).toList();
+
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                _buildFilterChips(l10n),
+                const SizedBox(height: 8),
+                Expanded(
                   child: filteredOrders.isEmpty
                       ? ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -424,14 +428,13 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                             );
                           },
                         ),
-                ),
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          }
 
-        return const SizedBox.shrink();
-      },
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 }
