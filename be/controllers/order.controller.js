@@ -189,7 +189,7 @@ exports.getOrderById = async (req, res) => {
         shop: order.shop_id ? {
           shop_name: order.shop_id.shop_name,
           logo: shopLogo,
-          phone: order.shop_id.phone
+          phone: order.shop_id.phone_number
         } : null
       },
       items: items.map(item => {
