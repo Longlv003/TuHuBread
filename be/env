@@ -1,7 +1,0 @@
-MONGOOSE_URL=mongodb://admin:password123@10.144.195.81:27018/Database_TuhuBread?authSource=admin
-TOKEN_SEC_KEY=qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq
-VNP_TMNCODE=VBEPE3S2
-VNP_HASH_SECRET=BFFM1O1SYY3BAIZXPJJH451W1C7UHNVG
-VNP_HOST=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-VNP_RETURN_URL=http://10.0.2.2:3000/api/payment/vnpay-return
-VNP_IPN_URL=
