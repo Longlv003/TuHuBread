@@ -6,6 +6,8 @@ const { shopModel } = require("../models/shop.model");
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { addressModel } = require("../models/address.model");
+const { cartModel } = require("../models/cart.model");
+const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 
@@ -421,6 +423,18 @@ exports.createOrder = async (req, res) => {
       const vnPayUtil = require("../utils/vnpay.util");
       const paymentUrl = await vnPayUtil.createPaymentUrl(req, createdOrders[0].order_code, dataRes.data.total_amount);
       dataRes.data.payment_url = paymentUrl;
+    }
+
+    // Clear user's active cart in the database
+    try {
+      const cart = await cartModel.findOne({ user_id: user._id, status: "active" });
+      if (cart) {
+        await cartItemModel.deleteMany({ cart_id: cart._id });
+        cart.cart_total = 0;
+        await cart.save();
+      }
+    } catch (cartErr) {
+      console.error("Clear cart error post order:", cartErr.message);
     }
 
     return res.json(dataRes);
