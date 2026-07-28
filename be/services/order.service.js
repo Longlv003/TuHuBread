@@ -378,6 +378,73 @@ class OrderService {
       totalAmount: calc.totalAmount,
     };
   }
+
+  /**
+   * Cập nhật trạng thái đơn hàng và gửi notification tương ứng
+   * @param {string} orderId 
+   * @param {Object} statusData - { orderStatus, paymentStatus }
+   * @returns {Promise<Object>}
+   */
+  async updateStatus(orderId, { orderStatus, paymentStatus }) {
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      throw new Error("Không tìm thấy đơn hàng");
+    }
+
+    if (orderStatus) order.order_status = orderStatus;
+    if (paymentStatus) order.payment_status = paymentStatus;
+    await order.save();
+
+    // Gửi notification
+    const notificationService = require("./notification.service");
+    const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
+
+    let type = null;
+    let title = "";
+    let message = "";
+
+    if (orderStatus === "confirmed") {
+      type = NOTIFICATION_TYPES.ORDER_CONFIRMED;
+      title = "Đơn hàng đã xác nhận";
+      message = `Đơn hàng ${order.order_code} đã được cửa hàng xác nhận`;
+    } else if (orderStatus === "preparing") {
+      type = NOTIFICATION_TYPES.ORDER_PREPARING;
+      title = "Đang chuẩn bị đơn hàng";
+      message = `Cửa hàng đang chuẩn bị món ăn cho đơn hàng ${order.order_code}`;
+    } else if (orderStatus === "shipping" || orderStatus === "delivering") {
+      type = NOTIFICATION_TYPES.ORDER_SHIPPING;
+      title = "Đơn hàng đang giao";
+      message = `Đơn hàng ${order.order_code} đang được giao đến bạn`;
+    } else if (orderStatus === "completed") {
+      type = NOTIFICATION_TYPES.ORDER_COMPLETED;
+      title = "Đơn hàng hoàn thành";
+      message = `Đơn hàng ${order.order_code} đã hoàn thành. Cảm ơn bạn đã đặt hàng!`;
+    } else if (orderStatus === "cancelled") {
+      type = NOTIFICATION_TYPES.ORDER_CANCELLED;
+      title = "Đơn hàng đã hủy";
+      message = `Đơn hàng ${order.order_code} đã bị hủy`;
+    }
+
+    if (type) {
+      try {
+        await notificationService.notify({
+          userId: order.user_id,
+          type,
+          title,
+          message,
+          orderId: order._id,
+          data: {
+            orderId: order._id.toString(),
+            type,
+          },
+        });
+      } catch (notifyErr) {
+        console.error(`[OrderService] Failed to send status notification for order ${order._id}:`, notifyErr.message);
+      }
+    }
+
+    return order;
+  }
 }
 
 module.exports = new OrderService();

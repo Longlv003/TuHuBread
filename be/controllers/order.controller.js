@@ -14,6 +14,7 @@ const { voucherSaveModel } = require("../models/voucherSave.model");
 const socketService = require("../services/socket.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
+const orderService = require("../services/order.service");
 
 const PAYMENT_METHODS = ["cash", "vnpay"];
 
@@ -150,11 +151,10 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
-    order.order_status = "cancelled";
-    await order.save();
+    const updatedOrder = await orderService.updateStatus(order._id, { orderStatus: "cancelled" });
 
     dataRes.msg = "Hủy đơn hàng thành công";
-    dataRes.data = order;
+    dataRes.data = updatedOrder;
 
   } catch (err) {
     console.error("cancelOrder error:", err.message);

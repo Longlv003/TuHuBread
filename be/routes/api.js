@@ -71,6 +71,8 @@ var paymentCtrl = require("../controllers/payment.controller");
 router.post("/payments/vnpay", firebaseAuth, paymentCtrl.createVnpayPayment);
 router.get("/payment/vnpay-return", paymentCtrl.vnpayReturn);
 router.get("/payment/vnpay-ipn", paymentCtrl.vnpayIpn);
-router.get("/payment/vnpay-verify", firebaseAuth, paymentCtrl.verifyPayment);
+// Notification Routes
+const notificationRouter = require("./notification.routes");
+router.use("/notifications", notificationRouter);
 
 module.exports = router;
