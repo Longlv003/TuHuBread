@@ -4,13 +4,17 @@ flavors:
       name: "TuHuBread.Dev"
     android:
       applicationId: "com.example.tuhubread"
+      icon: "assets/images/app_icon.png"
     ios:
       bundleId: "com.example.tuhubread"
+      icon: "assets/images/app_icon.png"
 
   production:
     app:
       name: "TuHuBread"
     android:
       applicationId: "com.example.tuhubread.prod"
+      icon: "assets/images/app_icon.png"
     ios:
       bundleId: "com.example.tuhubread.prod"
+      icon: "assets/images/app_icon.png"

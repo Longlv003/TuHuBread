@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
-import '../blocs/cart/cart_cubit.dart';
-import '../blocs/cart/cart_state.dart';
-import '../blocs/home/home_cubit.dart';
-import '../blocs/order/order_cubit.dart';
-import '../data/mock_notifications.dart';
-import '../di.dart';
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
+import '../blocs/cart/cart_cubit.dart';
+import '../blocs/home/home_cubit.dart';
+import '../blocs/notification/notification_cubit.dart';
+import '../blocs/notification/notification_state.dart';
+import '../blocs/order/order_cubit.dart';
+import '../di.dart';
 import '../models/user.model.dart';
 import '../routes/routes.dart';
 import '../widgets/customer_bottom_nav.dart';
@@ -89,17 +89,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     body: SafeArea(
                       child: Column(
                         children: [
-                          // Extracted Reusable Header Customer — ẩn ở tab Giỏ hàng
-                          // để nhường thêm diện tích cho danh sách sản phẩm.
-                          if (_currentIndex != 1) ...[
-                            CustomerHeader(
-                              user: user,
-                              titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                              unreadNotifications: MockNotifications.unreadCount,
-                              onNotificationTap: _onBellPressed,
-                            ),
-                            const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                          ],
+                          BlocBuilder<NotificationCubit, NotificationState>(
+                            builder: (context, notificationState) {
+                              final unreadCount =
+                                  notificationState is NotificationLoaded
+                                  ? notificationState.unreadCount
+                                  : 0;
+                              return CustomerHeader(
+                                user: user,
+                                titleWidget: _buildHeaderWidgetForTab(
+                                  user,
+                                  l10n,
+                                ),
+                                unreadNotifications: unreadCount,
+                                onNotificationTap: _onBellPressed,
+                              );
+                            },
+                          ),
+                          const Divider(height: 1, color: Color(0xFFF1EAE1)),
                           // Active Tab View Content — IndexedStack giữ nguyên state của
                           // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
                           Expanded(
@@ -124,16 +131,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                     ),
                   );
-                }
+                },
               ),
             );
           }
           return const Scaffold(
             backgroundColor: Color(0xFFFDFBF7),
             body: Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFE67E22),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFFE67E22)),
             ),
           );
         },
@@ -168,7 +173,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Text(
                     '${l10n.welcomeMessage},',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF7F8C8D),
+                    ),
                   ),
                   Text(
                     user.fullName.isNotEmpty ? user.fullName : l10n.guestUser,
@@ -188,17 +196,29 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         return Text(
           l10n.cartTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       case 2:
         return Text(
           l10n.historyTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       case 3:
         return Text(
           l10n.profileTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       default:
         return const SizedBox.shrink();

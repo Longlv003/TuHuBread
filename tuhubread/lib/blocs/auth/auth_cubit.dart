@@ -8,9 +8,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import '../../models/user.model.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import 'auth_state.dart';
 import '../../di.dart';
 import '../cart/cart_cubit.dart';
+import '../notification/notification_cubit.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 2, colors: true, printEmojis: true),
@@ -36,6 +38,12 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthSuccess(user));
         try {
           getIt<CartCubit>().loadCart();
+        } catch (_) {}
+        try {
+          getIt<NotificationCubit>().loadNotifications();
+        } catch (_) {}
+        try {
+          getIt<NotificationService>().registerDeviceToken();
         } catch (_) {}
       } else {
         emit(AuthFailure(response['msg'] ?? defaultLoginError));
@@ -364,6 +372,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> handleLogout() async {
+    // Deactivate FCM token on backend
+    try {
+      await getIt<NotificationService>().deactivateDeviceToken();
+    } catch (e) {
+      _log.w('[handleLogout] Failed to deactivate device token', error: e);
+    }
+
     // Logout khỏi Firebase
     await FirebaseAuth.instance.signOut();
 

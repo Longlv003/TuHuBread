@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/cart/cart_cubit.dart';
+import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/configs/system.dart';
 import 'package:tuhubread/di.dart';
 import 'package:tuhubread/l10n/app_localizations.dart';
@@ -24,6 +26,7 @@ class App extends StatelessWidget {
           providers: [
             BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
             BlocProvider<CartCubit>.value(value: getIt<CartCubit>()),
+            BlocProvider<NotificationCubit>.value(value: getIt<NotificationCubit>()),
           ],
           child: Material(child: child),
         ),

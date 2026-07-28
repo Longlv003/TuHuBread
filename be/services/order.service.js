@@ -97,6 +97,10 @@ class OrderService {
     }
 
     socketService.emitOrderUpdate(String(shopId), updated);
+    
+    // Gửi thông báo đẩy & thời gian thực đến khách hàng
+    this.sendOrderStatusNotification(updated, newStatus);
+
     return updated;
   }
 
@@ -395,7 +399,17 @@ class OrderService {
     if (paymentStatus) order.payment_status = paymentStatus;
     await order.save();
 
-    // Gửi notification
+    if (orderStatus) {
+      await this.sendOrderStatusNotification(order, orderStatus);
+    }
+
+    return order;
+  }
+
+  /**
+   * Helper gửi thông báo trạng thái đơn hàng qua FCM & Socket.IO
+   */
+  async sendOrderStatusNotification(order, orderStatus) {
     const notificationService = require("./notification.service");
     const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
 
@@ -442,8 +456,6 @@ class OrderService {
         console.error(`[OrderService] Failed to send status notification for order ${order._id}:`, notifyErr.message);
       }
     }
-
-    return order;
   }
 }
 

@@ -31,6 +31,21 @@ class FcmService {
           body: notification.body || notification.message,
         },
         data: stringifiedData,
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "high_importance_channel_v2",
+            sound: "default",
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default",
+              badge: 1,
+            },
+          },
+        },
       };
 
       const response = await messaging.send(message);
@@ -71,6 +86,21 @@ class FcmService {
         body: notification.body || notification.message,
       },
       data: stringifiedData,
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "high_importance_channel_v2",
+          sound: "default",
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            badge: 1,
+          },
+        },
+      },
     }));
 
     try {
