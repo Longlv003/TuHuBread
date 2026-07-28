@@ -117,12 +117,6 @@ async function claimVoucherForUser(user, voucher) {
   voucher.claimed_count += 1;
   await voucher.save();
 
-  // Ghi lại voucher đã lưu trực tiếp trên user để tiện tra cứu nhanh
-  await userModel.updateOne(
-    { _id: user._id },
-    { $addToSet: { voucher: voucher._id } },
-  );
-
   // Populate voucher_id để FE nhận đủ thông tin voucher (tên, mức giảm...)
   await newSave.populate("voucher_id");
 

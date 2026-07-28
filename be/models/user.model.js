@@ -7,13 +7,6 @@ const userSchema = new db.mongoose.Schema(
     email: { type: String, default: null },
     phone: { type: String, default: null },
     avatar: { type: String, default: null },
-    voucher: [
-      {
-        type: db.mongoose.Schema.Types.ObjectId,
-        ref: "voucherModel",
-        default: [],
-      },
-    ],
     role: {
       type: String,
       required: true,
