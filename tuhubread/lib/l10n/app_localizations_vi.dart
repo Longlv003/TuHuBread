@@ -193,6 +193,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get cartRemove => 'Xóa';
 
   @override
+  String get cartRemoveConfirmTitle => 'Xóa sản phẩm?';
+
+  @override
+  String cartRemoveConfirmMessage(String productName) {
+    return 'Bạn có chắc muốn xóa \"$productName\" khỏi giỏ hàng không?';
+  }
+
+  @override
+  String get cartRemoveConfirmBtn => 'Xóa';
+
+  @override
   String get cartSuggestionTitle => 'Thêm đồ uống cho đơn hàng?';
 
   @override
@@ -257,7 +268,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentMethodSectionTitle => 'Chọn phương thức thanh toán';
 
   @override
-  String get paymentMethodCash => 'Tiền mặt khi nhận hàng';
+  String get paymentMethodCash => 'Thanh toán khi nhận hàng';
+
+  @override
+  String get paymentMethodVnpay => 'Cổng thanh toán VNPay';
 
   @override
   String get paymentMethodMomo => 'Ví MoMo';
@@ -291,6 +305,58 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentBackToHome => 'Về trang chủ';
+
+  @override
+  String get checkoutVoucherSectionTitle => 'Ưu đãi & Voucher';
+
+  @override
+  String get checkoutVoucherChange => 'Chọn lại';
+
+  @override
+  String get checkoutVoucherSelect => 'Chọn mã';
+
+  @override
+  String checkoutVoucherEligibleCount(int count) {
+    return 'Bạn đang có $count voucher phù hợp';
+  }
+
+  @override
+  String get checkoutVoucherChoosePlaceholder => 'Chọn hoặc nhập mã giảm giá';
+
+  @override
+  String checkoutVoucherApplied(String amount) {
+    return 'Đã áp dụng giảm -$amount';
+  }
+
+  @override
+  String get checkoutVoucherNoEligible =>
+      'Không có voucher nào đủ điều kiện cho đơn hàng này';
+
+  @override
+  String checkoutVoucherDiscountPercent(num value) {
+    return 'Giảm $value%';
+  }
+
+  @override
+  String checkoutVoucherDiscountPercentMax(num value, String max) {
+    return 'Giảm $value% tối đa $max';
+  }
+
+  @override
+  String checkoutVoucherDiscountAmount(String value) {
+    return 'Giảm $value';
+  }
+
+  @override
+  String get checkoutVoucherFreeShipping => 'Miễn phí vận chuyển';
+
+  @override
+  String checkoutVoucherMinOrder(String value) {
+    return 'Đơn tối thiểu: $value';
+  }
+
+  @override
+  String get checkoutVoucherDoNotUse => 'Không sử dụng Voucher';
 
   @override
   String get historyTitle => 'Lịch sử đặt hàng';
@@ -441,6 +507,82 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get detailOtherShopsSection => 'Các chi nhánh khác cùng bán';
+
+  @override
+  String get orderStatusPending => 'Chờ xác nhận';
+
+  @override
+  String get orderStatusConfirmed => 'Đã xác nhận';
+
+  @override
+  String get orderStatusPreparing => 'Đang chuẩn bị';
+
+  @override
+  String get orderStatusDelivering => 'Đang giao hàng';
+
+  @override
+  String get orderStatusCompleted => 'Đã hoàn thành';
+
+  @override
+  String get orderStatusCancelled => 'Đã hủy';
+
+  @override
+  String get cancelOrderButton => 'Hủy đơn hàng';
+
+  @override
+  String get cancelOrderConfirmTitle => 'Xác nhận hủy đơn';
+
+  @override
+  String get cancelOrderConfirmMessage =>
+      'Bạn có chắc chắn muốn hủy đơn hàng này không?';
+
+  @override
+  String get cancelSuccess => 'Hủy đơn hàng thành công!';
+
+  @override
+  String get yes => 'Có';
+
+  @override
+  String get no => 'Không';
+
+  @override
+  String get orderCodeLabel => 'Mã đơn: ';
+
+  @override
+  String get orderDateLabel => 'Ngày đặt: ';
+
+  @override
+  String get paymentMethodLabel => 'Phương thức thanh toán';
+
+  @override
+  String get paymentStatusLabel => 'Trạng thái thanh toán';
+
+  @override
+  String get addressLabel => 'Địa chỉ giao hàng';
+
+  @override
+  String get itemsTotalLabel => 'Tiền món';
+
+  @override
+  String get deliveryFeeLabel => 'Phí giao hàng';
+
+  @override
+  String get discountLabel => 'Giảm giá';
+
+  @override
+  String get totalAmountLabel => 'Tổng cộng';
+
+  @override
+  String get paymentMethodBank => 'Chuyển khoản';
+
+  @override
+  String get paymentStatusUnpaid => 'Chưa thanh toán';
+
+  @override
+  String get paymentStatusPaid => 'Đã thanh toán';
+
+  @override
+  String get paymentStatusRefunded => 'Đã hoàn tiền';
 
   @override
   String get profileMyOrders => 'Đơn hàng của tôi';
@@ -800,4 +942,77 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get helpCenterEmailSupport => 'Email hỗ trợ';
+
+  @override
+  String get trackStatusDescPending =>
+      'Đang chờ cửa hàng xác nhận đơn đặt hàng của bạn.';
+
+  @override
+  String get trackStatusDescConfirmed =>
+      'Đơn hàng đã được xác nhận và đang chờ chuẩn bị.';
+
+  @override
+  String get trackStatusDescPreparing =>
+      'Cửa hàng đang thực hiện làm bánh mì nóng hổi cho bạn.';
+
+  @override
+  String get trackStatusDescDelivering =>
+      'Shipper đang trên đường giao bánh mì ngon lành đến địa chỉ của bạn.';
+
+  @override
+  String get trackStatusDescCompleted =>
+      'Đơn hàng đã giao thành công! Chúc bạn ăn ngon miệng.';
+
+  @override
+  String get trackStatusDescCancelled =>
+      'Đơn hàng của bạn đã bị hủy và sẽ không được giao.';
+
+  @override
+  String get trackOrderTitle => 'Trạng thái đơn hàng';
+
+  @override
+  String get trackOrderNote => 'Ghi chú: ';
+
+  @override
+  String get trackOrderReceiver => 'Người nhận';
+
+  @override
+  String get trackOrderSelectedItems => 'Món đã chọn';
+
+  @override
+  String trackOrderVariant(String variantName) {
+    return 'Phân loại: $variantName';
+  }
+
+  @override
+  String get historyFilterAll => 'Tất cả';
+
+  @override
+  String get historyNoOrdersInStatus =>
+      'Không có đơn hàng nào ở trạng thái này';
+
+  @override
+  String get historyTotalLabel => 'Tổng tiền:';
+
+  @override
+  String detailSoldAmount(int count) {
+    return 'Đã bán $count';
+  }
+
+  @override
+  String get detailViewPrice => 'Xem giá';
+
+  @override
+  String get paymentVnpayFailedOrCancelled =>
+      'Thanh toán VNPay thất bại hoặc đã bị hủy';
+
+  @override
+  String get paymentVnpayInitFailed =>
+      'Không thể khởi tạo liên kết thanh toán VNPay';
+
+  @override
+  String get checkoutVnpayInitFailed => 'Không thể tạo link thanh toán';
+
+  @override
+  String get checkoutVnpayFailed => 'Thanh toán qua VNPAY không thành công.';
 }

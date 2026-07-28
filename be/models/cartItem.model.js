@@ -17,6 +17,11 @@ const cartItemSchema = new db.mongoose.Schema(
       ref: "productVariantModel",
       required: true,
     },
+    shop_id: {
+      type: db.mongoose.Schema.Types.ObjectId,
+      ref: "shopModel",
+      required: true,
+    },
     quantity: { type: Number, required: true, default: 1 },
     product_name: { type: String, required: true },
     variant_name: { type: String, required: true },
@@ -26,8 +31,6 @@ const cartItemSchema = new db.mongoose.Schema(
     option_total_price: { type: Number, required: true, default: 0 },
     unit_price: { type: Number, required: true },
     subtotal: { type: Number, required: true },
-    note: { type: String, default: null },
-    deleted_at: { type: Date, default: null },
   },
   { collection: "cart_items", timestamps: true },
 );

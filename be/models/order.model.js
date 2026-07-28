@@ -18,7 +18,6 @@ const orderSchema = new db.mongoose.Schema(
       ref: "voucherModel",
       default: null,
     },
-    voucher_code: { type: String, default: null },
     address_id: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "addressModel",

@@ -6,6 +6,10 @@ class OrderRepository {
     return orderModel.findById(id).populate("user_id").populate("address_id");
   }
 
+  async findByOrderCode(orderCode) {
+    return orderModel.findOne({ order_code: orderCode, deleted_at: null });
+  }
+
   async findByShopId(shopId, limit = 50) {
     return orderModel.find({ shop_id: shopId, deleted_at: null })
       .sort({ createdAt: -1 })
@@ -21,6 +25,14 @@ class OrderRepository {
 
   async findDetailsByOrderId(orderId) {
     return orderDetailModel.find({ order_id: orderId, deleted_at: null });
+  }
+
+  async createOrder(orderData) {
+    return await orderModel.create(orderData);
+  }
+
+  async createOrderDetail(orderDetailData) {
+    return await orderDetailModel.create(orderDetailData);
   }
 
   async updateStatus(id, orderStatus, paymentStatus) {

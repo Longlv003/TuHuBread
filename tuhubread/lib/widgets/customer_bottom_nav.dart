@@ -46,6 +46,7 @@ class CustomerBottomNav extends StatelessWidget {
             final item = items[index];
             final selected = index == currentIndex;
             return Expanded(
+              flex: selected ? 3 : 2,
               child: _NavItem(
                 icon: item.icon,
                 label: item.label,
@@ -95,22 +96,26 @@ class _NavItem extends StatelessWidget {
               size: 22,
               color: selected ? Colors.white : const Color(0xFF95A5A6),
             ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOut,
-              child: selected
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Text(
-                        label,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+            Flexible(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                child: selected
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    )
-                  : const SizedBox(width: 0, height: 0),
+                      )
+                    : const SizedBox(width: 0, height: 0),
+              ),
             ),
           ],
         ),

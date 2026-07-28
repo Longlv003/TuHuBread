@@ -30,6 +30,26 @@ class CartItemModel extends Equatable {
     required this.unitPrice,
   });
 
+  factory CartItemModel.fromJson(Map<String, dynamic> json) {
+    final optionsList = json['selected_options'] as List? ?? [];
+    final optionIds = optionsList.map((e) => (e as Map)['option_id'] as String).toSet();
+    final optionNames = optionsList.map((e) => (e as Map)['option_name'] as String).toList();
+    return CartItemModel(
+      id: json['_id'] as String,
+      productId: json['product_id'] as String,
+      productName: json['product_name'] as String,
+      image: json['product_image'] as String? ?? '',
+      shopId: json['shop_id'] as String? ?? '',
+      shopName: json['shop_name'] as String?,
+      variantId: json['variant_id'] as String,
+      variantName: json['variant_name'] as String,
+      selectedOptionIds: optionIds,
+      selectedOptionNames: optionNames,
+      quantity: (json['quantity'] as num? ?? 1).toInt(),
+      unitPrice: (json['unit_price'] as num? ?? 0).toDouble(),
+    );
+  }
+
   /// Khóa cấu hình duy nhất: product + variant + options (đã sắp xếp).
   static String buildConfigKey(
     String productId,

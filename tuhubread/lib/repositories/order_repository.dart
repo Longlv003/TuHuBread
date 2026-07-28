@@ -9,5 +9,13 @@ abstract class OrderRepository {
     required String paymentMethod,
     required List<CartItemModel> items,
     String? note,
+    String? voucherCode,
+  });
+
+  Future<Result<OrderResultModel>> createVnpayPayment({
+    required String addressId,
+    required String deliveryOption,
+    String? note,
+    String? voucherCode,
   });
 }

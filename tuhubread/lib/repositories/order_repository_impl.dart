@@ -22,6 +22,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required String paymentMethod,
     required List<CartItemModel> items,
     String? note,
+    String? voucherCode,
   }) async {
     try {
       final res = await apiService.post('/api/orders', {
@@ -29,6 +30,7 @@ class OrderRepositoryImpl implements OrderRepository {
         'delivery_option': deliveryOption,
         'payment_method': paymentMethod,
         'note': note,
+        'voucher_code': voucherCode,
         'items': items
             .map(
               (item) => {
@@ -40,7 +42,9 @@ class OrderRepositoryImpl implements OrderRepository {
                 'shop_id': item.shopId,
                 'quantity': item.quantity,
                 'unit_price': item.unitPrice,
-                'selected_options': item.selectedOptionNames,
+                'selected_options': item.selectedOptionIds
+                    .map((id) => {'option_id': id})
+                    .toList(),
               },
             )
             .toList(),
@@ -55,6 +59,33 @@ class OrderRepositoryImpl implements OrderRepository {
     } catch (e, s) {
       _log.e('[createOrder] Failed', error: e, stackTrace: s);
       return const Failure('Không thể kết nối đến máy chủ để đặt hàng');
+    }
+  }
+
+  @override
+  Future<Result<OrderResultModel>> createVnpayPayment({
+    required String addressId,
+    required String deliveryOption,
+    String? note,
+    String? voucherCode,
+  }) async {
+    try {
+      final res = await apiService.post('/api/payments/vnpay', {
+        'address_id': addressId,
+        'delivery_option': deliveryOption,
+        'note': note,
+        'voucher_code': voucherCode,
+      });
+
+      if (res['data'] != null) {
+        return Success(
+          OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
+        );
+      }
+      return Failure(res['msg'] ?? 'Không thể tạo link thanh toán VNPay');
+    } catch (e, s) {
+      _log.e('[createVnpayPayment] Failed', error: e, stackTrace: s);
+      return const Failure('Không thể kết nối đến máy chủ để thanh toán');
     }
   }
 }

@@ -446,6 +446,24 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get cartRemove;
 
+  /// No description provided for @cartRemoveConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item?'**
+  String get cartRemoveConfirmTitle;
+
+  /// No description provided for @cartRemoveConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{productName}\" from your cart?'**
+  String cartRemoveConfirmMessage(String productName);
+
+  /// No description provided for @cartRemoveConfirmBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemoveConfirmBtn;
+
   /// No description provided for @cartSuggestionTitle.
   ///
   /// In en, this message translates to:
@@ -575,8 +593,14 @@ abstract class AppLocalizations {
   /// No description provided for @paymentMethodCash.
   ///
   /// In en, this message translates to:
-  /// **'Cash on Delivery'**
+  /// **'Payment on Delivery'**
   String get paymentMethodCash;
+
+  /// No description provided for @paymentMethodVnpay.
+  ///
+  /// In en, this message translates to:
+  /// **'VNPay Payment Gateway'**
+  String get paymentMethodVnpay;
 
   /// No description provided for @paymentMethodMomo.
   ///
@@ -637,6 +661,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to Home'**
   String get paymentBackToHome;
+
+  /// No description provided for @checkoutVoucherSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discounts & Vouchers'**
+  String get checkoutVoucherSectionTitle;
+
+  /// No description provided for @checkoutVoucherChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get checkoutVoucherChange;
+
+  /// No description provided for @checkoutVoucherSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Code'**
+  String get checkoutVoucherSelect;
+
+  /// No description provided for @checkoutVoucherEligibleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} eligible vouchers'**
+  String checkoutVoucherEligibleCount(int count);
+
+  /// No description provided for @checkoutVoucherChoosePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select or enter promo code'**
+  String get checkoutVoucherChoosePlaceholder;
+
+  /// No description provided for @checkoutVoucherApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount applied: -{amount}'**
+  String checkoutVoucherApplied(String amount);
+
+  /// No description provided for @checkoutVoucherNoEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible vouchers for this order'**
+  String get checkoutVoucherNoEligible;
+
+  /// No description provided for @checkoutVoucherDiscountPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value}% off'**
+  String checkoutVoucherDiscountPercent(num value);
+
+  /// No description provided for @checkoutVoucherDiscountPercentMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value}% off, max {max}'**
+  String checkoutVoucherDiscountPercentMax(num value, String max);
+
+  /// No description provided for @checkoutVoucherDiscountAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {value} off'**
+  String checkoutVoucherDiscountAmount(String value);
+
+  /// No description provided for @checkoutVoucherFreeShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Free shipping'**
+  String get checkoutVoucherFreeShipping;
+
+  /// No description provided for @checkoutVoucherMinOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Min order: {value}'**
+  String checkoutVoucherMinOrder(String value);
+
+  /// No description provided for @checkoutVoucherDoNotUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not use Voucher'**
+  String get checkoutVoucherDoNotUse;
 
   /// No description provided for @historyTitle.
   ///
@@ -907,6 +1009,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other branches selling this'**
   String get detailOtherShopsSection;
+
+  /// No description provided for @orderStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get orderStatusPending;
+
+  /// No description provided for @orderStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get orderStatusConfirmed;
+
+  /// No description provided for @orderStatusPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get orderStatusPreparing;
+
+  /// No description provided for @orderStatusDelivering.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivering'**
+  String get orderStatusDelivering;
+
+  /// No description provided for @orderStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get orderStatusCompleted;
+
+  /// No description provided for @orderStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get orderStatusCancelled;
+
+  /// No description provided for @cancelOrderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Order'**
+  String get cancelOrderButton;
+
+  /// No description provided for @cancelOrderConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Cancellation'**
+  String get cancelOrderConfirmTitle;
+
+  /// No description provided for @cancelOrderConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel this order?'**
+  String get cancelOrderConfirmMessage;
+
+  /// No description provided for @cancelSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Order cancelled successfully!'**
+  String get cancelSuccess;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @orderCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Code: '**
+  String get orderCodeLabel;
+
+  /// No description provided for @orderDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Date: '**
+  String get orderDateLabel;
+
+  /// No description provided for @paymentMethodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethodLabel;
+
+  /// No description provided for @paymentStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Status'**
+  String get paymentStatusLabel;
+
+  /// No description provided for @addressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get addressLabel;
+
+  /// No description provided for @itemsTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Total'**
+  String get itemsTotalLabel;
+
+  /// No description provided for @deliveryFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Fee'**
+  String get deliveryFeeLabel;
+
+  /// No description provided for @discountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discountLabel;
+
+  /// No description provided for @totalAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Amount'**
+  String get totalAmountLabel;
+
+  /// No description provided for @paymentMethodBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get paymentMethodBank;
+
+  /// No description provided for @paymentStatusUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid'**
+  String get paymentStatusUnpaid;
+
+  /// No description provided for @paymentStatusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paymentStatusPaid;
+
+  /// No description provided for @paymentStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get paymentStatusRefunded;
 
   /// No description provided for @profileMyOrders.
   ///
@@ -1573,6 +1825,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email Support'**
   String get helpCenterEmailSupport;
+
+  /// No description provided for @trackStatusDescPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the shop to confirm your order.'**
+  String get trackStatusDescPending;
+
+  /// No description provided for @trackStatusDescConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order has been confirmed and is waiting for preparation.'**
+  String get trackStatusDescConfirmed;
+
+  /// No description provided for @trackStatusDescPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'The shop is making fresh hot bread for you.'**
+  String get trackStatusDescPreparing;
+
+  /// No description provided for @trackStatusDescDelivering.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipper is on the way to deliver delicious bread to your address.'**
+  String get trackStatusDescDelivering;
+
+  /// No description provided for @trackStatusDescCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Order delivered successfully! Enjoy your meal.'**
+  String get trackStatusDescCompleted;
+
+  /// No description provided for @trackStatusDescCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order has been cancelled and will not be delivered.'**
+  String get trackStatusDescCancelled;
+
+  /// No description provided for @trackOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Status'**
+  String get trackOrderTitle;
+
+  /// No description provided for @trackOrderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: '**
+  String get trackOrderNote;
+
+  /// No description provided for @trackOrderReceiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver'**
+  String get trackOrderReceiver;
+
+  /// No description provided for @trackOrderSelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Items'**
+  String get trackOrderSelectedItems;
+
+  /// No description provided for @trackOrderVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant: {variantName}'**
+  String trackOrderVariant(String variantName);
+
+  /// No description provided for @historyFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get historyFilterAll;
+
+  /// No description provided for @historyNoOrdersInStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders in this status'**
+  String get historyNoOrdersInStatus;
+
+  /// No description provided for @historyTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total:'**
+  String get historyTotalLabel;
+
+  /// No description provided for @detailSoldAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold {count}'**
+  String detailSoldAmount(int count);
+
+  /// No description provided for @detailViewPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'View price'**
+  String get detailViewPrice;
+
+  /// No description provided for @paymentVnpayFailedOrCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'VNPay payment failed or was cancelled'**
+  String get paymentVnpayFailedOrCancelled;
+
+  /// No description provided for @paymentVnpayInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not initialize VNPay payment link'**
+  String get paymentVnpayInitFailed;
+
+  /// No description provided for @checkoutVnpayInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create payment link'**
+  String get checkoutVnpayInitFailed;
+
+  /// No description provided for @checkoutVnpayFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment via VNPAY was not successful.'**
+  String get checkoutVnpayFailed;
 }
 
 class _AppLocalizationsDelegate

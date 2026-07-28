@@ -57,6 +57,16 @@
   "cartVariantLabel": "Phân loại",
   "cartOptionsLabel": "Tùy chọn",
   "cartRemove": "Xóa",
+  "cartRemoveConfirmTitle": "Xóa sản phẩm?",
+  "cartRemoveConfirmMessage": "Bạn có chắc muốn xóa \"{productName}\" khỏi giỏ hàng không?",
+  "@cartRemoveConfirmMessage": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartRemoveConfirmBtn": "Xóa",
   "cartSuggestionTitle": "Thêm đồ uống cho đơn hàng?",
   "checkoutTitle": "Thanh toán",
   "checkoutAddressSectionTitle": "Địa chỉ giao hàng",
@@ -78,7 +88,8 @@
   "deliveryOptionSavingDesc": "Giao trong 2-3 giờ, miễn phí ship",
   "paymentTitle": "Phương thức thanh toán",
   "paymentMethodSectionTitle": "Chọn phương thức thanh toán",
-  "paymentMethodCash": "Tiền mặt khi nhận hàng",
+  "paymentMethodCash": "Thanh toán khi nhận hàng",
+  "paymentMethodVnpay": "Cổng thanh toán VNPay",
   "paymentMethodMomo": "Ví MoMo",
   "paymentMethodZalopay": "Ví ZaloPay",
   "paymentMethodOnlineNote": "Cổng thanh toán trực tuyến đang được phát triển. Đơn hàng vẫn được tạo, bạn có thể thanh toán khi nhận hàng.",
@@ -89,6 +100,64 @@
   "paymentOrderSuccessMessage": "Đơn hàng {code} của bạn đã được đặt.",
   "paymentOrderFailed": "Đặt hàng thất bại",
   "paymentBackToHome": "Về trang chủ",
+  "checkoutVoucherSectionTitle": "Ưu đãi & Voucher",
+  "checkoutVoucherChange": "Chọn lại",
+  "checkoutVoucherSelect": "Chọn mã",
+  "checkoutVoucherEligibleCount": "Bạn đang có {count} voucher phù hợp",
+  "@checkoutVoucherEligibleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutVoucherChoosePlaceholder": "Chọn hoặc nhập mã giảm giá",
+  "checkoutVoucherApplied": "Đã áp dụng giảm -{amount}",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherNoEligible": "Không có voucher nào đủ điều kiện cho đơn hàng này",
+  "checkoutVoucherDiscountPercent": "Giảm {value}%",
+  "@checkoutVoucherDiscountPercent": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      }
+    }
+  },
+  "checkoutVoucherDiscountPercentMax": "Giảm {value}% tối đa {max}",
+  "@checkoutVoucherDiscountPercentMax": {
+    "placeholders": {
+      "value": {
+        "type": "num"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDiscountAmount": "Giảm {value}",
+  "@checkoutVoucherDiscountAmount": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherFreeShipping": "Miễn phí vận chuyển",
+  "checkoutVoucherMinOrder": "Đơn tối thiểu: {value}",
+  "@checkoutVoucherMinOrder": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutVoucherDoNotUse": "Không sử dụng Voucher",
   "historyTitle": "Lịch sử đặt hàng",
   "historyEmpty": "Chưa có đơn hàng nào",
   "historyEmptySub": "Lịch sử đặt bánh mì của bạn sẽ hiển thị tại tab này.",
@@ -134,6 +203,31 @@
   "detailShopPhone": "Hotline chi nhánh: {phone}",
   "detailNoRatingYet": "Chưa có đánh giá",
   "detailOtherShopsSection": "Các chi nhánh khác cùng bán",
+  "orderStatusPending": "Chờ xác nhận",
+  "orderStatusConfirmed": "Đã xác nhận",
+  "orderStatusPreparing": "Đang chuẩn bị",
+  "orderStatusDelivering": "Đang giao hàng",
+  "orderStatusCompleted": "Đã hoàn thành",
+  "orderStatusCancelled": "Đã hủy",
+  "cancelOrderButton": "Hủy đơn hàng",
+  "cancelOrderConfirmTitle": "Xác nhận hủy đơn",
+  "cancelOrderConfirmMessage": "Bạn có chắc chắn muốn hủy đơn hàng này không?",
+  "cancelSuccess": "Hủy đơn hàng thành công!",
+  "yes": "Có",
+  "no": "Không",
+  "orderCodeLabel": "Mã đơn: ",
+  "orderDateLabel": "Ngày đặt: ",
+  "paymentMethodLabel": "Phương thức thanh toán",
+  "paymentStatusLabel": "Trạng thái thanh toán",
+  "addressLabel": "Địa chỉ giao hàng",
+  "itemsTotalLabel": "Tiền món",
+  "deliveryFeeLabel": "Phí giao hàng",
+  "discountLabel": "Giảm giá",
+  "totalAmountLabel": "Tổng cộng",
+  "paymentMethodBank": "Chuyển khoản",
+  "paymentStatusUnpaid": "Chưa thanh toán",
+  "paymentStatusPaid": "Đã thanh toán",
+  "paymentStatusRefunded": "Đã hoàn tiền",
   "profileMyOrders": "Đơn hàng của tôi",
   "profileMyOrdersSub": "Theo dõi và quản lý đơn hàng",
   "profileAddresses": "Địa chỉ giao hàng",
@@ -244,5 +338,25 @@
   "helpCenterFaq4Question": "Làm sao để đổi địa chỉ giao hàng?",
   "helpCenterFaq4Answer": "Vào Cá nhân > Địa chỉ giao hàng để thêm, sửa hoặc đặt địa chỉ mặc định.",
   "helpCenterCallSupport": "Gọi hỗ trợ",
-  "helpCenterEmailSupport": "Email hỗ trợ"
+  "helpCenterEmailSupport": "Email hỗ trợ",
+  "trackStatusDescPending": "Đang chờ cửa hàng xác nhận đơn đặt hàng của bạn.",
+  "trackStatusDescConfirmed": "Đơn hàng đã được xác nhận và đang chờ chuẩn bị.",
+  "trackStatusDescPreparing": "Cửa hàng đang thực hiện làm bánh mì nóng hổi cho bạn.",
+  "trackStatusDescDelivering": "Shipper đang trên đường giao bánh mì ngon lành đến địa chỉ của bạn.",
+  "trackStatusDescCompleted": "Đơn hàng đã giao thành công! Chúc bạn ăn ngon miệng.",
+  "trackStatusDescCancelled": "Đơn hàng của bạn đã bị hủy và sẽ không được giao.",
+  "trackOrderTitle": "Trạng thái đơn hàng",
+  "trackOrderNote": "Ghi chú: ",
+  "trackOrderReceiver": "Người nhận",
+  "trackOrderSelectedItems": "Món đã chọn",
+  "trackOrderVariant": "Phân loại: {variantName}",
+  "historyFilterAll": "Tất cả",
+  "historyNoOrdersInStatus": "Không có đơn hàng nào ở trạng thái này",
+  "historyTotalLabel": "Tổng tiền:",
+  "detailSoldAmount": "Đã bán {count}",
+  "detailViewPrice": "Xem giá",
+  "paymentVnpayFailedOrCancelled": "Thanh toán VNPay thất bại hoặc đã bị hủy",
+  "paymentVnpayInitFailed": "Không thể khởi tạo liên kết thanh toán VNPay",
+  "checkoutVnpayInitFailed": "Không thể tạo link thanh toán",
+  "checkoutVnpayFailed": "Thanh toán qua VNPAY không thành công."
 }
