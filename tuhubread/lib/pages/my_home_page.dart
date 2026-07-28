@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
+import 'package:tuhubread/models/user.model.dart';
 
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
@@ -11,7 +12,6 @@ import '../blocs/notification/notification_cubit.dart';
 import '../blocs/notification/notification_state.dart';
 import '../blocs/order/order_cubit.dart';
 import '../di.dart';
-import '../models/user.model.dart';
 import '../routes/routes.dart';
 import '../widgets/customer_bottom_nav.dart';
 import '../widgets/customer_header.dart';
