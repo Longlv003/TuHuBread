@@ -78,12 +78,12 @@
               <td><%= order.payment_method.toUpperCase() %></td>
               <td>
                 <span class="status-badge <%= order.payment_status === 'paid' ? 'status-completed' : 'status-pending' %>">
-                  <%= order.payment_status %>
+                  <%= paymentStatusLabels[order.payment_status] || order.payment_status %>
                 </span>
               </td>
               <td>
                 <span class="status-badge <%= order.order_status === 'completed' ? 'status-completed' : (order.order_status === 'cancelled' ? 'status-danger' : 'status-processing') %>">
-                  <%= order.order_status %>
+                  <%= orderStatusLabels[order.order_status] || order.order_status %>
                 </span>
               </td>
               <td><%= order.total_amount.toLocaleString('vi-VN') %>đ</td>

@@ -1,4 +1,5 @@
 const { orderModel } = require("../models/order.model");
+const { orderDetailModel } = require("../models/orderDetail.model");
 
 class OrderRepository {
   async findById(id) {
@@ -10,6 +11,16 @@ class OrderRepository {
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate("user_id");
+  }
+
+  async findByIdScoped(id, shopId) {
+    return orderModel.findOne({ _id: id, shop_id: shopId, deleted_at: null })
+      .populate("user_id")
+      .populate("address_id");
+  }
+
+  async findDetailsByOrderId(orderId) {
+    return orderDetailModel.find({ order_id: orderId, deleted_at: null });
   }
 
   async updateStatus(id, orderStatus, paymentStatus) {

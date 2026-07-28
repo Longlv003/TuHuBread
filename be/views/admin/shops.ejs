@@ -1,0 +1,146 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý chi nhánh (Shop)</h1>
+      <p>Xem danh sách, tạo mới và cập nhật thông tin chi nhánh</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header"><h3>Danh sách chi nhánh (<%= shops.length %>)</h3></div>
+      <div class="table-container">
+        <table style="table-layout: fixed;">
+          <colgroup>
+            <col style="width: 15%;">
+            <col style="width: 18%;">
+            <col style="width: 10%;">
+            <col style="width: 24%;">
+            <col style="width: 12%;">
+            <col style="width: 11%;">
+            <col style="width: 10%;">
+          </colgroup>
+          <thead><tr><th>Tên chi nhánh</th><th>Chủ quản lý</th><th>SĐT</th><th>Địa chỉ</th><th>Đánh giá</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+          <tbody>
+            <% shops.forEach(s => { %>
+              <tr>
+                <td style="word-break: break-word;"><strong><%= s.shop_name %></strong></td>
+                <td style="word-break: break-word;">
+                  <%= s.owner_user_id ? s.owner_user_id.full_name : 'Chưa có chủ' %><br>
+                  <span style="color:var(--text-muted); font-size:12px; word-break: break-word;"><%= (s.owner_user_id && s.owner_user_id.email) ? s.owner_user_id.email : '—' %></span>
+                </td>
+                <td style="white-space: nowrap;"><%= s.phone_number %></td>
+                <td style="word-break: break-word;"><%= s.address %></td>
+                <td style="white-space: nowrap;"><%= s.rating_average %> ⭐ (<%= s.total_reviews %>)</td>
+                <td style="white-space: nowrap;">
+                  <span class="status-badge <%= s.is_open ? 'status-active' : 'status-inactive' %>"><%= s.is_open ? 'Đang mở' : 'Đang đóng' %></span>
+                </td>
+                <td class="col-actions">
+                  <div class="actions-wrap">
+                    <button type="button" class="btn-action" onclick='onEditShop(<%- JSON.stringify({ _id: s._id, shop_name: s.shop_name, phone_number: s.phone_number, address: s.address, open_time: s.open_time, close_time: s.close_time, longitude: s.location ? s.location.coordinates[0] : null, latitude: s.location ? s.location.coordinates[1] : null }) %>)'>Sửa</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-card" id="addCard" style="margin-bottom: 24px;">
+        <div class="section-header"><h3>Tạo chi nhánh mới</h3></div>
+        <form id="addShopForm">
+          <div class="form-group"><label>Tên chi nhánh *</label><input type="text" name="shopName" required placeholder="Ví dụ: Bánh Mì TuHu - Quận 7"></div>
+          <div class="form-group"><label>Tên chủ quản lý *</label><input type="text" name="ownerName" required></div>
+          <div class="form-group"><label>Email đăng nhập *</label><input type="email" name="email" required></div>
+          <div class="form-group"><label>Mật khẩu *</label><input type="password" name="password" required minlength="6"></div>
+          <div class="form-group"><label>Số điện thoại *</label><input type="text" name="phone" required></div>
+          <div class="form-group"><label>Địa chỉ *</label><textarea name="address" rows="2" required></textarea></div>
+          <div class="form-group"><label>Vĩ độ (Latitude)</label><input type="text" name="latitude" placeholder="16.0612"></div>
+          <div class="form-group"><label>Kinh độ (Longitude)</label><input type="text" name="longitude" placeholder="108.2201"></div>
+          <button type="submit" class="btn-submit">Tạo chi nhánh</button>
+        </form>
+      </div>
+
+      <div class="section-card" id="editCard" style="display:none;">
+        <div class="section-header"><h3>Sửa thông tin chi nhánh</h3></div>
+        <form id="editShopForm">
+          <input type="hidden" id="editShopId">
+          <div class="form-group"><label>Tên chi nhánh *</label><input type="text" id="editShopName" name="shopName" required></div>
+          <div class="form-group"><label>Số điện thoại *</label><input type="text" id="editPhoneNumber" name="phoneNumber" required></div>
+          <div class="form-group"><label>Địa chỉ *</label><textarea id="editAddress" name="address" rows="2" required></textarea></div>
+          <div class="form-group"><label>Vĩ độ (Latitude)</label><input type="text" id="editLatitude" name="latitude"></div>
+          <div class="form-group"><label>Kinh độ (Longitude)</label><input type="text" id="editLongitude" name="longitude"></div>
+          <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group"><label>Giờ mở cửa</label><input type="time" id="editOpenTime" name="openTime"></div>
+            <div class="form-group"><label>Giờ đóng cửa</label><input type="time" id="editCloseTime" name="closeTime"></div>
+          </div>
+          <button type="submit" class="btn-submit">Lưu</button>
+          <button type="button" class="btn-cancel" onclick="cancelEdit()">Hủy</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("addShopForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch("/admin/shops/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert("Tạo chi nhánh thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  function onEditShop(s) {
+    document.getElementById("addCard").style.display = "none";
+    document.getElementById("editCard").style.display = "block";
+    document.getElementById("editShopId").value = s._id;
+    document.getElementById("editShopName").value = s.shop_name;
+    document.getElementById("editPhoneNumber").value = s.phone_number;
+    document.getElementById("editAddress").value = s.address;
+    document.getElementById("editLatitude").value = s.latitude || "";
+    document.getElementById("editLongitude").value = s.longitude || "";
+    document.getElementById("editOpenTime").value = s.open_time || "";
+    document.getElementById("editCloseTime").value = s.close_time || "";
+  }
+
+  function cancelEdit() {
+    document.getElementById("editCard").style.display = "none";
+    document.getElementById("addCard").style.display = "block";
+  }
+
+  document.getElementById("editShopForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editShopId").value;
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch(`/admin/shops/edit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+</script>
+
+<%- include('partials/footer') %>

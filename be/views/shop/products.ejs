@@ -1,0 +1,223 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý sản phẩm</h1>
+      <p>Thêm mới sản phẩm, quản lý biến thể, topping, thuộc tính và lô hàng</p>
+    </div>
+  </div>
+
+  <div class="search-filter-bar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="prodSearchInput" placeholder="Tìm kiếm sản phẩm...">
+    </div>
+    <div class="filter-box">
+      <select id="prodFilterStatus">
+        <option value="all">Tất cả sản phẩm</option>
+        <option value="active">Đang bán</option>
+        <option value="inactive">Ngừng bán</option>
+        <option value="out_of_stock">Hết hàng</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách sản phẩm (<%= products.length %>)</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-icon">Ảnh</th>
+              <th class="col-name">Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Giá</th>
+              <th>Tồn kho</th>
+              <th class="col-status">Trạng thái</th>
+              <th class="col-actions">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <% products.forEach(p => { %>
+              <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>">
+                <td class="col-icon">
+                  <img src="<%= p.display_variant && p.display_variant.image ? p.display_variant.image : 'https://placehold.co/50' %>" onerror="this.src='https://placehold.co/50'">
+                </td>
+                <td class="col-name"><strong><%= p.product_name %></strong></td>
+                <td><%= p.global_category_id ? p.global_category_id.category_name : 'N/A' %></td>
+                <td><%= p.display_variant ? p.display_variant.price.toLocaleString('vi-VN') + 'đ' : 'Chưa có giá' %></td>
+                <td><%= p.display_variant ? p.display_variant.stock_quantity : 0 %></td>
+                <td class="col-status">
+                  <span class="status-badge <%= p.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= p.status %></span>
+                </td>
+                <td class="col-actions">
+                  <div class="actions-wrap">
+                    <a href="/shop/products/<%= p._id %>" class="btn-action">Chi tiết</a>
+                    <button type="button" class="btn-action btn-delete" onclick="onDeleteProduct('<%= p._id %>')">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Thêm sản phẩm mới</h3>
+      </div>
+      <form id="addProductForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="productName">Tên sản phẩm *</label>
+          <input type="text" id="productName" name="productName" required placeholder="Ví dụ: Bánh mì thịt nướng">
+        </div>
+        <div class="form-group">
+          <label for="globalCategoryId">Danh mục toàn hệ thống *</label>
+          <select id="globalCategoryId" name="globalCategoryId" required>
+            <% globalCategories.forEach(c => { %>
+              <option value="<%= c._id %>"><%= c.category_name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="shopCategoryId">Danh mục shop</label>
+          <select id="shopCategoryId" name="shopCategoryId">
+            <option value="">-- Không thuộc danh mục shop --</option>
+            <% shopCategories.forEach(c => { %>
+              <option value="<%= c._id %>"><%= c.category_name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="description">Mô tả</label>
+          <textarea id="description" name="description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="prepTimeMinutes">Thời gian chuẩn bị (phút)</label>
+          <input type="number" id="prepTimeMinutes" name="prepTimeMinutes" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="storageNote">Ghi chú bảo quản (hiển thị cho khách)</label>
+          <textarea id="storageNote" name="storageNote" rows="2" placeholder="Ví dụ: Làm khi có đơn, dùng ngay trong 2h"></textarea>
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:20px;">
+          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:14px; margin-bottom:0;">
+            <input type="checkbox" name="isFeatured" style="width:auto;"> Sản phẩm nổi bật
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:14px; margin-bottom:0;">
+            <input type="checkbox" name="isNew" style="width:auto;"> Sản phẩm mới
+          </label>
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 20px 0;">
+        <p style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Biến thể mặc định</p>
+        <div class="form-group">
+          <label for="variantName">Tên biến thể</label>
+          <input type="text" id="variantName" name="variantName" placeholder="Mặc định">
+        </div>
+        <div class="form-group">
+          <label for="price">Giá bán *</label>
+          <input type="number" id="price" name="price" required min="0" placeholder="20000">
+        </div>
+        <div class="form-group">
+          <label for="stockQuantity">Tồn kho</label>
+          <input type="number" id="stockQuantity" name="stockQuantity" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="variantImage">Ảnh sản phẩm</label>
+          <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewImage(this, 'addPreview')">
+          <img id="addPreview" class="preview-box">
+        </div>
+        <button type="submit" class="btn-submit">Lưu sản phẩm</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  const addForm = document.getElementById("addProductForm");
+  addForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(addForm);
+    const submitBtn = addForm.querySelector(".btn-submit");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang lưu...";
+
+    try {
+      const response = await fetch("/shop/products/add", { method: "POST", body: formData });
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Thêm sản phẩm thành công!");
+        window.location.reload();
+      } else {
+        alert(result.msg || "Thêm sản phẩm thất bại");
+      }
+    } catch (err) {
+      console.error("Add product error:", err);
+      alert("Lỗi khi thêm sản phẩm!");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Lưu sản phẩm";
+    }
+  });
+
+  async function onDeleteProduct(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này? Toàn bộ biến thể/topping/thuộc tính/lô hàng liên quan cũng sẽ bị ẩn.")) return;
+
+    try {
+      const response = await fetch(`/shop/products/delete/${id}`, { method: "POST" });
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Xóa sản phẩm thành công!");
+        window.location.reload();
+      } else {
+        alert(result.msg || "Xóa thất bại");
+      }
+    } catch (err) {
+      console.error("Delete product error:", err);
+    }
+  }
+
+  const prodSearchInput = document.getElementById("prodSearchInput");
+  const prodFilterStatus = document.getElementById("prodFilterStatus");
+
+  function filterProducts() {
+    const query = prodSearchInput.value.toLowerCase().trim();
+    const statusFilter = prodFilterStatus.value;
+    const rows = document.querySelectorAll("#productsTableBody tr");
+
+    rows.forEach(row => {
+      const name = row.getAttribute("data-name");
+      const status = row.getAttribute("data-status");
+      const matchesSearch = name.includes(query);
+      const matchesStatus = (statusFilter === "all") || (status === statusFilter);
+      row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+    });
+  }
+
+  prodSearchInput.addEventListener("input", filterProducts);
+  prodFilterStatus.addEventListener("change", filterProducts);
+</script>
+
+<%- include('partials/footer') %>

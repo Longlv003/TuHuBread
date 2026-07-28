@@ -54,7 +54,7 @@
                 <td class="col-order"><%= cat.sort_order %></td>
                 <td class="col-status">
                   <% if (cat.deleted_at) { %>
-                    <span class="status-badge" style="background: rgba(149, 165, 166, 0.15); color: #BDC3C7;">Đã xóa</span>
+                    <span class="status-badge" style="background: #F1F2F3; color: #7F8C8D;">Đã xóa</span>
                   <% } else { %>
                     <span class="status-badge <%= cat.status === 'active' ? 'status-active' : 'status-inactive' %>">
                       <%= cat.status %>

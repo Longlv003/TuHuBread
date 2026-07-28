@@ -9,11 +9,16 @@
     :root {
       --primary: #E67E22;
       --primary-dark: #D35400;
-      --bg-gradient: linear-gradient(135deg, #2C3E50 0%, #1A252F 100%);
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --text: #ECF0F1;
-      --text-muted: #BDC3C7;
+      --primary-light: #F39C12;
+      --primary-tint: #FDF0E5;
+      --bg: #FDFBF7;
+      --surface: #FFFFFF;
+      --surface-alt: #FAF6F0;
+      --border: #F1EAE1;
+      --text: #2C3E50;
+      --text-muted: #7F8C8D;
+      --danger: #E74C3C;
+      --danger-bg: #FDECEA;
     }
 
     * {
@@ -24,7 +29,7 @@
     }
 
     body {
-      background: var(--bg-gradient);
+      background: linear-gradient(180deg, #FFF6EC 0%, #FDFBF7 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -45,7 +50,7 @@
     .circle {
       position: absolute;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(230, 126, 34, 0.15) 0%, rgba(230, 126, 34, 0) 70%);
+      background: radial-gradient(circle, rgba(230, 126, 34, 0.10) 0%, rgba(230, 126, 34, 0) 70%);
     }
 
     .circle-1 {
@@ -66,12 +71,10 @@
       width: 100%;
       max-width: 440px;
       padding: 40px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 24px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 50px rgba(44, 62, 80, 0.10);
       z-index: 2;
       animation: fadeIn 0.8s ease-out;
     }
@@ -99,7 +102,7 @@
       font-size: 28px;
       font-weight: 800;
       letter-spacing: 1px;
-      background: linear-gradient(to right, #FFB347, #E67E22);
+      background: linear-gradient(to right, var(--primary-light), var(--primary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -118,7 +121,7 @@
     .form-group label {
       display: block;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       margin-bottom: 8px;
       text-transform: uppercase;
@@ -128,9 +131,9 @@
     .form-group input {
       width: 100%;
       padding: 14px 16px;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 14px;
       color: var(--text);
       font-size: 15px;
       outline: none;
@@ -139,8 +142,8 @@
 
     .form-group input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(230, 126, 34, 0.3);
-      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.12);
+      background: var(--surface);
     }
 
     .options-row {
@@ -178,20 +181,21 @@
     .btn-login {
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: var(--primary);
       border: none;
-      border-radius: 12px;
+      border-radius: 16px;
       color: white;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 15px rgba(230, 126, 34, 0.2);
-      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(230, 126, 34, 0.25);
+      transition: all 0.2s ease;
     }
 
     .btn-login:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(230, 126, 34, 0.4);
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(230, 126, 34, 0.32);
     }
 
     .btn-login:active {
@@ -208,7 +212,7 @@
     .register-link a {
       color: var(--primary);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .register-link a:hover {
@@ -217,10 +221,10 @@
 
     .alert {
       padding: 12px;
-      background: rgba(231, 76, 60, 0.15);
-      border: 1px solid rgba(231, 76, 60, 0.3);
-      border-radius: 8px;
-      color: #E74C3C;
+      background: var(--danger-bg);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      border-radius: 10px;
+      color: var(--danger);
       font-size: 13px;
       margin-bottom: 20px;
       display: none;

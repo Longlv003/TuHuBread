@@ -1,0 +1,132 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý banner quảng cáo</h1>
+      <p>Banner hiển thị trên trang chủ app cho khách hàng</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header"><h3>Danh sách banner (<%= banners.length %>)</h3></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th class="col-icon">Ảnh</th><th>Tiêu đề</th><th>Link</th><th>Thứ tự</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+          <tbody>
+            <% banners.forEach(b => { %>
+              <tr>
+                <td class="col-icon"><img src="<%= b.image %>" onerror="this.src='https://placehold.co/50'"></td>
+                <td><strong><%= b.title %></strong></td>
+                <td><%= b.link_url || '-' %></td>
+                <td><%= b.sort_order %></td>
+                <td><span class="status-badge <%= b.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= b.status %></span></td>
+                <td class="col-actions">
+                  <div class="actions-wrap">
+                    <button type="button" class="btn-action" onclick='onEditBanner(<%- JSON.stringify({ _id: b._id, title: b.title, link_url: b.link_url, sort_order: b.sort_order, status: b.status, image: b.image }) %>)'>Sửa</button>
+                    <button type="button" class="btn-action btn-delete" onclick="onDeleteBanner('<%= b._id %>')">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-card" id="addCard" style="margin-bottom: 24px;">
+        <div class="section-header"><h3>Thêm banner mới</h3></div>
+        <form id="addBannerForm" enctype="multipart/form-data">
+          <div class="form-group"><label>Tiêu đề *</label><input type="text" name="title" required></div>
+          <div class="form-group"><label>Ảnh banner *</label><input type="file" name="image" accept="image/*" required onchange="previewImage(this, 'addPreview')"><img id="addPreview" class="preview-box"></div>
+          <div class="form-group"><label>Link (tùy chọn)</label><input type="text" name="linkUrl" placeholder="/product/123 hoặc URL ngoài"></div>
+          <div class="form-group"><label>Ngày bắt đầu hiển thị</label><input type="date" name="startDate"></div>
+          <div class="form-group"><label>Ngày kết thúc hiển thị</label><input type="date" name="endDate"></div>
+          <button type="submit" class="btn-submit">Thêm banner</button>
+        </form>
+      </div>
+
+      <div class="section-card" id="editCard" style="display:none;">
+        <div class="section-header"><h3>Sửa banner</h3></div>
+        <form id="editBannerForm" enctype="multipart/form-data">
+          <input type="hidden" id="editBannerId">
+          <div class="form-group"><label>Tiêu đề *</label><input type="text" id="editTitle" name="title" required></div>
+          <div class="form-group"><label>Ảnh mới (để trống nếu giữ nguyên)</label><input type="file" name="image" accept="image/*"></div>
+          <div class="form-group"><label>Link</label><input type="text" id="editLinkUrl" name="linkUrl"></div>
+          <div class="form-group"><label>Thứ tự</label><input type="number" id="editSortOrder" name="sortOrder" min="0"></div>
+          <div class="form-group"><label>Trạng thái</label>
+            <select id="editStatus" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+          </div>
+          <button type="submit" class="btn-submit">Lưu</button>
+          <button type="button" class="btn-cancel" onclick="cancelEdit()">Hủy</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = "block"; };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  document.getElementById("addBannerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      const response = await fetch("/admin/banners/add", { method: "POST", body: formData });
+      const result = await response.json();
+      if (result.status === "success") { alert("Thêm banner thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  function onEditBanner(b) {
+    document.getElementById("addCard").style.display = "none";
+    document.getElementById("editCard").style.display = "block";
+    document.getElementById("editBannerId").value = b._id;
+    document.getElementById("editTitle").value = b.title;
+    document.getElementById("editLinkUrl").value = b.link_url || "";
+    document.getElementById("editSortOrder").value = b.sort_order;
+    document.getElementById("editStatus").value = b.status;
+  }
+
+  function cancelEdit() {
+    document.getElementById("editCard").style.display = "none";
+    document.getElementById("addCard").style.display = "block";
+  }
+
+  document.getElementById("editBannerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editBannerId").value;
+    const formData = new FormData(e.target);
+    try {
+      const response = await fetch(`/admin/banners/edit/${id}`, { method: "POST", body: formData });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  async function onDeleteBanner(id) {
+    if (!confirm("Xóa banner này?")) return;
+    const response = await fetch(`/admin/banners/delete/${id}`, { method: "POST" });
+    const result = await response.json();
+    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
+    else alert(result.msg || "Thất bại");
+  }
+</script>
+
+<%- include('partials/footer') %>

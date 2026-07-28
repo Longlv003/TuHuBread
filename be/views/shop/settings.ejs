@@ -1,0 +1,122 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Cài đặt cửa hàng</h1>
+      <p>Quản lý thông tin, giờ hoạt động và hình ảnh cửa hàng</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header"><h3>Thông tin cửa hàng</h3></div>
+      <form id="settingsForm">
+        <div class="form-group"><label>Tên cửa hàng *</label><input type="text" name="shopName" required value="<%= shop.shop_name %>"></div>
+        <div class="form-group"><label>Số điện thoại *</label><input type="text" name="phoneNumber" required value="<%= shop.phone_number %>"></div>
+        <div class="form-group"><label>Địa chỉ *</label><textarea name="address" rows="2" required><%= shop.address %></textarea></div>
+        <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group"><label>Giờ mở cửa</label><input type="time" name="openTime" value="<%= shop.open_time || '' %>"></div>
+          <div class="form-group"><label>Giờ đóng cửa</label><input type="time" name="closeTime" value="<%= shop.close_time || '' %>"></div>
+        </div>
+        <button type="submit" class="btn-submit" style="width:auto; padding: 12px 24px;">Lưu thay đổi</button>
+      </form>
+
+      <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 24px 0;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <strong>Trạng thái hoạt động</strong>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Bật/tắt để hiện shop đang mở cửa cho khách hàng</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="isOpenToggle" <%= shop.is_open ? 'checked' : '' %>>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 24px 0;">
+
+      <div style="font-size: 13px; color: var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+        <div>Slug: <strong style="color:var(--text);"><%= shop.shop_slug %></strong></div>
+        <div>Đánh giá trung bình: <strong style="color:var(--text);"><%= shop.rating_average %> ⭐ (<%= shop.total_reviews %> đánh giá)</strong></div>
+        <div>Trạng thái duyệt (do quản trị hệ thống quản lý): <strong style="color:var(--text);"><%= shop.status %></strong></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header"><h3>Banner cửa hàng</h3></div>
+      <img id="bannerPreview" src="<%= shop.banner ? shop.banner : 'https://placehold.co/400x200' %>" onerror="this.src='https://placehold.co/400x200'" style="width:100%; border-radius:12px; object-fit:cover; margin-bottom:16px; aspect-ratio: 2/1;">
+      <div class="form-group">
+        <label>Thay đổi banner</label>
+        <input type="file" id="bannerInput" accept="image/*">
+      </div>
+      <button type="button" class="btn-submit" onclick="uploadBanner()">Tải lên banner</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch("/shop/settings/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") alert("Cập nhật thành công!");
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  document.getElementById("isOpenToggle").addEventListener("change", async (e) => {
+    const isOpen = e.target.checked;
+    try {
+      const response = await fetch("/shop/settings/toggle-open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isOpen })
+      });
+      const result = await response.json();
+      if (result.status !== "success") {
+        alert(result.msg || "Thất bại");
+        e.target.checked = !isOpen;
+      }
+    } catch (err) {
+      console.error(err);
+      e.target.checked = !isOpen;
+    }
+  });
+
+  async function uploadBanner() {
+    const file = document.getElementById("bannerInput").files[0];
+    if (!file) { alert("Vui lòng chọn ảnh banner"); return; }
+
+    const formData = new FormData();
+    formData.append("banner", file);
+
+    try {
+      const response = await fetch("/shop/settings/banner", { method: "POST", body: formData });
+      const result = await response.json();
+      if (result.status === "success") {
+        document.getElementById("bannerPreview").src = result.bannerUrl;
+        alert("Cập nhật banner thành công!");
+      } else {
+        alert(result.msg || "Tải lên thất bại");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi tải banner!");
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

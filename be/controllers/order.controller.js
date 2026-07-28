@@ -1,14 +1,11 @@
 const mongoose = require("mongoose");
 const { userModel } = require("../models/user.model");
 const { addressModel } = require("../models/address.model");
+const { shopModel } = require("../models/shop.model");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
-
-const DELIVERY_FEES = {
-  priority: 25000,
-  standard: 15000,
-  saving: 0,
-};
+const socketService = require("../services/socket.service");
+const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 
 const PAYMENT_METHODS = ["cash", "momo", "zalopay"];
 
@@ -40,7 +37,7 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
-    if (!DELIVERY_FEES.hasOwnProperty(delivery_option)) {
+    if (!DELIVERY_MULTIPLIERS.hasOwnProperty(delivery_option)) {
       dataRes.msg = "Tùy chọn giao hàng không hợp lệ";
       return res.status(400).json(dataRes);
     }
@@ -84,7 +81,9 @@ exports.createOrder = async (req, res) => {
     }
 
     // Order model chỉ hỗ trợ 1 shop/đơn — gộp giỏ hàng theo shop_id, mỗi
-    // shop tạo 1 đơn riêng. Phí giao hàng được tính 1 lần cho đơn đầu tiên.
+    // shop tạo 1 đơn riêng. Mỗi đơn tự tính phí giao hàng theo khoảng cách
+    // thực tế từ chính chi nhánh đó tới địa chỉ giao (không còn dùng chung
+    // 1 mức phí cố định cho cả giỏ hàng).
     const itemsByShop = new Map();
     for (const item of items) {
       const key = String(item.shop_id);
@@ -92,16 +91,25 @@ exports.createOrder = async (req, res) => {
       itemsByShop.get(key).push(item);
     }
 
-    const deliveryFee = DELIVERY_FEES[delivery_option];
     const createdOrders = [];
-    let shopIndex = 0;
 
     for (const [shopId, shopItems] of itemsByShop) {
+      const shop = await shopModel.findOne({ _id: shopId, deleted_at: null });
+      if (!shop) {
+        dataRes.msg = "Không tìm thấy cửa hàng cho một số sản phẩm trong giỏ hàng";
+        return res.status(404).json(dataRes);
+      }
+
+      const shopDeliveryFee = calculateDeliveryFee(
+        shop.location ? shop.location.coordinates : undefined,
+        address.location ? address.location.coordinates : undefined,
+        delivery_option,
+      );
+
       const itemsTotal = shopItems.reduce(
         (sum, it) => sum + it.unit_price * it.quantity,
         0,
       );
-      const shopDeliveryFee = shopIndex === 0 ? deliveryFee : 0;
       const totalAmount = itemsTotal + shopDeliveryFee;
 
       const order = await orderModel.create({
@@ -144,7 +152,7 @@ exports.createOrder = async (req, res) => {
         total_amount: totalAmount,
       });
 
-      shopIndex += 1;
+      socketService.emitNewOrder(shopId, order);
     }
 
     dataRes.data = {

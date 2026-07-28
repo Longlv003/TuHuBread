@@ -1,0 +1,109 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý thông báo</h1>
+      <p>Tạo và gửi thông báo đẩy (push notification) qua Firebase Cloud Messaging</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header"><h3>Lịch sử thông báo (<%= total %>)</h3></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Tiêu đề</th><th>Nội dung</th><th>Loại</th><th>Người nhận</th><th>Thời gian gửi</th></tr></thead>
+          <tbody>
+            <% notifications.forEach(n => { %>
+              <tr>
+                <td><strong><%= n.title %></strong></td>
+                <td style="max-width:260px;"><%= n.body %></td>
+                <td><%= n.type %></td>
+                <td><%= n.user_id ? n.user_id.full_name : 'N/A' %></td>
+                <td><%= n.sent_at ? new Date(n.sent_at).toLocaleString('vi-VN') : '-' %></td>
+              </tr>
+            <% }) %>
+            <% if (notifications.length === 0) { %>
+              <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Chưa có thông báo nào</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+      <% if (totalPages > 1) { %>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <a href="/admin/notifications?page=<%= p %>" class="btn-action" style="<%= p === page ? 'background:var(--primary); border-color:var(--primary);' : '' %>"><%= p %></a>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header"><h3>Tạo thông báo mới</h3></div>
+      <form id="notifyForm">
+        <div class="form-group"><label>Tiêu đề *</label><input type="text" name="title" required></div>
+        <div class="form-group"><label>Nội dung *</label><textarea name="body" rows="3" required></textarea></div>
+        <div class="form-group">
+          <label>Loại</label>
+          <select name="type">
+            <option value="system">Hệ thống</option>
+            <option value="order">Đơn hàng</option>
+            <option value="voucher">Voucher</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Gửi cho</label>
+          <select name="target" id="targetSelect" onchange="toggleEmailField()">
+            <option value="all">Tất cả khách hàng</option>
+            <option value="user">Người dùng cụ thể (theo email)</option>
+          </select>
+        </div>
+        <div class="form-group" id="emailGroup" style="display:none;">
+          <label>Email người dùng</label>
+          <input type="email" name="userEmail" placeholder="customer@example.com">
+        </div>
+        <button type="submit" class="btn-submit">Tạo và gửi thông báo</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleEmailField() {
+    const target = document.getElementById("targetSelect").value;
+    document.getElementById("emailGroup").style.display = target === "user" ? "block" : "none";
+  }
+
+  document.getElementById("notifyForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    const submitBtn = e.target.querySelector(".btn-submit");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang gửi...";
+
+    try {
+      const response = await fetch("/admin/notifications/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert(result.msg); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi gửi thông báo!");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Tạo và gửi thông báo";
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

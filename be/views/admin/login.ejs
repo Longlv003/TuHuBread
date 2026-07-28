@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập Admin - TuHuBread</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #E67E22;
+      --primary-dark: #D35400;
+      --primary-light: #F39C12;
+      --surface: #FFFFFF;
+      --surface-alt: #FAF6F0;
+      --border: #F1EAE1;
+      --text: #2C3E50;
+      --text-muted: #7F8C8D;
+      --danger: #E74C3C;
+      --danger-bg: #FDECEA;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body {
+      background: linear-gradient(180deg, #FFF6EC 0%, #FDFBF7 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text);
+    }
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(44, 62, 80, 0.10);
+    }
+    .brand { text-align: center; margin-bottom: 30px; }
+    .brand i { font-size: 48px; color: var(--primary); margin-bottom: 12px; }
+    .brand h2 {
+      font-size: 26px; font-weight: 800; letter-spacing: 1px;
+      background: linear-gradient(to right, var(--primary-light), var(--primary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 700; color: var(--text-muted);
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .form-group input {
+      width: 100%; padding: 14px 16px; background: var(--surface-alt);
+      border: 1px solid var(--border); border-radius: 14px; color: var(--text);
+      font-size: 15px; outline: none; transition: all 0.2s ease;
+    }
+    .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.12); background: var(--surface); }
+    .btn-login {
+      width: 100%; padding: 14px; background: var(--primary);
+      border: none; border-radius: 16px; color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(230, 126, 34, 0.25); transition: all 0.2s ease;
+    }
+    .btn-login:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .alert {
+      padding: 12px; background: var(--danger-bg); border: 1px solid rgba(231, 76, 60, 0.2);
+      border-radius: 10px; color: var(--danger); font-size: 13px; margin-bottom: 20px; display: none; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="brand">
+      <i class="fa-solid fa-user-shield" style="display:none;"></i>
+      <h2>TUHU ADMIN</h2>
+      <p>Cổng quản trị hệ thống</p>
+    </div>
+
+    <div class="alert" id="errorAlert"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="admin@example.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+        <input type="password" id="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">Đăng Nhập</button>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "<%= firebaseConfig.apiKey %>",
+      authDomain: "<%= firebaseConfig.authDomain %>",
+      projectId: "<%= firebaseConfig.projectId %>",
+      storageBucket: "<%= firebaseConfig.storageBucket %>",
+      messagingSenderId: "<%= firebaseConfig.messagingSenderId %>",
+      appId: "<%= firebaseConfig.appId %>"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const loginForm = document.getElementById("loginForm");
+    const errorAlert = document.getElementById("errorAlert");
+    const loginBtn = document.getElementById("loginBtn");
+
+    function showError(message) {
+      errorAlert.innerText = message;
+      errorAlert.style.display = "block";
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorAlert.style.display = "none";
+      loginBtn.innerText = "Đang xử lý...";
+      loginBtn.disabled = true;
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const idToken = await userCredential.user.getIdToken();
+
+        const response = await fetch("/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken })
+        });
+
+        const result = await response.json();
+        if (result.status === "success") {
+          window.location.href = "/admin/dashboard";
+        } else {
+          await firebase.auth().signOut();
+          showError(result.msg || "Đăng nhập thất bại");
+          loginBtn.innerText = "Đăng Nhập";
+          loginBtn.disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+        showError(err.message || "Email hoặc Mật khẩu không chính xác");
+        loginBtn.innerText = "Đăng Nhập";
+        loginBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@ exports.getProducts = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
 
   try {
-    const { shop_id, global_category_id, shop_category_id, search } = req.query;
+    const { shop_id, global_category_id, shop_category_id, search, featured } = req.query;
 
     const matchStage = { status: "active" };
 
@@ -27,6 +27,9 @@ exports.getProducts = async (req, res) => {
     }
     if (search) {
       matchStage.product_name = { $regex: search, $options: "i" };
+    }
+    if (featured === "true") {
+      matchStage.is_featured = true;
     }
 
     const now = new Date();
@@ -81,6 +84,8 @@ exports.getProducts = async (req, res) => {
           description: 1,
           preparation_time_minutes: 1,
           status: 1,
+          is_featured: 1,
+          is_new: 1,
           rating: {
             $cond: {
               if: { $gt: [{ $size: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } } }, 0] },
@@ -206,6 +211,8 @@ exports.getBestSellers = async (req, res) => {
           description: 1,
           preparation_time_minutes: 1,
           status: 1,
+          is_featured: 1,
+          is_new: 1,
           rating: {
             $cond: {
               if: { $gt: [{ $size: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } } }, 0] },
@@ -334,6 +341,8 @@ exports.getSaleProducts = async (req, res) => {
           description: 1,
           preparation_time_minutes: 1,
           status: 1,
+          is_featured: 1,
+          is_new: 1,
           rating: {
             $cond: {
               if: { $gt: [{ $size: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } } }, 0] },
@@ -390,6 +399,132 @@ exports.getSaleProducts = async (req, res) => {
 
   } catch (err) {
     console.error("Get sale products error:", err.message);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+
+  return res.json(dataRes);
+};
+
+// GET /api/products/featured
+exports.getFeaturedProducts = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+
+  try {
+    const { shop_id } = req.query;
+    const matchStage = { status: "active", is_featured: true };
+    if (shop_id) {
+      matchStage.shop_id = new mongoose.Types.ObjectId(shop_id);
+    }
+
+    const now = new Date();
+
+    const products = await productModel.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "product_variants",
+          localField: "_id",
+          foreignField: "product_id",
+          as: "variants",
+        }
+      },
+      {
+        $lookup: {
+          from: "product_sales",
+          let: { prodId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$product_id", "$$prodId"] },
+                    { $eq: ["$status", "active"] },
+                    { $lt: ["$start_date", now] },
+                    { $gt: ["$end_date", now] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: "active_sales"
+        }
+      },
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "product_id",
+          as: "db_reviews",
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          shop_id: 1,
+          global_category_id: 1,
+          shop_category_id: 1,
+          product_name: 1,
+          product_slug: 1,
+          description: 1,
+          preparation_time_minutes: 1,
+          status: 1,
+          is_featured: 1,
+          is_new: 1,
+          rating: {
+            $cond: {
+              if: { $gt: [{ $size: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } } }, 0] },
+              then: {
+                $round: [
+                  {
+                    $avg: {
+                      $map: {
+                        input: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } },
+                        as: "rev",
+                        in: "$$rev.rating"
+                      }
+                    }
+                  },
+                  1
+                ]
+              },
+              else: 0.0
+            }
+          },
+          sales_count: { $sum: "$variants.sold_quantity" },
+          price: {
+            $ifNull: [
+              { $arrayElemAt: ["$variants.price", 0] },
+              0
+            ]
+          },
+          image: {
+            $ifNull: [
+              { $arrayElemAt: ["$variants.image", 0] },
+              "/images/products/prod_special.jpg"
+            ]
+          },
+          active_sale: {
+            $cond: {
+              if: { $gt: [{ $size: "$active_sales" }, 0] },
+              then: { $arrayElemAt: ["$active_sales", 0] },
+              else: null
+            }
+          }
+        }
+      }
+    ]);
+
+    dataRes.data = products.map((product) => {
+      const fileName = product.image ? product.image.split("/").pop() : "prod_special.jpg";
+      return {
+        ...product,
+        image: `${req.protocol}://${req.get("host")}/images/products/${fileName}`,
+      };
+    });
+
+  } catch (err) {
+    console.error("Get featured products error:", err.message);
     dataRes.msg = "Server error: " + err.message;
     return res.status(500).json(dataRes);
   }
@@ -528,6 +663,9 @@ exports.getProductDetail = async (req, res) => {
       description: product.description,
       preparation_time_minutes: product.preparation_time_minutes,
       status: product.status,
+      is_featured: product.is_featured,
+      is_new: product.is_new,
+      storage_note: product.storage_note,
       rating: ratingAverage,
       sales_count: product.sales_count || 100,
       price: variants.length > 0 ? variants[0].price : 0,

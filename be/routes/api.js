@@ -7,8 +7,12 @@ var voucherCtrl = require("../controllers/voucher.controller");
 var shopCtrl = require("../controllers/shop.controller");
 var addressCtrl = require("../controllers/address.controller");
 var orderCtrl = require("../controllers/order.controller");
+var bannerCtrl = require("../controllers/banner.controller");
 
 router.post("/auth/firebase", accCtrl.verifyFirebaseUser);
+
+// Banner Routes
+router.get("/banners", bannerCtrl.getActiveBanners);
 
 // Shop Routes
 router.get("/shops", shopCtrl.getShops);
@@ -20,6 +24,7 @@ router.get("/shops/:shopId/categories", catCtrl.getShopCategories);
 // Product Routes
 router.get("/products/best-sellers", prodCtrl.getBestSellers);
 router.get("/products/sales", prodCtrl.getSaleProducts);
+router.get("/products/featured", prodCtrl.getFeaturedProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
 router.get("/products", prodCtrl.getProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
