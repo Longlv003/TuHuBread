@@ -24,6 +24,10 @@ class ShopRepository {
   async findAllActive() {
     return shopModel.find({ status: "active", deleted_at: null });
   }
+
+  async findAll() {
+    return shopModel.find({ deleted_at: null }).populate("owner_user_id", "full_name email phone").sort({ createdAt: -1 });
+  }
 }
 
 module.exports = new ShopRepository();

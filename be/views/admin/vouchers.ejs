@@ -1,0 +1,181 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Voucher toàn sàn</h1>
+      <p>Mã giảm giá áp dụng cho toàn hệ thống, không giới hạn 1 chi nhánh</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách mã giảm giá (<%= vouchers.length %>)</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Mã</th><th>Tên</th><th>Giảm giá</th><th>Đơn tối thiểu</th><th>Đã dùng</th><th>Thời gian</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
+          </thead>
+          <tbody>
+            <% vouchers.forEach(v => { %>
+              <tr>
+                <td><strong><%= v.voucher_code %></strong></td>
+                <td><%= v.voucher_name %></td>
+                <td>
+                  <% if (v.discount_type === 'percent') { %>Giảm <%= v.discount_value %>%
+                  <% } else if (v.discount_type === 'amount') { %>Giảm <%= v.discount_value.toLocaleString('vi-VN') %>đ
+                  <% } else { %>Miễn phí ship<% } %>
+                </td>
+                <td><%= v.min_order_amount.toLocaleString('vi-VN') %>đ</td>
+                <td><%= v.used_count %>/<%= v.usage_limit || '∞' %></td>
+                <td><%= new Date(v.start_date).toLocaleDateString('vi-VN') %> - <%= new Date(v.end_date).toLocaleDateString('vi-VN') %></td>
+                <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
+                <td class="col-actions">
+                  <div class="actions-wrap">
+                    <button type="button" class="btn-action" onclick='onEditVoucher(<%- JSON.stringify(v) %>)'>Sửa</button>
+                    <button type="button" class="btn-action btn-delete" onclick="onDeleteVoucher('<%= v._id %>')">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-card" id="voucherAddCard" style="margin-bottom: 24px;">
+        <div class="section-header"><h3>Tạo voucher toàn sàn</h3></div>
+        <form id="addVoucherForm">
+          <div class="form-group"><label>Mã voucher *</label><input type="text" name="voucherCode" required placeholder="Ví dụ: TUHUSALE" style="text-transform:uppercase;"></div>
+          <div class="form-group"><label>Tên chương trình *</label><input type="text" name="voucherName" required placeholder="Ví dụ: Giảm 50k toàn sàn"></div>
+          <div class="form-group">
+            <label>Loại giảm giá *</label>
+            <select name="discountType" id="addDiscountType" required onchange="toggleDiscountValue('addDiscountType', 'addDiscountValueGroup')">
+              <option value="percent">Giảm theo %</option>
+              <option value="amount">Giảm theo số tiền</option>
+              <option value="free_shipping">Miễn phí vận chuyển</option>
+            </select>
+          </div>
+          <div class="form-group" id="addDiscountValueGroup"><label>Giá trị giảm *</label><input type="number" name="discountValue" min="0"></div>
+          <div class="form-group"><label>Đơn tối thiểu</label><input type="number" name="minOrderAmount" min="0" value="0"></div>
+          <div class="form-group"><label>Giảm tối đa</label><input type="number" name="maxDiscountAmount" min="0" placeholder="Để trống nếu không giới hạn"></div>
+          <div class="form-group"><label>Giới hạn lượt lưu</label><input type="number" name="claimLimit" min="1" placeholder="Để trống nếu không giới hạn"></div>
+          <div class="form-group"><label>Giới hạn lượt dùng</label><input type="number" name="usageLimit" min="1" placeholder="Để trống nếu không giới hạn"></div>
+          <div class="form-group"><label>Ngày bắt đầu *</label><input type="date" name="startDate" required></div>
+          <div class="form-group"><label>Ngày kết thúc *</label><input type="date" name="endDate" required></div>
+          <button type="submit" class="btn-submit">Tạo voucher</button>
+        </form>
+      </div>
+
+      <div class="section-card" id="voucherEditCard" style="display:none;">
+        <div class="section-header"><h3>Sửa voucher</h3></div>
+        <form id="editVoucherForm">
+          <input type="hidden" id="editVoucherId">
+          <div class="form-group"><label>Mã voucher *</label><input type="text" id="editVoucherCode" name="voucherCode" required style="text-transform:uppercase;"></div>
+          <div class="form-group"><label>Tên chương trình *</label><input type="text" id="editVoucherName" name="voucherName" required></div>
+          <div class="form-group">
+            <label>Loại giảm giá *</label>
+            <select id="editDiscountType" name="discountType" required onchange="toggleDiscountValue('editDiscountType', 'editDiscountValueGroup')">
+              <option value="percent">Giảm theo %</option>
+              <option value="amount">Giảm theo số tiền</option>
+              <option value="free_shipping">Miễn phí vận chuyển</option>
+            </select>
+          </div>
+          <div class="form-group" id="editDiscountValueGroup"><label>Giá trị giảm *</label><input type="number" id="editDiscountValue" name="discountValue" min="0"></div>
+          <div class="form-group"><label>Đơn tối thiểu</label><input type="number" id="editMinOrderAmount" name="minOrderAmount" min="0"></div>
+          <div class="form-group"><label>Giảm tối đa</label><input type="number" id="editMaxDiscountAmount" name="maxDiscountAmount" min="0"></div>
+          <div class="form-group"><label>Giới hạn lượt lưu</label><input type="number" id="editClaimLimit" name="claimLimit" min="1"></div>
+          <div class="form-group"><label>Giới hạn lượt dùng</label><input type="number" id="editUsageLimit" name="usageLimit" min="1"></div>
+          <div class="form-group"><label>Ngày bắt đầu *</label><input type="date" id="editStartDate" name="startDate" required></div>
+          <div class="form-group"><label>Ngày kết thúc *</label><input type="date" id="editEndDate" name="endDate" required></div>
+          <div class="form-group"><label>Trạng thái</label>
+            <select id="editVoucherStatus" name="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="expired">Expired</option></select>
+          </div>
+          <button type="submit" class="btn-submit">Lưu</button>
+          <button type="button" class="btn-cancel" onclick="cancelVoucherEdit()">Hủy</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDiscountValue(selectId, groupId) {
+    const type = document.getElementById(selectId).value;
+    document.getElementById(groupId).style.display = type === "free_shipping" ? "none" : "block";
+  }
+  toggleDiscountValue('addDiscountType', 'addDiscountValueGroup');
+
+  document.getElementById("addVoucherForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch("/admin/vouchers/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert("Tạo voucher thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  function onEditVoucher(v) {
+    document.getElementById("voucherAddCard").style.display = "none";
+    document.getElementById("voucherEditCard").style.display = "block";
+    document.getElementById("editVoucherId").value = v._id;
+    document.getElementById("editVoucherCode").value = v.voucher_code;
+    document.getElementById("editVoucherName").value = v.voucher_name;
+    document.getElementById("editDiscountType").value = v.discount_type;
+    document.getElementById("editDiscountValue").value = v.discount_value;
+    document.getElementById("editMinOrderAmount").value = v.min_order_amount;
+    document.getElementById("editMaxDiscountAmount").value = v.max_discount_amount || "";
+    document.getElementById("editClaimLimit").value = v.claim_limit || "";
+    document.getElementById("editUsageLimit").value = v.usage_limit || "";
+    document.getElementById("editStartDate").value = v.start_date.slice(0, 10);
+    document.getElementById("editEndDate").value = v.end_date.slice(0, 10);
+    document.getElementById("editVoucherStatus").value = v.status;
+    toggleDiscountValue('editDiscountType', 'editDiscountValueGroup');
+  }
+
+  function cancelVoucherEdit() {
+    document.getElementById("voucherEditCard").style.display = "none";
+    document.getElementById("voucherAddCard").style.display = "block";
+  }
+
+  document.getElementById("editVoucherForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editVoucherId").value;
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch(`/admin/vouchers/edit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  async function onDeleteVoucher(id) {
+    if (!confirm("Xóa mã giảm giá này?")) return;
+    const response = await fetch(`/admin/vouchers/delete/${id}`, { method: "POST" });
+    const result = await response.json();
+    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
+    else alert(result.msg || "Thất bại");
+  }
+</script>
+
+<%- include('partials/footer') %>

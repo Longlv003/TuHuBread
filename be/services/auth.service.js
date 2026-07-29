@@ -1,7 +1,6 @@
 const { auth } = require("../configs/firebase.config");
 const accountRepository = require("../repositories/account.repository");
 const shopRepository = require("../repositories/shop.repository");
-const mongoose = require("mongoose");
 
 class AuthService {
   /**
@@ -31,6 +30,30 @@ class AuthService {
     const shop = await shopRepository.findByOwnerId(account._id);
 
     return { account, shop, decodedToken };
+  }
+
+  /**
+   * Verify Firebase ID Token and require an "admin" role account (platform admin portal)
+   * @param {string} idToken
+   */
+  async verifyAdminAccount(idToken) {
+    if (!idToken) {
+      throw new Error("ID Token is required");
+    }
+
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const firebaseUid = decodedToken.uid;
+
+    const account = await accountRepository.findByFirebaseUid(firebaseUid);
+    if (!account) {
+      throw new Error("Account is not registered in our database.");
+    }
+
+    if (account.role !== "admin") {
+      throw new Error("Access denied. Only system administrators can access this portal.");
+    }
+
+    return { account, decodedToken };
   }
 
   /**
@@ -72,12 +95,13 @@ class AuthService {
       throw new Error("Firebase user creation failed: " + err.message);
     }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
+    // Note: this MongoDB deployment is a standalone instance (no replica set), so
+    // multi-document transactions aren't available here. Create sequentially and
+    // roll back (delete the account + Firebase user) manually if the shop insert fails.
+    let newAccount;
     try {
       // 2. Create User Account in MongoDB
-      const newAccount = await accountRepository.create({
+      newAccount = await accountRepository.create({
         firebase_uid: firebaseUser.uid,
         full_name: ownerName,
         email: email,
@@ -109,13 +133,16 @@ class AuthService {
         status: "active"
       });
 
-      await session.commitTransaction();
-      session.endSession();
-
       return { account: newAccount, shop: newShop };
     } catch (err) {
-      await session.abortTransaction();
-      session.endSession();
+      // Clean up MongoDB account if it was created but the shop insert failed
+      if (newAccount) {
+        try {
+          await accountRepository.deleteById(newAccount._id);
+        } catch (delErr) {
+          console.error("Cleanup MongoDB account failed:", delErr.message);
+        }
+      }
 
       // Clean up Firebase User if DB insertion fails
       try {

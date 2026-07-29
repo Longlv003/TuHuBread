@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lỗi - TUHU BREAD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body {
+      background: linear-gradient(180deg, #FFF6EC 0%, #FDFBF7 100%);
+      color: #2C3E50;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .error-box {
+      max-width: 480px;
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid #F1EAE1;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(44, 62, 80, 0.10);
+    }
+    .error-box i { font-size: 40px; color: #E74C3C; margin-bottom: 16px; }
+    .error-box h1 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+    .error-box p { color: #7F8C8D; font-size: 14px; line-height: 1.6; margin-bottom: 24px; word-break: break-word; }
+    .error-box a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #E67E22;
+      color: white;
+      text-decoration: none;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 8px 20px rgba(230, 126, 34, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <div class="error-box">
+    <div>&#9888;</div>
+    <h1>Đã có lỗi xảy ra</h1>
+    <p><%= typeof message !== "undefined" ? message : "Vui lòng thử lại sau." %></p>
+    <a href="/shop/dashboard">Quay lại Dashboard</a>
+  </div>
+</body>
+</html>

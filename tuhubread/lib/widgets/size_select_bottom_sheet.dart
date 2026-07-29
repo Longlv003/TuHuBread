@@ -84,7 +84,7 @@ class _SizeSelectSheetState extends State<_SizeSelectSheet> {
                 ),
               ],
             ),
-            
+
             // Size Selection Section (Only show if there are multiple variants)
             if (detail.variants.length > 1) ...[
               const SizedBox(height: 8),

@@ -1,6 +1,4 @@
 const mongoose = require("mongoose");
-const { orderModel } = require("../models/order.model");
-const { orderDetailModel } = require("../models/orderDetail.model");
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
@@ -10,6 +8,10 @@ const { voucherSaveModel } = require("../models/voucherSave.model");
 const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
 const orderRepository = require("../repositories/order.repository");
+const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
+const socketService = require("./socket.service");
+
+const ORDER_FLOW = ["pending", "confirmed", "preparing", "delivering", "completed"];
 
 const DELIVERY_FEES = {
   priority: 25000,
@@ -23,17 +25,123 @@ function generateOrderCode() {
   return `TH${time}${rand}`;
 }
 
+/**
+ * Get the list of order_status values a shop owner may transition an order into.
+ * @param {string} currentStatus
+ */
+function getAllowedNextStatuses(currentStatus) {
+  if (currentStatus === "cancelled" || currentStatus === "completed") {
+    return [];
+  }
+
+  const idx = ORDER_FLOW.indexOf(currentStatus);
+  const next = idx >= 0 && idx < ORDER_FLOW.length - 1 ? [ORDER_FLOW[idx + 1]] : [];
+
+  if (currentStatus === "pending" || currentStatus === "confirmed") {
+    next.push("cancelled");
+  }
+
+  return next;
+}
+
 class OrderService {
-  async validateCartAndCalculate(userId, { addressId, deliveryOption, voucherCode }) {
-    // 1. Lấy giỏ hàng của user
-    const cart = await cartModel.findOne({ user_id: userId, deleted_at: null, status: "active" });
-    if (!cart) {
-      throw new Error("Không tìm thấy giỏ hàng hoạt động");
+  // --- Shop portal (order status management) ---
+
+  getAllowedNextStatuses(currentStatus) {
+    return getAllowedNextStatuses(currentStatus);
+  }
+
+  async getOrdersForShop(shopId) {
+    return orderRepository.findByShopId(shopId, 300);
+  }
+
+  async getOrderDetail(shopId, orderId) {
+    const order = await orderRepository.findByIdScoped(orderId, shopId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    const [items, history] = await Promise.all([
+      orderRepository.findDetailsByOrderId(orderId),
+      orderStatusHistoryRepository.findByOrderId(orderId)
+    ]);
+    return { order, items, history, nextStatuses: getAllowedNextStatuses(order.order_status) };
+  }
+
+  async updateOrderStatus(shopId, orderId, newStatus, changedByAccount) {
+    const order = await orderRepository.findByIdScoped(orderId, shopId);
+    if (!order) {
+      throw new Error("Order not found");
     }
 
-    const cartItems = await cartItemModel.find({ cart_id: cart._id, deleted_at: null });
-    if (!cartItems || cartItems.length === 0) {
-      throw new Error("Giỏ hàng của bạn đang trống");
+    const allowed = getAllowedNextStatuses(order.order_status);
+    if (!allowed.includes(newStatus)) {
+      throw new Error(`Không thể chuyển từ '${order.order_status}' sang '${newStatus}'`);
+    }
+
+    let paymentStatus;
+    if (newStatus === "completed" && order.payment_method === "cash" && order.payment_status === "unpaid") {
+      paymentStatus = "paid";
+    }
+
+    const previousStatus = order.order_status;
+    const updated = await orderRepository.updateStatus(orderId, newStatus, paymentStatus);
+
+    if (changedByAccount) {
+      await orderStatusHistoryRepository.create({
+        order_id: orderId,
+        from_status: previousStatus,
+        to_status: newStatus,
+        changed_by: changedByAccount._id,
+        changed_by_name: changedByAccount.full_name
+      });
+    }
+
+    socketService.emitOrderUpdate(String(shopId), updated);
+    
+    // Gửi thông báo đẩy & thời gian thực đến khách hàng
+    this.sendOrderStatusNotification(updated, newStatus);
+
+    return updated;
+  }
+
+  // --- Customer-facing cart validation + order creation (used by cash + VNPay flows) ---
+
+  async validateCartAndCalculate(userId, { addressId, deliveryOption, voucherCode, explicitItems }) {
+    // 1. Lấy danh sách sản phẩm cần đặt: ưu tiên explicitItems nếu được truyền
+    // (vd. "Mua ngay" từ trang chi tiết sản phẩm — gửi thẳng 1 sản phẩm chưa
+    // nằm trong giỏ hàng thật), ngược lại lấy từ giỏ hàng thật của user (luồng
+    // thanh toán bình thường từ tab Giỏ hàng).
+    let cart = null;
+    let cartItems;
+
+    if (Array.isArray(explicitItems) && explicitItems.length > 0) {
+      cartItems = explicitItems.map((it) => {
+        if (
+          !it.product_id || !mongoose.Types.ObjectId.isValid(it.product_id) ||
+          !it.variant_id || !mongoose.Types.ObjectId.isValid(it.variant_id) ||
+          !it.quantity || it.quantity <= 0
+        ) {
+          throw new Error("Dữ liệu sản phẩm không hợp lệ");
+        }
+        return {
+          product_id: it.product_id,
+          variant_id: it.variant_id,
+          quantity: it.quantity,
+          selected_options: it.selected_options || [],
+          product_name: it.product_name || "",
+          note: it.note || null,
+        };
+      });
+    } else {
+      cart = await cartModel.findOne({ user_id: userId, deleted_at: null, status: "active" });
+      if (!cart) {
+        throw new Error("Không tìm thấy giỏ hàng hoạt động");
+      }
+
+      cartItems = await cartItemModel.find({ cart_id: cart._id, deleted_at: null });
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error("Giỏ hàng của bạn đang trống");
+      }
     }
 
     // 2. Validate địa chỉ
@@ -245,6 +353,7 @@ class OrderService {
       }
 
       createdOrders.push(order);
+      socketService.emitNewOrder(String(shopId), order);
       shopIndex += 1;
     }
 
@@ -272,6 +381,81 @@ class OrderService {
       orders: createdOrders,
       totalAmount: calc.totalAmount,
     };
+  }
+
+  /**
+   * Cập nhật trạng thái đơn hàng và gửi notification tương ứng
+   * @param {string} orderId 
+   * @param {Object} statusData - { orderStatus, paymentStatus }
+   * @returns {Promise<Object>}
+   */
+  async updateStatus(orderId, { orderStatus, paymentStatus }) {
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      throw new Error("Không tìm thấy đơn hàng");
+    }
+
+    if (orderStatus) order.order_status = orderStatus;
+    if (paymentStatus) order.payment_status = paymentStatus;
+    await order.save();
+
+    if (orderStatus) {
+      await this.sendOrderStatusNotification(order, orderStatus);
+    }
+
+    return order;
+  }
+
+  /**
+   * Helper gửi thông báo trạng thái đơn hàng qua FCM & Socket.IO
+   */
+  async sendOrderStatusNotification(order, orderStatus) {
+    const notificationService = require("./notification.service");
+    const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
+
+    let type = null;
+    let title = "";
+    let message = "";
+
+    if (orderStatus === "confirmed") {
+      type = NOTIFICATION_TYPES.ORDER_CONFIRMED;
+      title = "Đơn hàng đã xác nhận";
+      message = `Đơn hàng ${order.order_code} đã được cửa hàng xác nhận`;
+    } else if (orderStatus === "preparing") {
+      type = NOTIFICATION_TYPES.ORDER_PREPARING;
+      title = "Đang chuẩn bị đơn hàng";
+      message = `Cửa hàng đang chuẩn bị món ăn cho đơn hàng ${order.order_code}`;
+    } else if (orderStatus === "shipping" || orderStatus === "delivering") {
+      type = NOTIFICATION_TYPES.ORDER_SHIPPING;
+      title = "Đơn hàng đang giao";
+      message = `Đơn hàng ${order.order_code} đang được giao đến bạn`;
+    } else if (orderStatus === "completed") {
+      type = NOTIFICATION_TYPES.ORDER_COMPLETED;
+      title = "Đơn hàng hoàn thành";
+      message = `Đơn hàng ${order.order_code} đã hoàn thành. Cảm ơn bạn đã đặt hàng!`;
+    } else if (orderStatus === "cancelled") {
+      type = NOTIFICATION_TYPES.ORDER_CANCELLED;
+      title = "Đơn hàng đã hủy";
+      message = `Đơn hàng ${order.order_code} đã bị hủy`;
+    }
+
+    if (type) {
+      try {
+        await notificationService.notify({
+          userId: order.user_id,
+          type,
+          title,
+          message,
+          orderId: order._id,
+          data: {
+            orderId: order._id.toString(),
+            type,
+          },
+        });
+      } catch (notifyErr) {
+        console.error(`[OrderService] Failed to send status notification for order ${order._id}:`, notifyErr.message);
+      }
+    }
   }
 }
 

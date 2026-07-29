@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/cart/cart_cubit.dart';
+import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/configs/system.dart';
 import 'package:tuhubread/di.dart';
 import 'package:tuhubread/l10n/app_localizations.dart';
@@ -18,19 +19,23 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GetMaterialApp(
-        title: F.title,
-        debugShowCheckedModeBanner: false,
-        builder: (context, child) => MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
-            BlocProvider<CartCubit>.value(value: getIt<CartCubit>()),
-          ],
-          child: Material(child: child),
+    title: F.title,
+    debugShowCheckedModeBanner: false,
+    builder: (context, child) => MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
+        BlocProvider<CartCubit>.value(value: getIt<CartCubit>()),
+        BlocProvider<NotificationCubit>.value(
+          value: getIt<NotificationCubit>(),
         ),
-        navigatorKey: System.navigatorKey,
-        getPages: AppRoutes().routes,
-        initialRoute: Routes.splashPage,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-      );
+      ],
+      child: Material(child: child),
+    ),
+    navigatorKey: System.navigatorKey,
+    getPages: AppRoutes().routes,
+    initialRoute: Routes.splashPage,
+    locale: initialLocale ?? const Locale('vi'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+  );
 }

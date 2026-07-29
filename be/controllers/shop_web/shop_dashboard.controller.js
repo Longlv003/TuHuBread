@@ -1,4 +1,5 @@
 const dashboardService = require("../../services/dashboard.service");
+const { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } = require("../../utils/orderStatus.util");
 
 class ShopDashboardController {
   /**
@@ -20,6 +21,8 @@ class ShopDashboardController {
 
       res.render("shop/dashboard", {
         stats,
+        orderStatusLabels: ORDER_STATUS_LABELS,
+        paymentStatusLabels: PAYMENT_STATUS_LABELS,
         firebaseConfig,
         shop: req.shop,
         user: req.user,

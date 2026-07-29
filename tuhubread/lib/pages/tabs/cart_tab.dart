@@ -77,60 +77,60 @@ class CartTab extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  for (final item in cartState.items)
-                    CartItemCard(
-                      key: ValueKey(item.id),
-                      item: item,
-                      onIncrement: () => cubit.incrementQuantity(item.id),
-                      onDecrement: () => cubit.decrementQuantity(
-                        item.id,
-                        confirmShow: () => _showRemoveConfirm(context, item.productName),
+                  children: [
+                    for (final item in cartState.items)
+                      CartItemCard(
+                        key: ValueKey(item.id),
+                        item: item,
+                        onIncrement: () => cubit.incrementQuantity(item.id),
+                        onDecrement: () => cubit.decrementQuantity(
+                          item.id,
+                          confirmShow: () => _showRemoveConfirm(context, item.productName),
+                        ),
+                        onRemove: () => cubit.removeItem(
+                          item.id,
+                          confirmShow: () => _showRemoveConfirm(context, item.productName),
+                        ),
                       ),
-                      onRemove: () => cubit.removeItem(
-                        item.id,
-                        confirmShow: () => _showRemoveConfirm(context, item.productName),
+                    if (suggestions.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.cartSuggestionTitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C3E50),
+                        ),
                       ),
-                    ),
-                  if (suggestions.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.cartSuggestionTitle,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C3E50),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 128,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: suggestions.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
+                          itemBuilder: (context, index) {
+                            final product = suggestions[index];
+                            return CartSuggestionCard(
+                              product: product,
+                              onAdd: () =>
+                                  CartActionHelper.quickAddProductWithFeedback(
+                                    context,
+                                    product.id,
+                                    successMessage: l10n.detailAddedToCart,
+                                    failureFallback: l10n.cartAddFailed,
+                                  ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 128,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: suggestions.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 10),
-                        itemBuilder: (context, index) {
-                          final product = suggestions[index];
-                          return CartSuggestionCard(
-                            product: product,
-                            onAdd: () =>
-                                CartActionHelper.quickAddProductWithFeedback(
-                                  context,
-                                  product.id,
-                                  successMessage: l10n.detailAddedToCart,
-                                  failureFallback: l10n.cartAddFailed,
-                                ),
-                          );
-                        },
-                      ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          CartSummaryBar(
+            CartSummaryBar(
               subtotal: cartState.subtotal,
               itemCount: cartState.totalQuantity,
               onCheckout: () => getx.Get.to(

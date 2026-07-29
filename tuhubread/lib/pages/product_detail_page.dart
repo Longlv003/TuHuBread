@@ -12,6 +12,7 @@ import '../models/product_option.model.dart';
 import '../models/product_review.model.dart';
 import '../models/product_variant.model.dart';
 import '../utils/currency_formatter.dart';
+import 'checkout_page.dart';
 
 class ProductDetailPage extends StatelessWidget {
   const ProductDetailPage({super.key});
@@ -1099,15 +1100,13 @@ class _ProductDetailContent extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.detailBuyNowSuccess),
-                      backgroundColor: const Color(0xFFE67E22),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 2),
-                    ),
+                  final detailState = context.read<ProductDetailCubit>().state;
+                  if (detailState is! ProductDetailLoaded) return;
+
+                  final item = CartActionHelper.buildBuyNowItem(detailState);
+                  getx.Get.to(
+                    () => CheckoutPage(items: [item], subtotal: item.lineTotal),
                   );
-                  getx.Get.back();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE67E22),

@@ -1,0 +1,108 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Đánh giá khách hàng</h1>
+      <p>Xem và kiểm duyệt các đánh giá về cửa hàng của bạn</p>
+    </div>
+  </div>
+
+  <div class="search-filter-bar">
+    <div class="filter-box">
+      <select id="reviewFilterRating">
+        <option value="all">Tất cả sao</option>
+        <option value="5">5 sao</option>
+        <option value="4">4 sao</option>
+        <option value="3">3 sao</option>
+        <option value="2">2 sao</option>
+        <option value="1">1 sao</option>
+      </select>
+    </div>
+    <div class="filter-box">
+      <select id="reviewFilterProduct">
+        <option value="all">Tất cả sản phẩm</option>
+        <% products.forEach(p => { %><option value="<%= p._id %>"><%= p.product_name %></option><% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <h3>Danh sách đánh giá (<%= reviews.length %>)</h3>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Khách hàng</th><th>Sản phẩm</th><th>Đơn hàng</th><th>Đánh giá</th><th>Nội dung</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
+        </thead>
+        <tbody id="reviewsTableBody">
+          <% reviews.forEach(r => { %>
+            <tr data-rating="<%= r.rating %>" data-product-id="<%= r.product_id ? r.product_id._id : '' %>">
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <img src="<%= r.user_id && r.user_id.avatar ? r.user_id.avatar : 'https://placehold.co/32' %>" onerror="this.src='https://placehold.co/32'" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                  <span><%= r.user_id ? r.user_id.full_name : 'N/A' %></span>
+                </div>
+              </td>
+              <td><%= r.product_id ? r.product_id.product_name : 'N/A' %></td>
+              <td>#<%= r.order_id ? r.order_id.order_code : 'N/A' %></td>
+              <td>
+                <% for (let i = 0; i < 5; i++) { %>
+                  <i class="fa-solid fa-star" style="color: <%= i < r.rating ? '#F1C40F' : '#E8DFD3' %>; font-size: 12px;"></i>
+                <% } %>
+              </td>
+              <td style="max-width: 260px;"><%= r.comment || '(Không có nội dung)' %></td>
+              <td>
+                <span class="status-badge <%= r.status === 'visible' ? 'status-active' : 'status-inactive' %>"><%= r.status === 'visible' ? 'Hiển thị' : 'Đã ẩn' %></span>
+              </td>
+              <td class="col-actions">
+                <div class="actions-wrap">
+                  <button type="button" class="btn-action" onclick="onToggleReview('<%= r._id %>')"><%= r.status === 'visible' ? 'Ẩn đánh giá' : 'Hiện đánh giá' %></button>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function onToggleReview(id) {
+    if (!confirm("Bạn có chắc muốn thay đổi trạng thái hiển thị đánh giá này?")) return;
+    try {
+      const response = await fetch(`/shop/reviews/toggle/${id}`, { method: "POST" });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  }
+
+  const reviewFilterRating = document.getElementById("reviewFilterRating");
+  const reviewFilterProduct = document.getElementById("reviewFilterProduct");
+
+  function filterReviews() {
+    const ratingFilter = reviewFilterRating.value;
+    const productFilter = reviewFilterProduct.value;
+    const rows = document.querySelectorAll("#reviewsTableBody tr");
+
+    rows.forEach(row => {
+      const rating = row.getAttribute("data-rating");
+      const productId = row.getAttribute("data-product-id");
+      const matchesRating = (ratingFilter === "all") || (rating === ratingFilter);
+      const matchesProduct = (productFilter === "all") || (productId === productFilter);
+      row.style.display = (matchesRating && matchesProduct) ? "" : "none";
+    });
+  }
+
+  reviewFilterRating.addEventListener("change", filterReviews);
+  reviewFilterProduct.addEventListener("change", filterReviews);
+</script>
+
+<%- include('partials/footer') %>

@@ -9,6 +9,7 @@ import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
 import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/voucher/voucher_cubit.dart';
+import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/repositories/address_repository.dart';
 import 'package:tuhubread/repositories/address_repository_impl.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
@@ -24,6 +25,9 @@ import 'package:tuhubread/repositories/payment_repository_impl.dart';
 import 'package:tuhubread/services/api_service.dart';
 import 'package:tuhubread/services/location_service.dart';
 import 'package:tuhubread/services/vietnam_address_service.dart';
+import 'package:tuhubread/services/notification_service.dart';
+import 'package:tuhubread/repositories/notification_repository.dart';
+import 'package:tuhubread/repositories/notification_repository_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -31,6 +35,12 @@ Future<void> init() async {
   // ─── Core services ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<Logger>(() => Logger());
   getIt.registerLazySingleton<ApiService>(() => ApiService());
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationService(repository: getIt<NotificationRepository>()),
+  );
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<AuthCubit>(
@@ -86,11 +96,15 @@ Future<void> init() async {
   getIt.registerFactory<OrderCubit>(
     () => OrderCubit(apiService: getIt<ApiService>()),
   );
+
   // ─── Payment ──────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<PaymentRepository>(
     () => PaymentRepositoryImpl(apiService: getIt<ApiService>()),
   );
   getIt.registerFactory<PaymentCubit>(
     () => PaymentCubit(repository: getIt<PaymentRepository>()),
+  );
+  getIt.registerLazySingleton<NotificationCubit>(
+    () => NotificationCubit(repository: getIt<NotificationRepository>())..loadNotifications(),
   );
 }

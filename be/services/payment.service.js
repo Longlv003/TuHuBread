@@ -15,6 +15,9 @@ const orderService = require("./order.service");
 const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
+const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
+const notificationService = require("./notification.service");
+const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -82,14 +85,17 @@ class PaymentService {
    * @param {string|null} params.voucherCode
    * @param {string|null} params.note
    * @param {string} [params.locale="VN"]
+   * @param {Array|undefined} params.items — nếu có (vd. "Mua ngay"), thanh
+   *   toán đúng các sản phẩm này thay vì đọc toàn bộ giỏ hàng thật.
    * @returns {Promise<{ paymentUrl: string, totalAmount: number }>}
    */
-  async createPaymentUrl(req, user, { addressId, deliveryOption, voucherCode, note, locale = "VN" }) {
-    // 1. Validate giỏ hàng & tính giá server-side
+  async createPaymentUrl(req, user, { addressId, deliveryOption, voucherCode, note, locale = "VN", items }) {
+    // 1. Validate giỏ hàng (hoặc items chỉ định thẳng) & tính giá server-side
     const calc = await orderService.validateCartAndCalculate(user._id, {
       addressId,
       deliveryOption,
       voucherCode,
+      explicitItems: items,
     });
 
     // 2. Tạo payment session (snapshot)
@@ -286,15 +292,44 @@ class PaymentService {
       shopIndex++;
     }
 
-    // 3. Hard-delete cart_items
+    // 3. Xoá khỏi giỏ hàng đúng những sản phẩm vừa thanh toán (không xoá toàn
+    // bộ giỏ hàng, vì "Mua ngay" thanh toán 1 sản phẩm không nằm trong giỏ
+    // hàng thật — xoá hết sẽ làm mất các sản phẩm khác khách đã thêm trước đó).
     const activeCart = await cartModel.findOne({
       user_id: session.user_id,
       status: "active",
       deleted_at: null,
     });
     if (activeCart) {
-      await cartItemModel.deleteMany({ cart_id: activeCart._id });
-      activeCart.cart_total = 0;
+      const paidKeys = new Set(
+        session.items.map((it) =>
+          buildCartItemConfigKey(
+            String(it.product_id),
+            String(it.variant_id),
+            (it.selected_options || []).map((o) => o.option_id),
+          ),
+        ),
+      );
+
+      const existingCartItems = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
+      const idsToDelete = existingCartItems
+        .filter((ci) =>
+          paidKeys.has(
+            buildCartItemConfigKey(
+              String(ci.product_id),
+              String(ci.variant_id),
+              (ci.selected_options || []).map((o) => o.option_id),
+            ),
+          ),
+        )
+        .map((ci) => ci._id);
+
+      if (idsToDelete.length > 0) {
+        await cartItemModel.deleteMany({ _id: { $in: idsToDelete } });
+      }
+
+      const remainingItems = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
+      activeCart.cart_total = remainingItems.reduce((sum, it) => sum + it.subtotal, 0);
       await activeCart.save();
     }
 
@@ -319,6 +354,25 @@ class PaymentService {
     session.order_ids = createdOrders.map((o) => o._id);
     await session.save();
 
+    // Send notifications for each order
+    for (const order of createdOrders) {
+      try {
+        await notificationService.notify({
+          userId: session.user_id,
+          type: NOTIFICATION_TYPES.PAYMENT_SUCCESS,
+          title: "Thanh toán thành công",
+          message: `Đơn hàng ${order.order_code} đã được thanh toán thành công`,
+          orderId: order._id,
+          data: {
+            orderId: order._id.toString(),
+            type: NOTIFICATION_TYPES.PAYMENT_SUCCESS,
+          },
+        });
+      } catch (notifyErr) {
+        console.error(`[PaymentService] Notification error for order ${order.order_code}:`, notifyErr.message);
+      }
+    }
+
     return {
       RspCode: "00",
       Message: "Confirm Success",
@@ -335,6 +389,21 @@ class PaymentService {
     session.vnp_transaction_no = transactionNo || null;
     session.vnp_response_code = responseCode || null;
     await session.save();
+
+    try {
+      await notificationService.notify({
+        userId: session.user_id,
+        type: NOTIFICATION_TYPES.PAYMENT_FAILED,
+        title: "Thanh toán thất bại",
+        message: `Giao dịch thanh toán VNPAY của bạn đã không thành công hoặc bị hủy.`,
+        data: {
+          sessionId: session._id.toString(),
+          type: NOTIFICATION_TYPES.PAYMENT_FAILED,
+        },
+      });
+    } catch (notifyErr) {
+      console.error(`[PaymentService] Notification error for failed payment session ${session._id}:`, notifyErr.message);
+    }
 
     return { RspCode: "00", Message: "Payment failed recorded" };
   }

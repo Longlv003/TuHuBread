@@ -20,7 +20,9 @@ async function resolveUser(req) {
  * POST /api/payments/vnpay
  * Tạo payment session & URL thanh toán VNPAY từ giỏ hàng hiện tại.
  *
- * Body: { address_id, delivery_option, voucher_code?, note?, locale? }
+ * Body: { address_id, delivery_option, voucher_code?, note?, locale?, items? }
+ * `items` chỉ dùng cho "Mua ngay": khi có sẽ thanh toán đúng các sản phẩm này
+ * thay vì đọc toàn bộ giỏ hàng thật của người dùng.
  * Response: { status, data: { payment_url, total_amount, session_id } }
  */
 exports.createVnpayPayment = async (req, res) => {
@@ -36,6 +38,7 @@ exports.createVnpayPayment = async (req, res) => {
       voucher_code: voucherCode,
       note,
       locale,
+      items,
     } = req.body;
 
     if (!addressId) {
@@ -48,6 +51,7 @@ exports.createVnpayPayment = async (req, res) => {
       voucherCode,
       note,
       locale,
+      items,
     });
 
     return res.status(200).json({

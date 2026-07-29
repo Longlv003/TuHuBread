@@ -7,9 +7,12 @@ var voucherCtrl = require("../controllers/voucher.controller");
 var shopCtrl = require("../controllers/shop.controller");
 var addressCtrl = require("../controllers/address.controller");
 var orderCtrl = require("../controllers/order.controller");
-
+var bannerCtrl = require("../controllers/banner.controller");
 
 router.post("/auth/firebase", accCtrl.verifyFirebaseUser);
+
+// Banner Routes
+router.get("/banners", bannerCtrl.getActiveBanners);
 
 // Shop Routes
 router.get("/shops", shopCtrl.getShops);
@@ -21,6 +24,7 @@ router.get("/shops/:shopId/categories", catCtrl.getShopCategories);
 // Product Routes
 router.get("/products/best-sellers", prodCtrl.getBestSellers);
 router.get("/products/sales", prodCtrl.getSaleProducts);
+router.get("/products/featured", prodCtrl.getFeaturedProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
 router.get("/products", prodCtrl.getProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
@@ -54,6 +58,7 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
+
 // Cart Routes
 var cartCtrl = require("../controllers/cart.controller");
 router.get("/carts", firebaseAuth, cartCtrl.getCart);
@@ -67,5 +72,8 @@ router.post("/payments/vnpay", firebaseAuth, paymentCtrl.createVnpayPayment);
 router.get("/payment/vnpay-return", paymentCtrl.vnpayReturn);
 router.get("/payment/vnpay-ipn", paymentCtrl.vnpayIpn);
 router.get("/payment/vnpay-verify", firebaseAuth, paymentCtrl.verifyPayment);
+// Notification Routes
+const notificationRouter = require("./notification.routes");
+router.use("/notifications", notificationRouter);
 
 module.exports = router;

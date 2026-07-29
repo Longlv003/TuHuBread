@@ -1,0 +1,132 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Quản lý người dùng</h1>
+      <p>Xem, cập nhật thông tin và khóa/mở khóa tài khoản trên toàn hệ thống</p>
+    </div>
+  </div>
+
+  <form id="filterForm" method="GET" action="/admin/users">
+    <div class="search-filter-bar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="search" value="<%= search %>" placeholder="Tìm theo tên hoặc email...">
+      </div>
+      <div class="filter-box">
+        <select name="role" onchange="document.getElementById('filterForm').submit()">
+          <option value="all" <%= role === 'all' ? 'selected' : '' %>>Tất cả vai trò</option>
+          <option value="customer" <%= role === 'customer' ? 'selected' : '' %>>Khách hàng</option>
+          <option value="shop_owner" <%= role === 'shop_owner' ? 'selected' : '' %>>Chủ chi nhánh</option>
+          <option value="driver" <%= role === 'driver' ? 'selected' : '' %>>Tài xế</option>
+          <option value="admin" <%= role === 'admin' ? 'selected' : '' %>>Admin</option>
+        </select>
+      </div>
+      <div class="filter-box">
+        <select name="status" onchange="document.getElementById('filterForm').submit()">
+          <option value="all" <%= status === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+          <option value="active" <%= status === 'active' ? 'selected' : '' %>>Hoạt động</option>
+          <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Không hoạt động</option>
+          <option value="blocked" <%= status === 'blocked' ? 'selected' : '' %>>Đã khóa</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-action">Lọc</button>
+    </div>
+  </form>
+
+  <div class="section-card">
+    <div class="section-header">
+      <h3>Danh sách người dùng (<%= total %>)</h3>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
+        </thead>
+        <tbody>
+          <% users.forEach(u => { %>
+            <tr>
+              <td><strong><%= u.full_name %></strong></td>
+              <td><%= u.email || 'N/A' %></td>
+              <td><%= u.phone || 'N/A' %></td>
+              <td><%= u.role %></td>
+              <td><span class="status-badge <%= u.status === 'blocked' ? 'status-inactive' : 'status-active' %>"><%= u.status %></span></td>
+              <td class="col-actions">
+                <div class="actions-wrap">
+                  <button type="button" class="btn-action" onclick='onEditUser(<%- JSON.stringify({ _id: u._id, full_name: u.full_name, phone: u.phone }) %>)'>Sửa</button>
+                  <% if (u.role !== 'admin') { %>
+                    <button type="button" class="btn-action <%= u.status === 'blocked' ? '' : 'btn-delete' %>" onclick="onToggleLock('<%= u._id %>')"><%= u.status === 'blocked' ? 'Mở khóa' : 'Khóa' %></button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (totalPages > 1) { %>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
+        <% for (let p = 1; p <= totalPages; p++) { %>
+          <a href="/admin/users?search=<%= encodeURIComponent(search) %>&role=<%= role %>&status=<%= status %>&page=<%= p %>"
+             class="btn-action" style="<%= p === page ? 'background:var(--primary); border-color:var(--primary);' : '' %>"><%= p %></a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="section-card" id="editUserCard" style="display:none; margin-top:24px; max-width: 480px;">
+    <div class="section-header"><h3>Sửa thông tin người dùng</h3></div>
+    <form id="editUserForm">
+      <input type="hidden" id="editUserId">
+      <div class="form-group"><label>Họ tên</label><input type="text" id="editFullName" name="fullName"></div>
+      <div class="form-group"><label>Số điện thoại</label><input type="text" id="editPhone" name="phone"></div>
+      <button type="submit" class="btn-submit">Lưu</button>
+      <button type="button" class="btn-cancel" onclick="document.getElementById('editUserCard').style.display='none'">Hủy</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function onEditUser(u) {
+    document.getElementById("editUserCard").style.display = "block";
+    document.getElementById("editUserId").value = u._id;
+    document.getElementById("editFullName").value = u.full_name || "";
+    document.getElementById("editPhone").value = u.phone || "";
+    document.getElementById("editUserCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  document.getElementById("editUserForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editUserId").value;
+    const formData = new FormData(e.target);
+    const body = Object.fromEntries(formData.entries());
+    try {
+      const response = await fetch(`/admin/users/edit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  });
+
+  async function onToggleLock(id) {
+    if (!confirm("Xác nhận thay đổi trạng thái tài khoản này?")) return;
+    try {
+      const response = await fetch(`/admin/users/toggle-lock/${id}`, { method: "POST" });
+      const result = await response.json();
+      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
+      else alert(result.msg || "Thất bại");
+    } catch (err) { console.error(err); alert("Lỗi"); }
+  }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,107 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Báo cáo doanh thu</h1>
+      <p>Theo dõi doanh thu và sản phẩm bán chạy theo thời gian</p>
+    </div>
+    <div class="filter-box">
+      <select id="daysFilter" onchange="window.location.href = '/shop/reports?days=' + this.value">
+        <option value="7" <%= days === 7 ? 'selected' : '' %>>7 ngày qua</option>
+        <option value="30" <%= days === 30 ? 'selected' : '' %>>30 ngày qua</option>
+        <option value="90" <%= days === 90 ? 'selected' : '' %>>90 ngày qua</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 30px;">
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Tổng doanh thu</h4>
+        <h2><%= Math.round(report.summary.totalRevenue).toLocaleString('vi-VN') %>đ</h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Đơn hoàn thành</h4>
+        <h2><%= report.summary.totalOrders %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Giá trị đơn TB</h4>
+        <h2><%= Math.round(report.summary.avgOrderValue).toLocaleString('vi-VN') %>đ</h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-chart-simple"></i></div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom: 24px;">
+    <div class="section-header"><h3>Doanh thu theo ngày</h3></div>
+    <div class="chart-container">
+      <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header"><h3>Top sản phẩm bán chạy</h3></div>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>#</th><th>Sản phẩm</th><th>Số lượng bán</th><th>Doanh thu</th></tr></thead>
+        <tbody>
+          <% report.topProducts.forEach((p, idx) => { %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td><strong><%= p.product_name %></strong></td>
+              <td><%= p.quantity_sold %></td>
+              <td><%= p.revenue.toLocaleString('vi-VN') %>đ</td>
+            </tr>
+          <% }) %>
+          <% if (report.topProducts.length === 0) { %>
+            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Chưa có dữ liệu bán hàng trong khoảng thời gian này</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const dailyRevenue = <%- JSON.stringify(report.dailyRevenue) %>;
+
+  const ctx = document.getElementById("revenueChart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dailyRevenue.map(d => d.date.slice(5)),
+      datasets: [{
+        label: "Doanh thu (đ)",
+        data: dailyRevenue.map(d => d.revenue),
+        borderColor: "#E67E22",
+        backgroundColor: "rgba(230, 126, 34, 0.15)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#2C3E50" } } },
+      scales: {
+        x: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } },
+        y: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } }
+      }
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

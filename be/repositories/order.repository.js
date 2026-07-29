@@ -17,6 +17,16 @@ class OrderRepository {
       .populate("user_id");
   }
 
+  async findByIdScoped(id, shopId) {
+    return orderModel.findOne({ _id: id, shop_id: shopId, deleted_at: null })
+      .populate("user_id")
+      .populate("address_id");
+  }
+
+  async findDetailsByOrderId(orderId) {
+    return orderDetailModel.find({ order_id: orderId, deleted_at: null });
+  }
+
   async createOrder(orderData) {
     return await orderModel.create(orderData);
   }

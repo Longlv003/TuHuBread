@@ -1,22 +1,20 @@
 const mongoose = require("mongoose");
+const { userModel } = require("../models/user.model");
+const { addressModel } = require("../models/address.model");
+const { shopModel } = require("../models/shop.model");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
-const { userModel } = require("../models/user.model");
-const { shopModel } = require("../models/shop.model");
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
-const { addressModel } = require("../models/address.model");
+const { productOptionModel } = require("../models/productOption.model");
 const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
-
-
-const DELIVERY_FEES = {
-  priority: 25000,
-  standard: 15000,
-  saving: 0,
-};
+const socketService = require("../services/socket.service");
+const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
+const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
+const orderService = require("../services/order.service");
 
 const PAYMENT_METHODS = ["cash", "vnpay"];
 
@@ -30,6 +28,7 @@ function generateOrderCode() {
   return `TH${time}${rand}`;
 }
 
+// GET /api/orders
 exports.getOrders = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
   try {
@@ -44,13 +43,11 @@ exports.getOrders = async (req, res) => {
       .populate("shop_id")
       .sort({ createdAt: -1 });
 
-
-
     dataRes.data = orders.map(order => {
       const shopLogo = order.shop_id?.logo
         ? (order.shop_id.logo.startsWith("http")
-            ? order.shop_id.logo
-            : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
+          ? order.shop_id.logo
+          : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
         : null;
 
       return {
@@ -70,6 +67,7 @@ exports.getOrders = async (req, res) => {
   return res.json(dataRes);
 };
 
+// GET /api/orders/:id
 exports.getOrderById = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
   try {
@@ -95,8 +93,8 @@ exports.getOrderById = async (req, res) => {
 
     const shopLogo = order.shop_id?.logo
       ? (order.shop_id.logo.startsWith("http")
-          ? order.shop_id.logo
-          : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
+        ? order.shop_id.logo
+        : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
       : null;
 
     dataRes.data = {
@@ -111,8 +109,8 @@ exports.getOrderById = async (req, res) => {
       items: items.map(item => {
         const itemImage = item.product_image
           ? (item.product_image.startsWith("http")
-              ? item.product_image
-              : `${req.protocol}://${req.get("host")}/images/products/${item.product_image.split("/").pop()}`)
+            ? item.product_image
+            : `${req.protocol}://${req.get("host")}/images/products/${item.product_image.split("/").pop()}`)
           : null;
         return {
           ...item.toObject(),
@@ -129,6 +127,7 @@ exports.getOrderById = async (req, res) => {
   return res.json(dataRes);
 };
 
+// POST /api/orders/:id/cancel
 exports.cancelOrder = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
   try {
@@ -152,11 +151,10 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
-    order.order_status = "cancelled";
-    await order.save();
+    const updatedOrder = await orderService.updateStatus(order._id, { orderStatus: "cancelled" });
 
     dataRes.msg = "Hủy đơn hàng thành công";
-    dataRes.data = order;
+    dataRes.data = updatedOrder;
 
   } catch (err) {
     console.error("cancelOrder error:", err.message);
@@ -184,7 +182,7 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
-    if (!DELIVERY_FEES.hasOwnProperty(delivery_option)) {
+    if (!DELIVERY_MULTIPLIERS.hasOwnProperty(delivery_option)) {
       dataRes.msg = "Tùy chọn giao hàng không hợp lệ";
       return res.status(400).json(dataRes);
     }
@@ -209,8 +207,8 @@ exports.createOrder = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const { productOptionModel } = require("../models/productOption.model");
-
+    // Validate từng item + tính lại giá server-side từ product/variant/option
+    // (không tin tưởng unit_price do client gửi lên)
     for (const item of items) {
       if (
         !item.product_id ||
@@ -311,7 +309,9 @@ exports.createOrder = async (req, res) => {
     }
 
     // Order model chỉ hỗ trợ 1 shop/đơn — gộp giỏ hàng theo shop_id, mỗi
-    // shop tạo 1 đơn riêng. Phí giao hàng được tính 1 lần cho đơn đầu tiên.
+    // shop tạo 1 đơn riêng. Mỗi đơn tự tính phí giao hàng theo khoảng cách
+    // thực tế từ chính chi nhánh đó tới địa chỉ giao (không còn dùng chung
+    // 1 mức phí cố định cho cả giỏ hàng).
     const itemsByShop = new Map();
     for (const item of items) {
       const key = String(item.shop_id);
@@ -319,14 +319,36 @@ exports.createOrder = async (req, res) => {
       itemsByShop.get(key).push(item);
     }
 
-    const deliveryFee = DELIVERY_FEES[delivery_option];
-    
+    // Tính trước items_total + phí ship thực tế cho từng shop (cần tọa độ shop)
+    const shopEntries = [];
+    for (const [shopId, shopItems] of itemsByShop) {
+      const shop = await shopModel.findOne({ _id: shopId, deleted_at: null });
+      if (!shop) {
+        dataRes.msg = "Không tìm thấy cửa hàng cho một số sản phẩm trong giỏ hàng";
+        return res.status(404).json(dataRes);
+      }
+
+      const itemsTotal = shopItems.reduce(
+        (sum, it) => sum + it.unit_price * it.quantity,
+        0,
+      );
+      const deliveryFee = calculateDeliveryFee(
+        shop.location ? shop.location.coordinates : undefined,
+        address.location ? address.location.coordinates : undefined,
+        delivery_option,
+      );
+
+      shopEntries.push({ shopId, shopItems, itemsTotal, deliveryFee });
+    }
+
+    const overallItemsTotal = shopEntries.reduce((sum, e) => sum + e.itemsTotal, 0);
+    const overallDeliveryFee = shopEntries.reduce((sum, e) => sum + e.deliveryFee, 0);
+
     // Tính toán lượng giảm giá tổng của voucher
     let totalDiscount = 0;
     if (appliedVoucher) {
-      const overallItemsTotal = items.reduce((sum, it) => sum + it.unit_price * it.quantity, 0);
       if (appliedVoucher.discountType === "free_shipping") {
-        totalDiscount = deliveryFee;
+        totalDiscount = overallDeliveryFee;
       } else if (appliedVoucher.discountType === "percent") {
         let discount = overallItemsTotal * (appliedVoucher.discountValue / 100);
         if (appliedVoucher.maxDiscountAmount && discount > appliedVoucher.maxDiscountAmount) {
@@ -339,16 +361,9 @@ exports.createOrder = async (req, res) => {
     }
 
     const createdOrders = [];
-    let shopIndex = 0;
     let remainingDiscount = totalDiscount;
 
-    for (const [shopId, shopItems] of itemsByShop) {
-      const itemsTotal = shopItems.reduce(
-        (sum, it) => sum + it.unit_price * it.quantity,
-        0,
-      );
-      const shopDeliveryFee = shopIndex === 0 ? deliveryFee : 0;
-      
+    for (const { shopId, shopItems, itemsTotal, deliveryFee: shopDeliveryFee } of shopEntries) {
       let orderDiscount = 0;
       if (remainingDiscount > 0) {
         orderDiscount = Math.min(remainingDiscount, itemsTotal + shopDeliveryFee);
@@ -381,9 +396,9 @@ exports.createOrder = async (req, res) => {
           product_name: it.product_name,
           variant_name: it.variant_name,
           product_image: it.product_image || null,
-          base_price: it.unit_price,
+          base_price: it.base_price,
           selected_options: it.selected_options || [],
-          option_total_price: 0,
+          option_total_price: it.option_total_price || 0,
           unit_price: it.unit_price,
           subtotal: it.unit_price * it.quantity,
         })),
@@ -398,7 +413,7 @@ exports.createOrder = async (req, res) => {
         total_amount: totalAmount,
       });
 
-      shopIndex += 1;
+      socketService.emitNewOrder(shopId, order);
     }
 
     // Đánh dấu voucher đã sử dụng
@@ -419,18 +434,41 @@ exports.createOrder = async (req, res) => {
       total_amount: createdOrders.reduce((sum, o) => sum + o.total_amount, 0),
     };
 
-    if (payment_method === "vnpay" && createdOrders.length > 0) {
-      const vnPayUtil = require("../utils/vnpay.util");
-      const paymentUrl = await vnPayUtil.createPaymentUrl(req, createdOrders[0].order_code, dataRes.data.total_amount);
-      dataRes.data.payment_url = paymentUrl;
-    }
-
-    // Clear user's active cart in the database
+    // Xoá khỏi giỏ hàng đúng những sản phẩm vừa đặt (không xoá toàn bộ giỏ hàng,
+    // vì "Mua ngay" gửi thẳng 1 sản phẩm không nằm trong giỏ — xoá hết sẽ làm mất
+    // các sản phẩm khác khách đã thêm vào giỏ từ trước).
     try {
       const cart = await cartModel.findOne({ user_id: user._id, status: "active" });
       if (cart) {
-        await cartItemModel.deleteMany({ cart_id: cart._id });
-        cart.cart_total = 0;
+        const orderedKeys = new Set(
+          items.map((it) =>
+            buildCartItemConfigKey(
+              String(it.product_id),
+              String(it.variant_id),
+              (it.selected_options || []).map((o) => o.option_id),
+            ),
+          ),
+        );
+
+        const cartItems = await cartItemModel.find({ cart_id: cart._id, deleted_at: null });
+        const idsToDelete = cartItems
+          .filter((ci) =>
+            orderedKeys.has(
+              buildCartItemConfigKey(
+                String(ci.product_id),
+                String(ci.variant_id),
+                (ci.selected_options || []).map((o) => o.option_id),
+              ),
+            ),
+          )
+          .map((ci) => ci._id);
+
+        if (idsToDelete.length > 0) {
+          await cartItemModel.deleteMany({ _id: { $in: idsToDelete } });
+        }
+
+        const remainingItems = await cartItemModel.find({ cart_id: cart._id, deleted_at: null });
+        cart.cart_total = remainingItems.reduce((sum, it) => sum + it.subtotal, 0);
         await cart.save();
       }
     } catch (cartErr) {
@@ -444,4 +482,3 @@ exports.createOrder = async (req, res) => {
     return res.status(500).json(dataRes);
   }
 };
-

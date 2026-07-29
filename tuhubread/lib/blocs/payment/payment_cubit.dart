@@ -3,6 +3,7 @@ import 'package:tuhubread/models/order_result.model.dart';
 import 'package:tuhubread/models/payment_verify_result.model.dart';
 
 import '../../core/result.dart';
+import '../../models/cart_item.model.dart';
 import '../../repositories/payment_repository.dart';
 import 'payment_state.dart';
 
@@ -25,6 +26,7 @@ class PaymentCubit extends Cubit<PaymentState> {
     required String deliveryOption,
     String? voucherCode,
     String? note,
+    List<CartItemModel>? items,
   }) async {
     emit(const PaymentLoading());
 
@@ -33,6 +35,7 @@ class PaymentCubit extends Cubit<PaymentState> {
       deliveryOption: deliveryOption,
       voucherCode: voucherCode,
       note: note,
+      items: items,
     );
 
     switch (result) {

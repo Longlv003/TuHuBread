@@ -6,6 +6,7 @@ import '../blocs/product_detail/product_detail_cubit.dart';
 import '../blocs/product_detail/product_detail_state.dart';
 import '../core/result.dart';
 import '../di.dart';
+import '../models/cart_item.model.dart';
 import '../models/product_detail.model.dart';
 import '../models/product_variant.model.dart';
 import '../repositories/home_repository.dart';
@@ -80,6 +81,37 @@ class CartActionHelper {
     );
 
     _showSnackBar(context, true, successMessage);
+  }
+
+  /// Xây dựng 1 [CartItemModel] cục bộ (không lưu server) từ lựa chọn hiện
+  /// tại trên màn chi tiết, dùng cho "Mua ngay" — đi thẳng tới Checkout với
+  /// đúng 1 sản phẩm này, không đụng tới giỏ hàng thật của người dùng.
+  static CartItemModel buildBuyNowItem(ProductDetailLoaded detailState) {
+    final detail = detailState.productDetail;
+    final variant = detailState.selectedVariant;
+    final optionIds = detailState.selectedOptionIds;
+    final optionNames = detail.options
+        .where((o) => optionIds.contains(o.id))
+        .map((o) => o.optionName)
+        .toList();
+    final unitPrice = detailState.quantity > 0
+        ? detailState.totalPrice / detailState.quantity
+        : detailState.totalPrice;
+
+    return CartItemModel(
+      id: 'buy_now_${variant.id}',
+      productId: detail.id,
+      productName: detail.productName,
+      image: variant.image ?? detail.image,
+      shopId: detail.shopId,
+      shopName: detail.shop?.shopName,
+      variantId: variant.id,
+      variantName: variant.variantName,
+      selectedOptionIds: optionIds,
+      selectedOptionNames: optionNames,
+      quantity: detailState.quantity,
+      unitPrice: unitPrice,
+    );
   }
 
   static void _showSnackBar(

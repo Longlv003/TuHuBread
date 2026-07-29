@@ -1,0 +1,172 @@
+<%- include('partials/header') %>
+
+<!-- Sidebar Navigation -->
+<%- include('partials/sidebar') %>
+
+<!-- Main Content Area -->
+<div class="main-content">
+  <div class="header-bar">
+    <div class="welcome-text">
+      <h1>Đơn hàng #<%= order.order_code %></h1>
+      <p>Đặt lúc <%= new Date(order.createdAt).toLocaleString('vi-VN') %></p>
+    </div>
+    <a href="/shop/orders" class="btn-action"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
+  </div>
+
+  <div class="content-grid">
+    <div>
+      <div class="section-card" style="margin-bottom: 24px;">
+        <div class="section-header">
+          <h3>Sản phẩm trong đơn</h3>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th>Biến thể</th>
+                <th>SL</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% items.forEach(item => { %>
+                <tr>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <img src="<%= item.product_image ? item.product_image : 'https://placehold.co/40' %>" onerror="this.src='https://placehold.co/40'" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
+                      <strong><%= item.product_name %></strong>
+                    </div>
+                  </td>
+                  <td><%= item.variant_name %></td>
+                  <td><%= item.quantity %></td>
+                  <td><%= item.unit_price.toLocaleString('vi-VN') %>đ</td>
+                  <td><%= item.subtotal.toLocaleString('vi-VN') %>đ</td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <h3>Tổng kết đơn hàng</h3>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Tạm tính</span><span><%= order.items_total.toLocaleString('vi-VN') %>đ</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Giảm giá</span><span>-<%= order.discount_amount.toLocaleString('vi-VN') %>đ</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Phí giao hàng</span><span><%= order.delivery_fee.toLocaleString('vi-VN') %>đ</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:800; border-top:1px solid var(--glass-border); padding-top:10px;"><span>Tổng cộng</span><span><%= order.total_amount.toLocaleString('vi-VN') %>đ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-card" style="margin-bottom: 24px;">
+        <div class="section-header"><h3>Trạng thái đơn hàng</h3></div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <span class="status-badge <%= order.order_status === 'completed' ? 'status-completed' : (order.order_status === 'cancelled' ? 'status-danger' : (order.order_status === 'pending' ? 'status-pending' : 'status-processing')) %>" style="font-size: 13px; align-self: flex-start;">
+            <%= orderStatusLabels[order.order_status] || order.order_status %>
+          </span>
+          <span class="status-badge <%= order.payment_status === 'paid' ? 'status-completed' : (order.payment_status === 'refunded' ? 'status-danger' : 'status-pending') %>" style="font-size: 13px; align-self: flex-start;">
+            Thanh toán: <%= paymentStatusLabels[order.payment_status] || order.payment_status %>
+          </span>
+
+          <% if (nextStatuses.length > 0) { %>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+              <% nextStatuses.forEach(status => {
+                const labels = {
+                  confirmed: "Xác nhận đơn",
+                  preparing: "Bắt đầu chuẩn bị",
+                  delivering: "Giao hàng",
+                  completed: "Hoàn thành đơn",
+                  cancelled: "Hủy đơn"
+                };
+              %>
+                <button type="button" class="<%= status === 'cancelled' ? 'btn-cancel' : 'btn-submit' %>" onclick="updateStatus('<%= status %>')"><%= labels[status] || status %></button>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <p style="color: var(--text-muted); font-size: 13px;">Đơn hàng đã kết thúc, không thể thay đổi thêm.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header"><h3>Thông tin giao hàng</h3></div>
+        <div style="font-size:14px; display:flex; flex-direction:column; gap:8px;">
+          <div><strong><%= order.user_id ? order.user_id.full_name : 'N/A' %></strong></div>
+          <div style="color:var(--text-muted);"><%= order.user_id ? (order.user_id.phone || 'Chưa có SĐT') : '' %></div>
+          <% if (order.address_id) { %>
+            <div style="color:var(--text-muted); margin-top:8px;">
+              <%= order.address_id.receiver_name %> - <%= order.address_id.receiver_phone %><br>
+              <%= order.address_id.address_detail %>
+            </div>
+          <% } %>
+          <% if (order.note) { %>
+            <div style="margin-top:8px; padding:10px; background:var(--surface-alt); border:1px solid var(--border); border-radius:12px;">
+              <em>Ghi chú: <%= order.note %></em>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="section-card" style="margin-top:24px;">
+        <div class="section-header"><h3>Lịch sử trạng thái</h3></div>
+        <% if (history.length === 0) { %>
+          <p style="color: var(--text-muted); font-size: 13px;">Chưa có thay đổi trạng thái nào.</p>
+        <% } else { %>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <% history.forEach(h => { %>
+              <div style="border-left: 2px solid var(--primary); padding-left: 14px;">
+                <div style="font-size:13px; font-weight:600;">
+                  <%= h.from_status ? (orderStatusLabels[h.from_status] || h.from_status) + " → " : "" %><%= orderStatusLabels[h.to_status] || h.to_status %>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                  <%= h.changed_by_name %> · <%= new Date(h.createdAt).toLocaleString('vi-VN') %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function updateStatus(newStatus) {
+    if (!confirm("Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?")) return;
+
+    try {
+      const response = await fetch("/shop/orders/edit-status/<%= order._id %>", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_status: newStatus })
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Cập nhật trạng thái thành công!");
+        window.location.reload();
+      } else {
+        alert(result.msg || "Cập nhật thất bại");
+      }
+    } catch (err) {
+      console.error("Update order status error:", err);
+      alert("Lỗi khi cập nhật trạng thái!");
+    }
+  }
+
+  function onSocketConnected(socket) {
+    socket.on("order_updated", (updatedOrder) => {
+      if (updatedOrder._id === "<%= order._id %>") {
+        window.location.reload();
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

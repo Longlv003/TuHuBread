@@ -12,7 +12,19 @@ const notificationSchema = new db.mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["order", "voucher", "system"],
+      enum: [
+        "order",
+        "voucher",
+        "system",
+        "PAYMENT_SUCCESS",
+        "PAYMENT_FAILED",
+        "ORDER_CREATED",
+        "ORDER_CONFIRMED",
+        "ORDER_PREPARING",
+        "ORDER_SHIPPING",
+        "ORDER_COMPLETED",
+        "ORDER_CANCELLED"
+      ],
     },
     data: { type: Object, default: null },
     is_read: { type: Boolean, required: true, default: false },

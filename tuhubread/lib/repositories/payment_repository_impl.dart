@@ -1,6 +1,7 @@
 import 'package:logger/logger.dart';
 
 import '../core/result.dart';
+import '../models/cart_item.model.dart';
 import '../models/order_result.model.dart';
 import '../models/payment_verify_result.model.dart';
 import '../services/api_service.dart';
@@ -21,6 +22,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     required String deliveryOption,
     String? voucherCode,
     String? note,
+    List<CartItemModel>? items,
   }) async {
     try {
       final res = await apiService.post('/api/payments/vnpay', {
@@ -28,6 +30,24 @@ class PaymentRepositoryImpl implements PaymentRepository {
         'delivery_option': deliveryOption,
         if (voucherCode != null) 'voucher_code': voucherCode,
         if (note != null) 'note': note,
+        if (items != null)
+          'items': items
+              .map(
+                (item) => {
+                  'product_id': item.productId,
+                  'variant_id': item.variantId,
+                  'product_name': item.productName,
+                  'variant_name': item.variantName,
+                  'product_image': item.image,
+                  'shop_id': item.shopId,
+                  'quantity': item.quantity,
+                  'unit_price': item.unitPrice,
+                  'selected_options': item.selectedOptionIds
+                      .map((id) => {'option_id': id})
+                      .toList(),
+                },
+              )
+              .toList(),
       });
 
       if (res['data'] != null) {
