@@ -15,13 +15,16 @@ function buildFirebaseConfig() {
 class ShopReviewController {
   async showReviews(req, res) {
     try {
-      const [reviews, products] = await Promise.all([
-        reviewService.getReviewsByShop(req.shop._id),
+      const [{ reviews, total, page, totalPages }, products] = await Promise.all([
+        reviewService.getReviewsByShopPaginated(req.shop._id, req.query.page),
         productRepository.findByShopId(req.shop._id)
       ]);
 
       res.render("shop/reviews", {
         reviews,
+        total,
+        page,
+        totalPages,
         products,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,

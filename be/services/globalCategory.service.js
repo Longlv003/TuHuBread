@@ -6,6 +6,21 @@ class GlobalCategoryService {
     return globalCategoryRepository.findAll();
   }
 
+  async getAllCategoriesPaginated(page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [categories, total] = await Promise.all([
+      globalCategoryRepository.findAllPaginated({ page: parsedPage, limit }),
+      globalCategoryRepository.countAll(),
+    ]);
+    return {
+      categories,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   async addCategory(data) {
     const { categoryName, status, categoryIcon } = data;
 

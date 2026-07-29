@@ -33,7 +33,7 @@
 
   <div class="section-card">
     <div class="section-header">
-      <h3>Danh sách đánh giá (<%= reviews.length %>)</h3>
+      <h3>Danh sách đánh giá (<%= total %>)</h3>
     </div>
     <div class="table-container">
       <table>
@@ -41,6 +41,15 @@
           <tr><th>Khách hàng</th><th>Sản phẩm</th><th>Đơn hàng</th><th>Đánh giá</th><th>Nội dung</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
         </thead>
         <tbody id="reviewsTableBody">
+          <% if (reviews.length === 0) { %>
+            <tr><td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-star-half-stroke"></i></div>
+                <div class="empty-state-title">Chưa có đánh giá nào</div>
+                <div class="empty-state-desc">Đánh giá của khách hàng sau khi mua sẽ hiển thị ở đây.</div>
+              </div>
+            </td></tr>
+          <% } %>
           <% reviews.forEach(r => { %>
             <tr data-rating="<%= r.rating %>" data-product-id="<%= r.product_id ? r.product_id._id : '' %>">
               <td>
@@ -69,19 +78,20 @@
           <% }) %>
         </tbody>
       </table>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/reviews' }) %>
     </div>
   </div>
 </div>
 
 <script>
   async function onToggleReview(id) {
-    if (!confirm("Bạn có chắc muốn thay đổi trạng thái hiển thị đánh giá này?")) return;
+    if (!(await showConfirmDialog({ title: "Thay đổi hiển thị", message: "Bạn có chắc muốn thay đổi trạng thái hiển thị đánh giá này?" }))) return;
     try {
       const response = await fetch(`/shop/reviews/toggle/${id}`, { method: "POST" });
       const result = await response.json();
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   }
 
   const reviewFilterRating = document.getElementById("reviewFilterRating");

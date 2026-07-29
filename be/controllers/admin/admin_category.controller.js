@@ -3,10 +3,13 @@ const globalCategoryService = require("../../services/globalCategory.service");
 class AdminCategoryController {
   async showCategories(req, res) {
     try {
-      const categories = await globalCategoryService.getAllCategories();
+      const { categories, total, page, totalPages } = await globalCategoryService.getAllCategoriesPaginated(req.query.page);
 
       res.render("admin/categories", {
         categories,
+        total,
+        page,
+        totalPages,
         admin: req.admin,
         title: "Danh mục toàn hệ thống",
         activeTab: "categories"

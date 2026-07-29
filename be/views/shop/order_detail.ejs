@@ -138,7 +138,7 @@
 
 <script>
   async function updateStatus(newStatus) {
-    if (!confirm("Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?")) return;
+    if (!(await showConfirmDialog({ title: "Cập nhật trạng thái", message: "Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?" }))) return;
 
     try {
       const response = await fetch("/shop/orders/edit-status/<%= order._id %>", {
@@ -149,21 +149,27 @@
 
       const result = await response.json();
       if (result.status === "success") {
-        alert("Cập nhật trạng thái thành công!");
-        window.location.reload();
+        showToast("Cập nhật trạng thái thành công!", "success");
+        setTimeout(() => window.location.reload(), 900);
       } else {
-        alert(result.msg || "Cập nhật thất bại");
+        showToast(result.msg || "Cập nhật thất bại", "error");
       }
     } catch (err) {
       console.error("Update order status error:", err);
-      alert("Lỗi khi cập nhật trạng thái!");
+      showToast("Lỗi khi cập nhật trạng thái!", "error");
     }
   }
 
   function onSocketConnected(socket) {
     socket.on("order_updated", (updatedOrder) => {
       if (updatedOrder._id === "<%= order._id %>") {
-        window.location.reload();
+        if (updatedOrder.order_status === "cancelled") {
+          showToast(`Đơn hàng #${updatedOrder.order_code} vừa bị khách hàng hủy!`, "error");
+          playAlertSound();
+        } else {
+          showToast("Đơn hàng vừa được cập nhật trạng thái mới.", "info");
+        }
+        setTimeout(() => window.location.reload(), 1200);
       }
     });
   }

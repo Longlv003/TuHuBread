@@ -71,6 +71,15 @@
           </tr>
         </thead>
         <tbody id="ordersTableBody">
+          <% if (stats.recentOrders.length === 0) { %>
+            <tr><td colspan="6">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="empty-state-title">Chưa có đơn hàng nào</div>
+                <div class="empty-state-desc">Đơn hàng mới từ khách hàng sẽ hiển thị ở đây ngay khi phát sinh.</div>
+              </div>
+            </td></tr>
+          <% } %>
           <% stats.recentOrders.forEach(order => { %>
             <tr>
               <td><strong>#<%= order.order_code %></strong></td>
@@ -96,6 +105,8 @@
 </div>
 
 <script>
+  const ORDER_STATUS_LABELS_CLIENT = <%- JSON.stringify(orderStatusLabels) %>;
+
   // Page-specific socket events
   function onSocketConnected(socket) {
     document.getElementById("connectionStatus").innerText = "Realtime Active";
@@ -113,7 +124,13 @@
     });
 
     socket.on("order_updated", (order) => {
-      showRealtimeAlert(`Đơn hàng #${order.order_code} đã thay đổi trạng thái sang: ${order.order_status}`);
+      const label = ORDER_STATUS_LABELS_CLIENT[order.order_status] || order.order_status;
+      if (order.order_status === "cancelled") {
+        showRealtimeAlert(`Đơn hàng #${order.order_code} vừa bị hủy!`);
+        playAlertSound();
+      } else {
+        showRealtimeAlert(`Đơn hàng #${order.order_code} đã chuyển sang trạng thái: ${label}`);
+      }
       refreshDashboardData();
     });
 
@@ -128,27 +145,7 @@
     banner.style.display = "flex";
     setTimeout(() => {
       banner.style.display = "none";
-    }, 7000);
-  }
-
-  function playAlertSound() {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
-      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-      console.warn("Could not play synthesized sound:", e.message);
-    }
+    }, 12000);
   }
 
   async function refreshDashboardData() {

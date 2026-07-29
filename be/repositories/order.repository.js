@@ -17,6 +17,18 @@ class OrderRepository {
       .populate("user_id");
   }
 
+  async findByShopIdPaginated(shopId, { page = 1, limit = 50 }) {
+    return orderModel.find({ shop_id: shopId, deleted_at: null })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("user_id");
+  }
+
+  async countByShopId(shopId) {
+    return orderModel.countDocuments({ shop_id: shopId, deleted_at: null });
+  }
+
   async findByIdScoped(id, shopId) {
     return orderModel.findOne({ _id: id, shop_id: shopId, deleted_at: null })
       .populate("user_id")
@@ -43,7 +55,7 @@ class OrderRepository {
   }
 
   async getDashboardStats(shopId) {
-    const orders = await orderModel.find({ shop_id: shopId, deleted_at: null });
+    const orders = await orderModel.find({ shop_id: shopId, deleted_at: null }).populate("user_id");
 
     const totalRevenue = orders
       .filter(o => o.order_status === "completed" && o.payment_status === "paid")

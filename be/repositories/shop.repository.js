@@ -28,6 +28,18 @@ class ShopRepository {
   async findAll() {
     return shopModel.find({ deleted_at: null }).populate("owner_user_id", "full_name email phone").sort({ createdAt: -1 });
   }
+
+  async findAllPaginated({ page = 1, limit = 50 }) {
+    return shopModel.find({ deleted_at: null })
+      .populate("owner_user_id", "full_name email phone")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countAll() {
+    return shopModel.countDocuments({ deleted_at: null });
+  }
 }
 
 module.exports = new ShopRepository();

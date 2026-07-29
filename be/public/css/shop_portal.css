@@ -672,3 +672,368 @@ tbody tr:hover {
   height: 320px;
   width: 100%;
 }
+
+/* Confirm modal — thay thế window.confirm() mặc định của trình duyệt */
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 62, 80, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.confirm-modal-overlay.show {
+  opacity: 1;
+}
+
+.confirm-modal-card {
+  background: var(--surface, #fff);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  padding: 28px 24px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  transform: translateY(12px) scale(0.97);
+  transition: transform 0.2s ease;
+}
+
+.confirm-modal-overlay.show .confirm-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.confirm-modal-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--primary-tint);
+  color: var(--primary);
+}
+
+.confirm-modal-icon.danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.confirm-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.confirm-modal-message {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-modal-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface, #fff);
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.confirm-modal-btn:hover {
+  background: var(--bg);
+}
+
+.confirm-modal-btn.confirm {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+}
+
+.confirm-modal-btn.confirm:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.confirm-modal-btn.confirm.danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.22);
+}
+
+.confirm-modal-btn.confirm.danger:hover {
+  background: var(--danger-dark);
+  border-color: var(--danger-dark);
+}
+
+/* Toast notification — thay thế window.alert() mặc định của trình duyệt */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface, #fff);
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid var(--success);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 260px;
+  max-width: 380px;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: auto;
+}
+
+.toast-item.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-item i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.toast-item span {
+  line-height: 1.4;
+}
+
+.toast-item.success { border-left-color: var(--success); }
+.toast-item.success i { color: var(--success); }
+.toast-item.error { border-left-color: var(--danger); }
+.toast-item.error i { color: var(--danger); }
+.toast-item.info { border-left-color: var(--primary); }
+.toast-item.info i { color: var(--primary); }
+
+/* ─── Responsive: điện thoại/tablet ────────────────────────────────────────
+   Sidebar mặc định rộng 260px cố định — trên màn hình nhỏ sẽ ẩn thành ngăn
+   kéo (drawer) trượt ra từ trái, mở bằng nút hamburger trên thanh topbar
+   mobile riêng. */
+.mobile-topbar {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body {
+    flex-direction: column;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+
+  .mobile-topbar .hamburger-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .mobile-topbar .mobile-topbar-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 62, 80, 0.45);
+    z-index: 90;
+  }
+
+  .main-content {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .header-bar {
+    margin-bottom: 20px;
+  }
+
+  .welcome-text h1 {
+    font-size: 22px;
+  }
+
+  .section-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .search-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box,
+  .filter-box select {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Trạng thái rỗng (không có đơn hàng/sản phẩm/voucher...) — dùng trong 1 ô
+   <td colspan> giữa bảng, hoặc độc lập ngoài bảng. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-tint);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+
+.empty-state .empty-state-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.empty-state .empty-state-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Loading spinner cho vùng đang tải dữ liệu AJAX */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  gap: 10px;
+  font-size: 13px;
+}
+
+.loading-spinner .spinner-ring {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Phân trang */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.pagination-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}

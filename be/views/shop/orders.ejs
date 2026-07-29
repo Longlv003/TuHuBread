@@ -37,7 +37,7 @@
 
   <div class="section-card">
     <div class="section-header">
-      <h3>Danh sách đơn hàng (<%= orders.length %>)</h3>
+      <h3>Danh sách đơn hàng (<%= total %>)</h3>
     </div>
     <div class="table-container">
       <table>
@@ -54,6 +54,15 @@
           </tr>
         </thead>
         <tbody id="ordersTableBody">
+          <% if (orders.length === 0) { %>
+            <tr><td colspan="8">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="empty-state-title">Chưa có đơn hàng nào</div>
+                <div class="empty-state-desc">Đơn hàng mới từ khách hàng sẽ hiển thị ở đây ngay khi phát sinh.</div>
+              </div>
+            </td></tr>
+          <% } %>
           <% orders.forEach(order => { %>
             <tr data-code="<%= order.order_code.toLowerCase() %>" data-customer="<%= order.user_id ? order.user_id.full_name.toLowerCase() : '' %>" data-status="<%= order.order_status %>">
               <td><strong>#<%= order.order_code %></strong></td>
@@ -81,10 +90,13 @@
         </tbody>
       </table>
     </div>
+    <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/orders' }) %>
   </div>
 </div>
 
 <script>
+  const ORDER_STATUS_LABELS_CLIENT = <%- JSON.stringify(orderStatusLabels) %>;
+
   function onSocketConnected(socket) {
     socket.on("new_order", (order) => {
       showRealtimeAlert(`Có đơn hàng mới #${order.order_code} vừa được tạo!`);
@@ -93,7 +105,14 @@
     });
 
     socket.on("order_updated", (order) => {
-      showRealtimeAlert(`Đơn hàng #${order.order_code} đã thay đổi trạng thái sang: ${order.order_status}`);
+      const label = ORDER_STATUS_LABELS_CLIENT[order.order_status] || order.order_status;
+      if (order.order_status === "cancelled") {
+        showRealtimeAlert(`Đơn hàng #${order.order_code} vừa bị hủy!`);
+        playAlertSound();
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showRealtimeAlert(`Đơn hàng #${order.order_code} đã chuyển sang trạng thái: ${label}`);
+      }
     });
   }
 
@@ -101,24 +120,7 @@
     const banner = document.getElementById("alertBanner");
     document.getElementById("bannerText").innerText = text;
     banner.style.display = "flex";
-    setTimeout(() => { banner.style.display = "none"; }, 7000);
-  }
-
-  function playAlertSound() {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-      console.warn("Could not play synthesized sound:", e.message);
-    }
+    setTimeout(() => { banner.style.display = "none"; }, 12000);
   }
 
   // Client-side search and filter

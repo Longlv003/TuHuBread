@@ -204,6 +204,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String get cartRemoveConfirmBtn => 'Xóa';
 
   @override
+  String get cartShopConflictTitle => 'Đổi chi nhánh?';
+
+  @override
+  String cartShopConflictMessage(String shopName) {
+    return 'Giỏ hàng của bạn đang có sản phẩm từ \"$shopName\". Bạn có muốn xóa giỏ hàng cũ để đặt hàng từ chi nhánh mới không?';
+  }
+
+  @override
+  String get cartShopConflictConfirm => 'Xóa giỏ cũ';
+
+  @override
+  String get cartShopConflictClearFailed =>
+      'Không thể xóa giỏ hàng cũ, vui lòng thử lại';
+
+  @override
   String get cartSuggestionTitle => 'Thêm đồ uống cho đơn hàng?';
 
   @override

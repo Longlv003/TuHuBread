@@ -25,6 +25,36 @@ class ProductService {
     }));
   }
 
+  async getProductsByShopPaginated(shopId, page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [products, total] = await Promise.all([
+      productRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit }),
+      productRepository.countByShopId(shopId),
+    ]);
+
+    const productIds = products.map(p => p._id);
+    const variants = await productVariantRepository.findByProductIds(productIds);
+
+    const firstVariantByProduct = new Map();
+    for (const variant of variants) {
+      const key = String(variant.product_id);
+      if (!firstVariantByProduct.has(key)) {
+        firstVariantByProduct.set(key, variant);
+      }
+    }
+
+    return {
+      products: products.map(product => ({
+        ...product.toObject(),
+        display_variant: firstVariantByProduct.get(String(product._id)) || null
+      })),
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   async getProductDetail(shopId, productId) {
     const product = await productRepository.findByIdScoped(productId, shopId);
     if (!product) {

@@ -464,6 +464,30 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get cartRemoveConfirmBtn;
 
+  /// No description provided for @cartShopConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch shop?'**
+  String get cartShopConflictTitle;
+
+  /// No description provided for @cartShopConflictMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart already has items from \"{shopName}\". Do you want to clear your cart to order from the new shop instead?'**
+  String cartShopConflictMessage(String shopName);
+
+  /// No description provided for @cartShopConflictConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cart'**
+  String get cartShopConflictConfirm;
+
+  /// No description provided for @cartShopConflictClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear your old cart, please try again'**
+  String get cartShopConflictClearFailed;
+
   /// No description provided for @cartSuggestionTitle.
   ///
   /// In en, this message translates to:

@@ -19,7 +19,12 @@ class CartCubit extends Cubit<CartState> {
   }
 
   /// Thêm sản phẩm từ màn chi tiết và đồng bộ lên database.
-  Future<void> addFromProductDetail(ProductDetailLoaded detailState) async {
+  /// [replaceCart]: true khi người dùng đã xác nhận xoá giỏ hàng cũ (khác
+  /// chi nhánh) để đặt hàng từ chi nhánh mới — xem [CartActionHelper].
+  Future<Result<List<CartItemModel>>> addFromProductDetail(
+    ProductDetailLoaded detailState, {
+    bool replaceCart = false,
+  }) async {
     final detail = detailState.productDetail;
     final variant = detailState.selectedVariant;
     final optionIds = detailState.selectedOptionIds;
@@ -29,11 +34,24 @@ class CartCubit extends Cubit<CartState> {
       variantId: variant.id,
       optionIds: optionIds.toList(),
       quantity: detailState.quantity,
+      replaceCart: replaceCart,
     );
 
     if (result is Success<List<CartItemModel>>) {
       emit(state.copyWith(items: result.data));
     }
+    return result;
+  }
+
+  /// Xoá giỏ hàng thật trên server (khác [clearCart] chỉ reset state cục bộ
+  /// dùng sau khi đặt hàng thành công / đăng xuất).
+  Future<bool> requestClearCart() async {
+    final result = await cartRepository.clearCart();
+    if (result is Success<List<CartItemModel>>) {
+      emit(state.copyWith(items: result.data));
+      return true;
+    }
+    return false;
   }
 
   Future<void> incrementQuantity(String itemId) async {

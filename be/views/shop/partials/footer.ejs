@@ -6,6 +6,24 @@
   <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 
   <script>
+    // Toggle sidebar dạng ngăn kéo trên di động (nút hamburger + backdrop)
+    (function () {
+      const sidebar = document.querySelector('.sidebar');
+      const toggleBtn = document.getElementById('sidebarToggleBtn');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (!sidebar || !toggleBtn || !backdrop) return;
+
+      const closeSidebar = () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+      };
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('show');
+      });
+      backdrop.addEventListener('click', closeSidebar);
+    })();
+
     // Initialize Firebase
     const firebaseConfig = {
       apiKey: "<%= firebaseConfig.apiKey %>",
@@ -17,6 +35,114 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+
+    /**
+     * Modal xác nhận thay cho window.confirm() mặc định của trình duyệt.
+     * Dùng: if (!(await showConfirmDialog({ message: "...", danger: true }))) return;
+     */
+    function showConfirmDialog({ title = "Xác nhận", message = "", confirmText = "Xác nhận", cancelText = "Huỷ", danger = false } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "confirm-modal-overlay";
+        overlay.innerHTML = `
+          <div class="confirm-modal-card">
+            <div class="confirm-modal-icon${danger ? " danger" : ""}">
+              <i class="fa-solid ${danger ? "fa-triangle-exclamation" : "fa-circle-question"}"></i>
+            </div>
+            <h3 class="confirm-modal-title"></h3>
+            <p class="confirm-modal-message"></p>
+            <div class="confirm-modal-actions">
+              <button type="button" class="confirm-modal-btn cancel"></button>
+              <button type="button" class="confirm-modal-btn confirm${danger ? " danger" : ""}"></button>
+            </div>
+          </div>
+        `;
+        overlay.querySelector(".confirm-modal-title").innerText = title;
+        overlay.querySelector(".confirm-modal-message").innerText = message;
+        overlay.querySelector(".cancel").innerText = cancelText;
+        overlay.querySelector(".confirm").innerText = confirmText;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add("show"));
+
+        let settled = false;
+        const cleanup = (result) => {
+          if (settled) return;
+          settled = true;
+          document.removeEventListener("keydown", onKeyDown);
+          overlay.classList.remove("show");
+          setTimeout(() => overlay.remove(), 200);
+          resolve(result);
+        };
+        const onKeyDown = (e) => {
+          if (e.key === "Escape") cleanup(false);
+        };
+
+        overlay.querySelector(".cancel").addEventListener("click", () => cleanup(false));
+        overlay.querySelector(".confirm").addEventListener("click", () => cleanup(true));
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) cleanup(false);
+        });
+        document.addEventListener("keydown", onKeyDown);
+      });
+    }
+
+    /**
+     * Âm báo "ting ting" khi có sự kiện realtime (đơn hàng mới...).
+     * Dùng file âm thanh thật thay vì tổng hợp bằng Web Audio API. Trình
+     * duyệt vẫn có thể chặn phát tự động nếu trang chưa có tương tác nào từ
+     * người dùng — "mở khoá" bằng cách play+pause ngay lần click/gõ phím/
+     * chạm đầu tiên trên trang.
+     */
+    const notificationAudio = new Audio("/sound/tieng%20ting%20ting.mp3");
+    notificationAudio.preload = "auto";
+    notificationAudio.volume = 0.7;
+
+    ["click", "keydown", "touchstart"].forEach((evt) => {
+      document.addEventListener(evt, () => {
+        notificationAudio.play().then(() => {
+          notificationAudio.pause();
+          notificationAudio.currentTime = 0;
+        }).catch(() => {});
+      }, { once: true });
+    });
+
+    function playAlertSound() {
+      try {
+        notificationAudio.currentTime = 0;
+        notificationAudio.play().catch((e) => {
+          console.warn("Could not play notification sound:", e.message);
+        });
+      } catch (e) {
+        console.warn("Could not play notification sound:", e.message);
+      }
+    }
+
+    /**
+     * Toast thông báo thay cho window.alert() mặc định của trình duyệt.
+     * type: "success" | "error" | "info"
+     */
+    function showToast(message, type = "success") {
+      let container = document.getElementById("toastContainer");
+      if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+      }
+
+      const icon = type === "error" ? "fa-circle-exclamation" : type === "info" ? "fa-circle-info" : "fa-circle-check";
+      const toast = document.createElement("div");
+      toast.className = `toast-item ${type}`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i><span></span>`;
+      toast.querySelector("span").innerText = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => toast.classList.add("show"));
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 250);
+      }, 6000);
+    }
 
     let socket;
 
@@ -58,9 +184,9 @@
           const result = await response.json();
           if (result.status === "success") {
             shopLogoImg.src = result.logoUrl;
-            alert("Cập nhật logo cửa hàng thành công!");
+            showToast("Cập nhật logo cửa hàng thành công!", "success");
           } else {
-            alert(result.msg || "Tải ảnh lên thất bại");
+            showToast(result.msg || "Tải ảnh lên thất bại", "error");
           }
         } catch (err) {
           console.error("Upload logo error:", err);

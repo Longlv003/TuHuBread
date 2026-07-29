@@ -5,6 +5,7 @@ const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
 const { userModel } = require("../models/user.model");
+const { shopModel } = require("../models/shop.model");
 
 async function findCurrentUser(req) {
   return userModel.findOne({ firebase_uid: req.user.uid });
@@ -77,7 +78,7 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const { product_id, variant_id, selected_options, quantity, note } = req.body;
+    const { product_id, variant_id, selected_options, quantity, note, replace_cart } = req.body;
 
     if (!product_id || !mongoose.Types.ObjectId.isValid(product_id) ||
         !variant_id || !mongoose.Types.ObjectId.isValid(variant_id) ||
@@ -97,6 +98,30 @@ exports.addToCart = async (req, res) => {
     if (!variant) {
       dataRes.msg = "Phiên bản sản phẩm không khả dụng";
       return res.status(400).json(dataRes);
+    }
+
+    // Giỏ hàng chỉ được chứa sản phẩm của 1 chi nhánh tại 1 thời điểm (giống
+    // Grab/Shopee Food) — nếu giỏ đang có sản phẩm của chi nhánh khác thì
+    // chặn lại, trừ khi client xác nhận muốn thay thế giỏ hàng (replace_cart).
+    const activeCart = await getOrCreateActiveCart(user._id);
+    const otherShopItem = await cartItemModel.findOne({
+      cart_id: activeCart._id,
+      deleted_at: null,
+      shop_id: { $ne: product.shop_id },
+    });
+    if (otherShopItem) {
+      if (!replace_cart) {
+        const currentShop = await shopModel.findById(otherShopItem.shop_id);
+        dataRes.status = "conflict";
+        dataRes.code = "SHOP_CONFLICT";
+        dataRes.msg = `Giỏ hàng của bạn đang có sản phẩm từ "${currentShop ? currentShop.shop_name : "cửa hàng khác"}"`;
+        dataRes.data = {
+          current_shop_id: String(otherShopItem.shop_id),
+          current_shop_name: currentShop ? currentShop.shop_name : null,
+        };
+        return res.status(409).json(dataRes);
+      }
+      await cartItemModel.deleteMany({ cart_id: activeCart._id });
     }
 
     let basePrice = variant.price;
@@ -125,11 +150,10 @@ exports.addToCart = async (req, res) => {
     }
 
     const unitPrice = basePrice + optionTotalPrice;
-    const cart = await getOrCreateActiveCart(user._id);
 
     // Look for existing item with exact same variant and options in active cart
     // Options compare: sorted option_ids match
-    const existingItems = await cartItemModel.find({ cart_id: cart._id, product_id, variant_id, deleted_at: null });
+    const existingItems = await cartItemModel.find({ cart_id: activeCart._id, product_id, variant_id, deleted_at: null });
     let matchedItem = null;
 
     const targetOptIds = verifiedOptions.map(o => String(o.option_id)).sort().join(",");
@@ -151,7 +175,7 @@ exports.addToCart = async (req, res) => {
     } else {
       // Create new cart item
       await cartItemModel.create({
-        cart_id: cart._id,
+        cart_id: activeCart._id,
         product_id,
         variant_id,
         shop_id: product.shop_id,
@@ -168,18 +192,42 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    const newTotal = await recalculateCartTotal(cart._id);
-    const items = await cartItemModel.find({ cart_id: cart._id, deleted_at: null });
+    const newTotal = await recalculateCartTotal(activeCart._id);
+    const items = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
 
     dataRes.status = "success";
     dataRes.data = {
-      cart_id: cart._id,
+      cart_id: activeCart._id,
       cart_total: newTotal,
       items: formatCartItems(items, req),
     };
     return res.json(dataRes);
   } catch (err) {
     console.error("Add to cart error:", err);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};
+
+exports.clearCart = async (req, res) => {
+  const dataRes = { status: "error", msg: "" };
+  try {
+    const user = await findCurrentUser(req);
+    if (!user) {
+      dataRes.msg = "Không tìm thấy user";
+      return res.status(404).json(dataRes);
+    }
+
+    const cart = await getOrCreateActiveCart(user._id);
+    await cartItemModel.deleteMany({ cart_id: cart._id });
+    cart.cart_total = 0;
+    await cart.save();
+
+    dataRes.status = "success";
+    dataRes.data = { cart_id: cart._id, cart_total: 0, items: [] };
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("Clear cart error:", err);
     dataRes.msg = "Server error: " + err.message;
     return res.status(500).json(dataRes);
   }

@@ -15,7 +15,7 @@
   <div class="content-grid">
     <div class="section-card">
       <div class="section-header">
-        <h3>Danh sách mã giảm giá (<%= vouchers.length %>)</h3>
+        <h3>Danh sách mã giảm giá (<%= total %>)</h3>
       </div>
       <div class="table-container">
         <table>
@@ -23,6 +23,15 @@
             <tr><th>Mã</th><th>Tên</th><th>Giảm giá</th><th>Đơn tối thiểu</th><th>Đã dùng</th><th>Thời gian</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
           </thead>
           <tbody>
+            <% if (vouchers.length === 0) { %>
+              <tr><td colspan="8">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-ticket-simple"></i></div>
+                  <div class="empty-state-title">Chưa có voucher toàn sàn nào</div>
+                  <div class="empty-state-desc">Tạo voucher áp dụng cho toàn bộ hệ thống chi nhánh.</div>
+                </div>
+              </td></tr>
+            <% } %>
             <% vouchers.forEach(v => { %>
               <tr>
                 <td><strong><%= v.voucher_code %></strong></td>
@@ -47,6 +56,7 @@
           </tbody>
         </table>
       </div>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/admin/vouchers' }) %>
     </div>
 
     <div>
@@ -124,9 +134,9 @@
         body: JSON.stringify(body)
       });
       const result = await response.json();
-      if (result.status === "success") { alert("Tạo voucher thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Tạo voucher thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
 
   function onEditVoucher(v) {
@@ -164,17 +174,17 @@
         body: JSON.stringify(body)
       });
       const result = await response.json();
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
 
   async function onDeleteVoucher(id) {
-    if (!confirm("Xóa mã giảm giá này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá voucher", message: "Xóa mã giảm giá này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/admin/vouchers/delete/${id}`, { method: "POST" });
     const result = await response.json();
-    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
-    else alert(result.msg || "Thất bại");
+    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
+    else showToast(result.msg || "Thất bại", "error");
   }
 </script>
 

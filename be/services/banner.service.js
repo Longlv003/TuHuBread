@@ -5,6 +5,21 @@ class BannerService {
     return bannerRepository.findAll();
   }
 
+  async getAllBannersPaginated(page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [banners, total] = await Promise.all([
+      bannerRepository.findAllPaginated({ page: parsedPage, limit }),
+      bannerRepository.countAll(),
+    ]);
+    return {
+      banners,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   async addBanner(data) {
     const { title, image, linkUrl, sortOrder, status, startDate, endDate } = data;
 

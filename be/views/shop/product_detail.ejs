@@ -332,14 +332,14 @@
       });
       const result = await response.json();
       if (result.status === "success") {
-        alert("Cập nhật sản phẩm thành công!");
-        window.location.reload();
+        showToast("Cập nhật sản phẩm thành công!", "success");
+        setTimeout(() => window.location.reload(), 900);
       } else {
-        alert(result.msg || "Cập nhật thất bại");
+        showToast(result.msg || "Cập nhật thất bại", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi cập nhật sản phẩm!");
+      showToast("Lỗi khi cập nhật sản phẩm!", "error");
     }
   });
 
@@ -355,9 +355,9 @@
     e.preventDefault();
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/variants/add`, e.target);
-      if (result.status === "success") { alert("Thêm biến thể thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Thêm biến thể thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
 
   function onEditVariant(v) {
@@ -379,16 +379,16 @@
     const id = document.getElementById("editVariantId").value;
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/variants/edit/${id}`, e.target);
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   async function onDeleteVariant(id) {
-    if (!confirm("Xóa biến thể này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá biến thể", message: "Xóa biến thể này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/variants/delete/${id}`, { method: "POST" });
     const result = await response.json();
-    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
-    else alert(result.msg || "Thất bại");
+    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
+    else showToast(result.msg || "Thất bại", "error");
   }
 
   // ---- OPTIONS (Topping) ----
@@ -396,9 +396,9 @@
     e.preventDefault();
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/options/add`, e.target);
-      if (result.status === "success") { alert("Thêm topping thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Thêm topping thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   function onEditOption(o) {
     document.getElementById("optionAddCard").style.display = "none";
@@ -417,16 +417,16 @@
     const id = document.getElementById("editOptionId").value;
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/options/edit/${id}`, e.target);
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   async function onDeleteOption(id) {
-    if (!confirm("Xóa topping này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá topping", message: "Xóa topping này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/options/delete/${id}`, { method: "POST" });
     const result = await response.json();
-    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
-    else alert(result.msg || "Thất bại");
+    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
+    else showToast(result.msg || "Thất bại", "error");
   }
 
   // ---- ATTRIBUTES ----
@@ -434,9 +434,9 @@
     e.preventDefault();
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/attributes/add`, e.target);
-      if (result.status === "success") { alert("Thêm thuộc tính thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Thêm thuộc tính thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   function onEditAttribute(a) {
     document.getElementById("attributeAddCard").style.display = "none";
@@ -456,16 +456,16 @@
     const id = document.getElementById("editAttributeId").value;
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/attributes/edit/${id}`, e.target);
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   async function onDeleteAttribute(id) {
-    if (!confirm("Xóa thuộc tính này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá thuộc tính", message: "Xóa thuộc tính này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/attributes/delete/${id}`, { method: "POST" });
     const result = await response.json();
-    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
-    else alert(result.msg || "Thất bại");
+    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
+    else showToast(result.msg || "Thất bại", "error");
   }
 
   // ---- BATCHES ----
@@ -473,9 +473,9 @@
     e.preventDefault();
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/batches/add`, e.target);
-      if (result.status === "success") { alert("Nhập lô hàng thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Nhập lô hàng thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   function onEditBatch(id, quantityRemaining, status) {
     document.getElementById("batchAddCard").style.display = "none";
@@ -493,16 +493,16 @@
     const id = document.getElementById("editBatchId").value;
     try {
       const result = await submitForm(`/shop/products/${PRODUCT_ID}/batches/edit/${id}`, e.target);
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
   async function onDeleteBatch(id) {
-    if (!confirm("Xóa lô hàng này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá lô hàng", message: "Xóa lô hàng này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/batches/delete/${id}`, { method: "POST" });
     const result = await response.json();
-    if (result.status === "success") { alert("Đã xóa!"); window.location.reload(); }
-    else alert(result.msg || "Thất bại");
+    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
+    else showToast(result.msg || "Thất bại", "error");
   }
 </script>
 

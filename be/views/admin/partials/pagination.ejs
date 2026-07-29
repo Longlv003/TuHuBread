@@ -1,0 +1,18 @@
+<%
+/* Locals bắt buộc: page, totalPages, baseUrl. Tuỳ chọn: extraQuery (chuỗi
+   query string không có dấu ? ở đầu và không chứa page, vd "search=abc&status=active"). */
+const _extraQuery = typeof extraQuery !== "undefined" && extraQuery ? extraQuery + "&" : "";
+const _prevUrl = baseUrl + "?" + _extraQuery + "page=" + (page - 1);
+const _nextUrl = baseUrl + "?" + _extraQuery + "page=" + (page + 1);
+%>
+<% if (totalPages > 1) { %>
+  <div class="pagination-bar">
+    <a class="pagination-btn <%= page <= 1 ? 'disabled' : '' %>" href="<%= page <= 1 ? '#' : _prevUrl %>">
+      <i class="fa-solid fa-chevron-left"></i> Trước
+    </a>
+    <span class="pagination-info">Trang <%= page %> / <%= totalPages %></span>
+    <a class="pagination-btn <%= page >= totalPages ? 'disabled' : '' %>" href="<%= page >= totalPages ? '#' : _nextUrl %>">
+      Sau <i class="fa-solid fa-chevron-right"></i>
+    </a>
+  </div>
+<% } %>

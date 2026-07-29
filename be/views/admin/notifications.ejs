@@ -19,6 +19,15 @@
         <table>
           <thead><tr><th>Tiêu đề</th><th>Nội dung</th><th>Loại</th><th>Người nhận</th><th>Thời gian gửi</th></tr></thead>
           <tbody>
+            <% if (notifications.length === 0) { %>
+              <tr><td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-bell"></i></div>
+                  <div class="empty-state-title">Chưa gửi thông báo nào</div>
+                  <div class="empty-state-desc">Lịch sử thông báo đã gửi sẽ hiển thị ở đây.</div>
+                </div>
+              </td></tr>
+            <% } %>
             <% notifications.forEach(n => { %>
               <tr>
                 <td><strong><%= n.title %></strong></td>
@@ -29,18 +38,18 @@
               </tr>
             <% }) %>
             <% if (notifications.length === 0) { %>
-              <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Chưa có thông báo nào</td></tr>
+              <tr><td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-bell"></i></div>
+                  <div class="empty-state-title">Chưa gửi thông báo nào</div>
+                  <div class="empty-state-desc">Lịch sử thông báo đã gửi sẽ hiển thị ở đây.</div>
+                </div>
+              </td></tr>
             <% } %>
           </tbody>
         </table>
       </div>
-      <% if (totalPages > 1) { %>
-        <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
-          <% for (let p = 1; p <= totalPages; p++) { %>
-            <a href="/admin/notifications?page=<%= p %>" class="btn-action" style="<%= p === page ? 'background:var(--primary); border-color:var(--primary);' : '' %>"><%= p %></a>
-          <% } %>
-        </div>
-      <% } %>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/admin/notifications' }) %>
     </div>
 
     <div class="section-card">
@@ -94,11 +103,11 @@
         body: JSON.stringify(body)
       });
       const result = await response.json();
-      if (result.status === "success") { alert(result.msg); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
+      if (result.status === "success") { showToast(result.msg, "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi gửi thông báo!");
+      showToast("Lỗi khi gửi thông báo!", "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = "Tạo và gửi thông báo";

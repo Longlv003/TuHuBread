@@ -14,10 +14,13 @@ function buildFirebaseConfig() {
 class ShopVoucherController {
   async showVouchers(req, res) {
     try {
-      const vouchers = await voucherService.getVouchersByShop(req.shop._id);
+      const { vouchers, total, page, totalPages } = await voucherService.getVouchersByShopPaginated(req.shop._id, req.query.page);
 
       res.render("shop/vouchers", {
         vouchers,
+        total,
+        page,
+        totalPages,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,
         user: req.user,

@@ -67,6 +67,17 @@
     }
   },
   "cartRemoveConfirmBtn": "Xóa",
+  "cartShopConflictTitle": "Đổi chi nhánh?",
+  "cartShopConflictMessage": "Giỏ hàng của bạn đang có sản phẩm từ \"{shopName}\". Bạn có muốn xóa giỏ hàng cũ để đặt hàng từ chi nhánh mới không?",
+  "@cartShopConflictMessage": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartShopConflictConfirm": "Xóa giỏ cũ",
+  "cartShopConflictClearFailed": "Không thể xóa giỏ hàng cũ, vui lòng thử lại",
   "cartSuggestionTitle": "Thêm đồ uống cho đơn hàng?",
   "checkoutTitle": "Thanh toán",
   "checkoutAddressSectionTitle": "Địa chỉ giao hàng",

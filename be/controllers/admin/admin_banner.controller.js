@@ -3,10 +3,13 @@ const bannerService = require("../../services/banner.service");
 class AdminBannerController {
   async showBanners(req, res) {
     try {
-      const banners = await bannerService.getAllBanners();
+      const { banners, total, page, totalPages } = await bannerService.getAllBannersPaginated(req.query.page);
 
       res.render("admin/banners", {
         banners,
+        total,
+        page,
+        totalPages,
         admin: req.admin,
         title: "Quản lý Banner",
         activeTab: "banners"

@@ -16,6 +16,19 @@ class ProductRepository {
       .sort({ createdAt: -1 });
   }
 
+  async findByShopIdPaginated(shopId, { page = 1, limit = 50 }) {
+    return productModel.find({ shop_id: shopId, deleted_at: null })
+      .populate("global_category_id")
+      .populate("shop_category_id")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countByShopId(shopId) {
+    return productModel.countDocuments({ shop_id: shopId, deleted_at: null });
+  }
+
   async findIdsByShopId(shopId) {
     const products = await productModel.find({ shop_id: shopId, deleted_at: null }).select("_id");
     return products.map(p => p._id);

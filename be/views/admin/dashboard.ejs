@@ -55,6 +55,15 @@
       <table>
         <thead><tr><th>#</th><th>Sản phẩm</th><th>Số lượng bán</th><th>Doanh thu</th></tr></thead>
         <tbody>
+          <% if (report.topProducts.length === 0) { %>
+            <tr><td colspan="4">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                <div class="empty-state-title">Chưa có dữ liệu bán hàng</div>
+                <div class="empty-state-desc">Sản phẩm bán chạy trên toàn hệ thống sẽ hiển thị ở đây.</div>
+              </div>
+            </td></tr>
+          <% } %>
           <% report.topProducts.forEach((p, idx) => { %>
             <tr>
               <td><%= idx + 1 %></td>

@@ -16,6 +16,7 @@ const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
+const socketService = require("./socket.service");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -287,6 +288,7 @@ class PaymentService {
       }
 
       createdOrders.push(order);
+      socketService.emitNewOrder(shopId, order);
       shopIndex++;
     }
 

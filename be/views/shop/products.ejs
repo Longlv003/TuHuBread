@@ -30,7 +30,7 @@
   <div class="content-grid">
     <div class="section-card">
       <div class="section-header">
-        <h3>Danh sách sản phẩm (<%= products.length %>)</h3>
+        <h3>Danh sách sản phẩm (<%= total %>)</h3>
       </div>
       <div class="table-container">
         <table>
@@ -46,6 +46,15 @@
             </tr>
           </thead>
           <tbody id="productsTableBody">
+            <% if (products.length === 0) { %>
+              <tr><td colspan="7">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-bread-slice"></i></div>
+                  <div class="empty-state-title">Chưa có sản phẩm nào</div>
+                  <div class="empty-state-desc">Thêm sản phẩm đầu tiên để khách hàng có thể đặt mua.</div>
+                </div>
+              </td></tr>
+            <% } %>
             <% products.forEach(p => { %>
               <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>">
                 <td class="col-icon">
@@ -69,6 +78,7 @@
           </tbody>
         </table>
       </div>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/products' }) %>
     </div>
 
     <div class="section-card">
@@ -168,14 +178,14 @@
       const response = await fetch("/shop/products/add", { method: "POST", body: formData });
       const result = await response.json();
       if (result.status === "success") {
-        alert("Thêm sản phẩm thành công!");
-        window.location.reload();
+        showToast("Thêm sản phẩm thành công!", "success");
+        setTimeout(() => window.location.reload(), 900);
       } else {
-        alert(result.msg || "Thêm sản phẩm thất bại");
+        showToast(result.msg || "Thêm sản phẩm thất bại", "error");
       }
     } catch (err) {
       console.error("Add product error:", err);
-      alert("Lỗi khi thêm sản phẩm!");
+      showToast("Lỗi khi thêm sản phẩm!", "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = "Lưu sản phẩm";
@@ -183,16 +193,16 @@
   });
 
   async function onDeleteProduct(id) {
-    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này? Toàn bộ biến thể/topping/thuộc tính/lô hàng liên quan cũng sẽ bị ẩn.")) return;
+    if (!(await showConfirmDialog({ title: "Xoá sản phẩm", message: "Bạn có chắc chắn muốn xóa sản phẩm này? Toàn bộ biến thể/topping/thuộc tính/lô hàng liên quan cũng sẽ bị ẩn.", confirmText: "Xoá", danger: true }))) return;
 
     try {
       const response = await fetch(`/shop/products/delete/${id}`, { method: "POST" });
       const result = await response.json();
       if (result.status === "success") {
-        alert("Xóa sản phẩm thành công!");
-        window.location.reload();
+        showToast("Xóa sản phẩm thành công!", "success");
+        setTimeout(() => window.location.reload(), 900);
       } else {
-        alert(result.msg || "Xóa thất bại");
+        showToast(result.msg || "Xóa thất bại", "error");
       }
     } catch (err) {
       console.error("Delete product error:", err);

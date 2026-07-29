@@ -14,6 +14,7 @@ const { voucherSaveModel } = require("../models/voucherSave.model");
 const socketService = require("../services/socket.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
+const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
 
 const PAYMENT_METHODS = ["cash", "vnpay"];
 
@@ -150,8 +151,20 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
+    const previousStatus = order.order_status;
     order.order_status = "cancelled";
     await order.save();
+
+    // Lưu lịch sử thay đổi trạng thái (khách hàng tự huỷ) + báo realtime cho shop
+    await orderStatusHistoryRepository.create({
+      order_id: order._id,
+      from_status: previousStatus,
+      to_status: "cancelled",
+      changed_by: user._id,
+      changed_by_name: user.full_name,
+      note: "Khách hàng tự hủy đơn",
+    });
+    socketService.emitOrderUpdate(String(order.shop_id), order);
 
     dataRes.msg = "Hủy đơn hàng thành công";
     dataRes.data = order;
@@ -162,6 +175,57 @@ exports.cancelOrder = async (req, res) => {
     return res.status(500).json(dataRes);
   }
   return res.json(dataRes);
+};
+
+// GET /api/delivery-fee/preview?shop_id=&address_id=
+// Xem trước phí ship theo khoảng cách thật cho cả 3 tuỳ chọn giao hàng —
+// dùng ở màn Thanh toán để cập nhật giá ngay khi đổi địa chỉ, trước khi đặt
+// hàng thật (không tạo order/thay đổi dữ liệu gì).
+exports.previewDeliveryFee = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+  try {
+    const { uid } = req.user;
+    const user = await userModel.findOne({ firebase_uid: uid });
+    if (!user) {
+      dataRes.msg = "User not found";
+      return res.status(404).json(dataRes);
+    }
+
+    const { shop_id, address_id } = req.query;
+    if (!shop_id || !mongoose.Types.ObjectId.isValid(shop_id) ||
+        !address_id || !mongoose.Types.ObjectId.isValid(address_id)) {
+      dataRes.msg = "Thiếu hoặc sai shop_id/address_id";
+      return res.status(400).json(dataRes);
+    }
+
+    const [shop, address] = await Promise.all([
+      shopModel.findOne({ _id: shop_id, deleted_at: null }),
+      addressModel.findOne({ _id: address_id, user_id: user._id, deleted_at: null }),
+    ]);
+    if (!shop) {
+      dataRes.msg = "Không tìm thấy cửa hàng";
+      return res.status(404).json(dataRes);
+    }
+    if (!address) {
+      dataRes.msg = "Không tìm thấy địa chỉ";
+      return res.status(404).json(dataRes);
+    }
+
+    const shopCoords = shop.location ? shop.location.coordinates : undefined;
+    const addressCoords = address.location ? address.location.coordinates : undefined;
+
+    dataRes.status = "success";
+    dataRes.data = {
+      priority: calculateDeliveryFee(shopCoords, addressCoords, "priority"),
+      standard: calculateDeliveryFee(shopCoords, addressCoords, "standard"),
+      saving: calculateDeliveryFee(shopCoords, addressCoords, "saving"),
+    };
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("previewDeliveryFee error:", err.message);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
 };
 
 // POST /api/orders

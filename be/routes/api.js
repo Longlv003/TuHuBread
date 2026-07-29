@@ -58,10 +58,12 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
+router.get("/delivery-fee/preview", firebaseAuth, orderCtrl.previewDeliveryFee);
 
 // Cart Routes
 var cartCtrl = require("../controllers/cart.controller");
 router.get("/carts", firebaseAuth, cartCtrl.getCart);
+router.delete("/carts", firebaseAuth, cartCtrl.clearCart);
 router.post("/carts/items", firebaseAuth, cartCtrl.addToCart);
 router.put("/carts/items/:itemId", firebaseAuth, cartCtrl.updateCartItem);
 router.delete("/carts/items/:itemId", firebaseAuth, cartCtrl.deleteCartItem);

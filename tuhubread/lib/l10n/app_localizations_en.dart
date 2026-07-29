@@ -201,6 +201,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartRemoveConfirmBtn => 'Remove';
 
   @override
+  String get cartShopConflictTitle => 'Switch shop?';
+
+  @override
+  String cartShopConflictMessage(String shopName) {
+    return 'Your cart already has items from \"$shopName\". Do you want to clear your cart to order from the new shop instead?';
+  }
+
+  @override
+  String get cartShopConflictConfirm => 'Clear cart';
+
+  @override
+  String get cartShopConflictClearFailed =>
+      'Could not clear your old cart, please try again';
+
+  @override
   String get cartSuggestionTitle => 'Add a drink to your order?';
 
   @override

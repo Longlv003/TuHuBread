@@ -7,17 +7,13 @@ const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
+const { shopModel } = require("../models/shop.model");
 const orderRepository = require("../repositories/order.repository");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
 const socketService = require("./socket.service");
+const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 
 const ORDER_FLOW = ["pending", "confirmed", "preparing", "delivering", "completed"];
-
-const DELIVERY_FEES = {
-  priority: 25000,
-  standard: 15000,
-  saving: 0,
-};
 
 function generateOrderCode() {
   const time = Date.now().toString(36).toUpperCase();
@@ -51,8 +47,19 @@ class OrderService {
     return getAllowedNextStatuses(currentStatus);
   }
 
-  async getOrdersForShop(shopId) {
-    return orderRepository.findByShopId(shopId, 300);
+  async getOrdersForShop(shopId, page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [orders, total] = await Promise.all([
+      orderRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit }),
+      orderRepository.countByShopId(shopId),
+    ]);
+    return {
+      orders,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
   }
 
   async getOrderDetail(shopId, orderId) {
@@ -150,7 +157,7 @@ class OrderService {
     }
 
     // 3. Validate delivery option
-    if (!DELIVERY_FEES.hasOwnProperty(deliveryOption)) {
+    if (!DELIVERY_MULTIPLIERS.hasOwnProperty(deliveryOption)) {
       throw new Error("Tùy chọn giao hàng không hợp lệ");
     }
 
@@ -250,7 +257,15 @@ class OrderService {
       }
     }
 
-    const deliveryFee = DELIVERY_FEES[deliveryOption];
+    // Tính phí ship theo khoảng cách thực tế từ chi nhánh tới địa chỉ giao
+    // hàng (đồng nhất với luồng thanh toán tiền mặt) — giỏ hàng chỉ chứa sản
+    // phẩm của 1 chi nhánh tại 1 thời điểm nên lấy toạ độ từ item đầu tiên là đủ.
+    const shop = await shopModel.findOne({ _id: validatedItems[0].shop_id, deleted_at: null });
+    const deliveryFee = calculateDeliveryFee(
+      shop && shop.location ? shop.location.coordinates : undefined,
+      address.location ? address.location.coordinates : undefined,
+      deliveryOption,
+    );
 
     // Tính toán discount tổng
     if (appliedVoucher) {

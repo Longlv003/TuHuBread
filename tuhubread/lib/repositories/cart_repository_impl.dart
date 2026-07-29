@@ -42,6 +42,7 @@ class CartRepositoryImpl implements CartRepository {
     required List<String> optionIds,
     required int quantity,
     String? note,
+    bool replaceCart = false,
   }) async {
     try {
       final res = await apiService.post('/api/carts/items', {
@@ -50,6 +51,7 @@ class CartRepositoryImpl implements CartRepository {
         'selected_options': optionIds.map((id) => {'option_id': id}).toList(),
         'quantity': quantity,
         'note': note,
+        if (replaceCart) 'replace_cart': true,
       });
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
@@ -58,6 +60,20 @@ class CartRepositoryImpl implements CartRepository {
     } catch (e, s) {
       _log.e('[addToCart] Failed', error: e, stackTrace: s);
       return const Failure('Không thể kết nối đến máy chủ để thêm vào giỏ hàng');
+    }
+  }
+
+  @override
+  Future<Result<List<CartItemModel>>> clearCart() async {
+    try {
+      final res = await apiService.delete('/api/carts');
+      if (res['data'] != null) {
+        return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
+      }
+      return Failure(res['msg'] ?? 'Không thể xoá giỏ hàng');
+    } catch (e, s) {
+      _log.e('[clearCart] Failed', error: e, stackTrace: s);
+      return const Failure('Không thể kết nối đến máy chủ để xoá giỏ hàng');
     }
   }
 

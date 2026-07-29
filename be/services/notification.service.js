@@ -33,10 +33,10 @@ async function sendPushInBatches(tokens, title, body) {
 class NotificationService {
   async getNotifications(page = 1) {
     const [notifications, total] = await Promise.all([
-      notificationRepository.findAllPaginated(page, 20),
+      notificationRepository.findAllPaginated(page, 10),
       notificationRepository.countAll()
     ]);
-    return { notifications, total, page, totalPages: Math.max(Math.ceil(total / 20), 1) };
+    return { notifications, total, page, totalPages: Math.max(Math.ceil(total / 10), 1) };
   }
 
   async createAndSend({ title, body, type, target, userEmail }) {

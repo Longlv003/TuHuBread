@@ -4,10 +4,13 @@ const authService = require("../../services/auth.service");
 class AdminShopController {
   async showShops(req, res) {
     try {
-      const shops = await shopService.getAllShops();
+      const { shops, total, page, totalPages } = await shopService.getAllShopsPaginated(req.query.page);
 
       res.render("admin/shops", {
         shops,
+        total,
+        page,
+        totalPages,
         admin: req.admin,
         title: "Quản lý Shop",
         activeTab: "shops"

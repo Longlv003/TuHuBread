@@ -1067,8 +1067,11 @@ class _ProductDetailContent extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  CartActionHelper.addCurrentProductToCart(context);
+                onPressed: () async {
+                  final added = await CartActionHelper.addCurrentProductToCart(
+                    context,
+                  );
+                  if (!context.mounted || !added) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.detailAddedToCart),

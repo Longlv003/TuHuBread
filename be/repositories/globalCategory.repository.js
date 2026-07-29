@@ -13,6 +13,17 @@ class GlobalCategoryRepository {
     return globalCategoryModel.find({ deleted_at: null }).sort({ category_name: 1 });
   }
 
+  async findAllPaginated({ page = 1, limit = 50 }) {
+    return globalCategoryModel.find({ deleted_at: null })
+      .sort({ category_name: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countAll() {
+    return globalCategoryModel.countDocuments({ deleted_at: null });
+  }
+
   async findBySlug(slug) {
     return globalCategoryModel.findOne({ category_slug: slug, deleted_at: null });
   }

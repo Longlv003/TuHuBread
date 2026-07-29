@@ -8,6 +8,22 @@ class ProductSaleService {
     return productSaleRepository.findByProductIds(productIds);
   }
 
+  async getSalesByShopPaginated(shopId, page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const productIds = await productRepository.findIdsByShopId(shopId);
+    const [sales, total] = await Promise.all([
+      productSaleRepository.findByProductIdsPaginated(productIds, { page: parsedPage, limit }),
+      productSaleRepository.countByProductIds(productIds),
+    ]);
+    return {
+      sales,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   async getFormOptions(shopId) {
     const products = await productRepository.findByShopId(shopId);
     const productIds = products.map(p => p._id);

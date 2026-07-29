@@ -72,9 +72,9 @@
         body: JSON.stringify(body)
       });
       const result = await response.json();
-      if (result.status === "success") alert("Cập nhật thành công!");
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") showToast("Cập nhật thành công!", "success");
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
 
   document.getElementById("isOpenToggle").addEventListener("change", async (e) => {
@@ -87,7 +87,7 @@
       });
       const result = await response.json();
       if (result.status !== "success") {
-        alert(result.msg || "Thất bại");
+        showToast(result.msg || "Thất bại", "error");
         e.target.checked = !isOpen;
       }
     } catch (err) {
@@ -98,7 +98,7 @@
 
   async function uploadBanner() {
     const file = document.getElementById("bannerInput").files[0];
-    if (!file) { alert("Vui lòng chọn ảnh banner"); return; }
+    if (!file) { showToast("Vui lòng chọn ảnh banner", "error"); return; }
 
     const formData = new FormData();
     formData.append("banner", file);
@@ -108,13 +108,13 @@
       const result = await response.json();
       if (result.status === "success") {
         document.getElementById("bannerPreview").src = result.bannerUrl;
-        alert("Cập nhật banner thành công!");
+        showToast("Cập nhật banner thành công!", "success");
       } else {
-        alert(result.msg || "Tải lên thất bại");
+        showToast(result.msg || "Tải lên thất bại", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi tải banner!");
+      showToast("Lỗi khi tải banner!", "error");
     }
   }
 </script>

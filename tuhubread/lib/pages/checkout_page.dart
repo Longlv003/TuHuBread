@@ -14,6 +14,7 @@ import '../core/result.dart';
 import '../di.dart';
 import '../models/address.model.dart';
 import '../models/cart_item.model.dart';
+import '../models/delivery_fee_preview.model.dart';
 import '../models/delivery_option.model.dart';
 import '../models/order_result.model.dart';
 import '../models/payment_verify_result.model.dart';
@@ -93,6 +94,7 @@ class _CheckoutContent extends StatefulWidget {
 class _CheckoutContentState extends State<_CheckoutContent> {
   AddressModel? _selectedAddress;
   DeliveryOptionModel _selectedDelivery = DeliveryOptionModel.standard;
+  DeliveryFeePreviewModel? _deliveryFees;
   _PaymentMethod _selectedMethod = _PaymentMethod.cash;
   VoucherSaveModel? _selectedVoucher;
   final _noteController = TextEditingController();
@@ -105,13 +107,34 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     super.dispose();
   }
 
+  /// Phí ship của tuỳ chọn đang chọn — ưu tiên giá trị thật đã tải từ server
+  /// theo khoảng cách tới địa chỉ hiện tại, nếu chưa tải xong thì tạm dùng
+  /// giá ước tính tĩnh để không để trống màn hình.
+  double get _currentDeliveryFee =>
+      _deliveryFees?.feeFor(_selectedDelivery.id) ?? _selectedDelivery.fee;
+
+  /// Gọi backend tính lại phí ship thật theo khoảng cách từ chi nhánh tới
+  /// địa chỉ vừa chọn — dùng widget.items.first vì giỏ hàng/luồng thanh
+  /// toán chỉ bao giờ thuộc đúng 1 chi nhánh tại 1 thời điểm.
+  Future<void> _loadDeliveryFees() async {
+    if (_selectedAddress == null || widget.items.isEmpty) return;
+    final result = await getIt<OrderRepository>().previewDeliveryFee(
+      shopId: widget.items.first.shopId,
+      addressId: _selectedAddress!.id,
+    );
+    if (!mounted) return;
+    if (result is Success<DeliveryFeePreviewModel>) {
+      setState(() => _deliveryFees = result.data);
+    }
+  }
+
   double _calculateVoucherDiscount(VoucherSaveModel? save) {
     if (save == null || save.voucher == null) return 0.0;
     final v = save.voucher!;
     if (widget.subtotal < v.minOrderAmount) return 0.0;
 
     if (v.discountType == 'free_shipping') {
-      return _selectedDelivery.fee;
+      return _currentDeliveryFee;
     } else if (v.discountType == 'percent') {
       double discount = widget.subtotal * (v.discountValue / 100);
       if (v.maxDiscountAmount != null && discount > v.maxDiscountAmount!) {
@@ -336,6 +359,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     );
     if (result != null) {
       setState(() => _selectedAddress = result);
+      _loadDeliveryFees();
     }
   }
 
@@ -613,6 +637,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                 orElse: () => state.addresses.first,
               );
               setState(() => _selectedAddress = defaultAddress);
+              _loadDeliveryFees();
             }
           }
         },
@@ -671,7 +696,14 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                   children: DeliveryOptionModel.all
                       .map(
                         (option) => CheckoutDeliveryOptionTile(
-                          option: option,
+                          option: _deliveryFees == null
+                              ? option
+                              : DeliveryOptionModel(
+                                  id: option.id,
+                                  label: option.label,
+                                  description: option.description,
+                                  fee: _deliveryFees!.feeFor(option.id),
+                                ),
                           selected: option.id == _selectedDelivery.id,
                           l10n: l10n,
                           onTap: () =>
@@ -894,7 +926,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           child: Builder(
             builder: (context) {
               final discount = _calculateVoucherDiscount(_selectedVoucher);
-              final total = widget.subtotal - discount + _selectedDelivery.fee;
+              final total = widget.subtotal - discount + _currentDeliveryFee;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -929,7 +961,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                   const SizedBox(height: 6),
                   CheckoutPriceRow(
                     label: l10n.checkoutDeliveryFee,
-                    value: _selectedDelivery.fee,
+                    value: _currentDeliveryFee,
                   ),
                   const Divider(height: 16, color: Color(0xFFF1EAE1)),
                   CheckoutPriceRow(

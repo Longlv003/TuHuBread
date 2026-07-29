@@ -1,6 +1,6 @@
 const accountRepository = require("../repositories/account.repository");
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 class AdminUserService {
   async getUsers({ search, role, status, page = 1 }) {

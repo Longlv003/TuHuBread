@@ -29,6 +29,24 @@ class ShopCategoryService {
     return shopCategoryRepository.findByShopId(shopId);
   }
 
+  async getCategoriesByShopPaginated(shopId, page = 1) {
+    if (!shopId) {
+      throw new Error("Shop ID is required");
+    }
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [categories, total] = await Promise.all([
+      shopCategoryRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit }),
+      shopCategoryRepository.countByShopId(shopId),
+    ]);
+    return {
+      categories,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   /**
    * Add a new category
    * @param {string} shopId

@@ -9,6 +9,17 @@ class BannerRepository {
     return bannerModel.find({ deleted_at: null }).sort({ sort_order: 1 });
   }
 
+  async findAllPaginated({ page = 1, limit = 50 }) {
+    return bannerModel.find({ deleted_at: null })
+      .sort({ sort_order: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countAll() {
+    return bannerModel.countDocuments({ deleted_at: null });
+  }
+
   async findAllActive() {
     const now = new Date();
     return bannerModel.find({

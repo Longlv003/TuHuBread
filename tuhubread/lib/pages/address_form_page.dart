@@ -71,13 +71,25 @@ class _AddressFormPageState extends State<AddressFormPage> {
     super.dispose();
   }
 
+  /// Ứng dụng hiện chỉ giao hàng trong phạm vi Thành phố Hà Nội — chỉ giữ lại
+  /// Hà Nội trong danh sách tỉnh/thành và tự động chọn sẵn, khách chỉ cần
+  /// chọn Phường/Xã và nhập số nhà.
   Future<void> _loadProvinces() async {
     final provinces = await _addressService.fetchProvinces();
     if (!mounted) return;
+
+    final hanoi = provinces
+        .where((p) => _normalize(p.name) == _normalize('Hà Nội'))
+        .toList();
+
     setState(() {
-      _provinces = provinces;
+      _provinces = hanoi;
       _isLoadingProvinces = false;
     });
+
+    if (hanoi.isNotEmpty && _selectedProvince == null) {
+      await _onProvinceChanged(hanoi.first);
+    }
   }
 
   Future<void> _onProvinceChanged(ProvinceModel? province) async {
@@ -198,6 +210,18 @@ class _AddressFormPageState extends State<AddressFormPage> {
         '$street, ${_selectedWard!.name}, ${_selectedProvince!.name}';
 
     setState(() => _isSaving = true);
+
+    // Nếu chưa có toạ độ (khách tự chọn tỉnh/phường + gõ tay, không bấm "Vị
+    // trí hiện tại"), thử dịch xuôi địa chỉ chữ ra toạ độ thật — để backend
+    // tính phí ship theo đúng khoảng cách thay vì rơi vào giá trị mặc định.
+    if (_detectedLatitude == null || _detectedLongitude == null) {
+      final geocoded = await _locationService.geocodeAddress(fullDetail);
+      if (geocoded != null) {
+        _detectedLatitude = geocoded.latitude;
+        _detectedLongitude = geocoded.longitude;
+      }
+    }
+    if (!mounted) return;
 
     final cubit = context.read<AddressCubit>();
     final success = _isEditing

@@ -3,10 +3,13 @@ const voucherService = require("../../services/voucher.service");
 class AdminVoucherController {
   async showVouchers(req, res) {
     try {
-      const vouchers = await voucherService.getPlatformVouchers();
+      const { vouchers, total, page, totalPages } = await voucherService.getPlatformVouchersPaginated(req.query.page);
 
       res.render("admin/vouchers", {
         vouchers,
+        total,
+        page,
+        totalPages,
         admin: req.admin,
         title: "Voucher toàn sàn",
         activeTab: "vouchers"

@@ -74,6 +74,17 @@
     }
   },
   "cartRemoveConfirmBtn": "Remove",
+  "cartShopConflictTitle": "Switch shop?",
+  "cartShopConflictMessage": "Your cart already has items from \"{shopName}\". Do you want to clear your cart to order from the new shop instead?",
+  "@cartShopConflictMessage": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartShopConflictConfirm": "Clear cart",
+  "cartShopConflictClearFailed": "Could not clear your old cart, please try again",
   "cartSuggestionTitle": "Add a drink to your order?",
   "checkoutTitle": "Checkout",
   "checkoutAddressSectionTitle": "Delivery Address",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../blocs/cart/cart_cubit.dart';
 import '../blocs/product_detail/product_detail_cubit.dart';
@@ -11,18 +12,30 @@ import '../models/product_detail.model.dart';
 import '../models/product_variant.model.dart';
 import '../repositories/home_repository.dart';
 import '../utils/cart_price_calculator.dart';
+import '../widgets/app_confirm_dialog.dart';
 import '../widgets/size_select_bottom_sheet.dart';
 
 /// Helper thêm sản phẩm hiện tại vào giỏ hàng mà không cần sửa logic ProductDetailCubit.
 class CartActionHelper {
   CartActionHelper._();
 
-  static bool addCurrentProductToCart(BuildContext context) {
+  static Future<bool> addCurrentProductToCart(BuildContext context) async {
     final detailState = context.read<ProductDetailCubit>().state;
     if (detailState is! ProductDetailLoaded) return false;
 
-    getIt<CartCubit>().addFromProductDetail(detailState);
-    return true;
+    final cubit = getIt<CartCubit>();
+    final detail = detailState.productDetail;
+    final canProceed = await _ensureSameShop(
+      context,
+      cubit,
+      shopId: detail.shopId,
+      shopName: detail.shop?.shopName,
+    );
+    if (!canProceed) return false;
+    if (!context.mounted) return false;
+
+    final result = await cubit.addFromProductDetail(detailState);
+    return result is Success<List<CartItemModel>>;
   }
 
   /// Thêm nhanh từ danh sách (Home, gợi ý trong giỏ hàng...): nếu sản phẩm
@@ -49,6 +62,16 @@ class CartActionHelper {
       return;
     }
 
+    final cubit = getIt<CartCubit>();
+    final canProceed = await _ensureSameShop(
+      context,
+      cubit,
+      shopId: detail.shopId,
+      shopName: detail.shop?.shopName,
+    );
+    if (!canProceed) return;
+    if (!context.mounted) return;
+
     ProductVariantModel variant;
     Set<String> selectedOptions = {};
     int quantity = 1;
@@ -70,7 +93,7 @@ class CartActionHelper {
       selectedOptions,
     );
 
-    getIt<CartCubit>().addFromProductDetail(
+    final result = await cubit.addFromProductDetail(
       ProductDetailLoaded(
         productDetail: detail,
         selectedVariant: variant,
@@ -79,8 +102,47 @@ class CartActionHelper {
         totalPrice: unitPrice * quantity,
       ),
     );
+    if (!context.mounted) return;
 
-    _showSnackBar(context, true, successMessage);
+    if (result is Success<List<CartItemModel>>) {
+      _showSnackBar(context, true, successMessage);
+    } else if (result is Failure<List<CartItemModel>>) {
+      _showSnackBar(context, false, result.message);
+    }
+  }
+
+  /// Giỏ hàng chỉ được chứa sản phẩm của 1 chi nhánh (giống Grab/Shopee Food).
+  /// Nếu giỏ đang có sản phẩm của chi nhánh khác [shopId], hỏi xác nhận xoá
+  /// giỏ cũ trước khi thêm. Trả về true nếu có thể tiếp tục thêm vào giỏ.
+  static Future<bool> _ensureSameShop(
+    BuildContext context,
+    CartCubit cubit, {
+    required String shopId,
+    String? shopName,
+  }) async {
+    final items = cubit.state.items;
+    if (items.isEmpty) return true;
+    if (items.first.shopId == shopId) return true;
+
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      type: ConfirmDialogType.warning,
+      title: l10n.cartShopConflictTitle,
+      description: l10n.cartShopConflictMessage(
+        items.first.shopName ?? '',
+      ),
+      confirmTitle: l10n.cartShopConflictConfirm,
+      cancelTitle: l10n.cartCancel,
+    );
+    if (confirmed != true) return false;
+    if (!context.mounted) return false;
+
+    final cleared = await cubit.requestClearCart();
+    if (!cleared && context.mounted) {
+      _showSnackBar(context, false, l10n.cartShopConflictClearFailed);
+    }
+    return cleared;
   }
 
   /// Xây dựng 1 [CartItemModel] cục bộ (không lưu server) từ lựa chọn hiện

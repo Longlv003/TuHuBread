@@ -18,10 +18,13 @@ class ShopOrderController {
    */
   async showOrders(req, res) {
     try {
-      const orders = await orderService.getOrdersForShop(req.shop._id);
+      const { orders, total, page, totalPages } = await orderService.getOrdersForShop(req.shop._id, req.query.page);
 
       res.render("shop/orders", {
         orders,
+        total,
+        page,
+        totalPages,
         orderStatusLabels: ORDER_STATUS_LABELS,
         paymentStatusLabels: PAYMENT_STATUS_LABELS,
         firebaseConfig: buildFirebaseConfig(),

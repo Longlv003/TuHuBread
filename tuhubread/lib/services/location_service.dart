@@ -96,4 +96,21 @@ class LocationService {
       throw const LocationException(LocationFailureReason.geocodeFailed);
     }
   }
+
+  /// Dịch xuôi (forward geocoding): chuyển địa chỉ dạng chữ (khách tự nhập
+  /// tỉnh/phường/đường, không dùng nút "Vị trí hiện tại") thành toạ độ
+  /// lat/lng thật — cần để backend tính phí ship theo khoảng cách thực tế
+  /// thay vì rơi vào giá trị mặc định khi thiếu toạ độ.
+  Future<({double latitude, double longitude})?> geocodeAddress(
+    String fullAddress,
+  ) async {
+    try {
+      final locations = await locationFromAddress(fullAddress);
+      if (locations.isEmpty) return null;
+      final loc = locations.first;
+      return (latitude: loc.latitude, longitude: loc.longitude);
+    } catch (_) {
+      return null;
+    }
+  }
 }

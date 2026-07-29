@@ -5,6 +5,21 @@ class VoucherService {
     return voucherRepository.findByShopId(shopId);
   }
 
+  async getVouchersByShopPaginated(shopId, page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [vouchers, total] = await Promise.all([
+      voucherRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit }),
+      voucherRepository.countByShopId(shopId),
+    ]);
+    return {
+      vouchers,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   async addVoucher(shopId, data) {
     const { voucherCode, voucherName, discountType, discountValue, minOrderAmount, maxDiscountAmount, claimLimit, usageLimit, startDate, endDate } = data;
 
@@ -119,6 +134,21 @@ class VoucherService {
 
   async getPlatformVouchers() {
     return voucherRepository.findPlatformVouchers();
+  }
+
+  async getPlatformVouchersPaginated(page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [vouchers, total] = await Promise.all([
+      voucherRepository.findPlatformVouchersPaginated({ page: parsedPage, limit }),
+      voucherRepository.countPlatformVouchers(),
+    ]);
+    return {
+      vouchers,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
   }
 
   async addPlatformVoucher(data) {

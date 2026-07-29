@@ -16,6 +16,19 @@ class ProductSaleRepository {
       .sort({ createdAt: -1 });
   }
 
+  async findByProductIdsPaginated(productIds, { page = 1, limit = 50 }) {
+    return productSaleModel.find({ product_id: { $in: productIds }, deleted_at: null })
+      .populate("product_id", "product_name")
+      .populate("variant_id", "variant_name")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countByProductIds(productIds) {
+    return productSaleModel.countDocuments({ product_id: { $in: productIds }, deleted_at: null });
+  }
+
   async create(data) {
     return productSaleModel.create(data);
   }

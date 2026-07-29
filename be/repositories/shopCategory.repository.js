@@ -9,6 +9,17 @@ class ShopCategoryRepository {
     return shopCategoryModel.find({ shop_id: shopId }).sort({ sort_order: 1 });
   }
 
+  async findByShopIdPaginated(shopId, { page = 1, limit = 50 }) {
+    return shopCategoryModel.find({ shop_id: shopId })
+      .sort({ sort_order: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+  }
+
+  async countByShopId(shopId) {
+    return shopCategoryModel.countDocuments({ shop_id: shopId });
+  }
+
   async findBySlugAndShopId(slug, shopId) {
     return shopCategoryModel.findOne({
       shop_id: shopId,

@@ -69,6 +69,21 @@ class ShopService {
     return shopRepository.findAll();
   }
 
+  async getAllShopsPaginated(page = 1) {
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const [shops, total] = await Promise.all([
+      shopRepository.findAllPaginated({ page: parsedPage, limit }),
+      shopRepository.countAll(),
+    ]);
+    return {
+      shops,
+      total,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
+  }
+
   /**
    * Admin: update any shop's info directly by ID
    * @param {string} shopId

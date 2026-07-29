@@ -45,6 +45,15 @@
             </tr>
           </thead>
           <tbody id="categoriesTableBody">
+            <% if (categories.length === 0) { %>
+              <tr><td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-tags"></i></div>
+                  <div class="empty-state-title">Chưa có danh mục nào</div>
+                  <div class="empty-state-desc">Tạo danh mục để tổ chức sản phẩm của cửa hàng gọn gàng hơn.</div>
+                </div>
+              </td></tr>
+            <% } %>
             <% categories.forEach(cat => { %>
               <tr id="row-<%= cat._id %>" data-name="<%= cat.category_name %>" data-status="<%= cat.deleted_at ? 'deleted' : cat.status %>" <% if (cat.deleted_at) { %> style="opacity: 0.5; background: rgba(231, 76, 60, 0.02);" <% } %>>
                 <td class="col-icon">
@@ -78,6 +87,7 @@
           </tbody>
         </table>
       </div>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/categories' }) %>
     </div>
 
     <!-- Cột 2: Form Thêm/Sửa -->
@@ -193,16 +203,16 @@
 
       const result = await response.json();
       if (result.status === "success") {
-        alert("Thêm danh mục mới thành công!");
+        showToast("Thêm danh mục mới thành công!", "success");
         addForm.reset();
         document.getElementById("addPreview").style.display = "none";
         await refreshCategoriesTable();
       } else {
-        alert(result.msg || "Thêm mới thất bại");
+        showToast(result.msg || "Thêm mới thất bại", "error");
       }
     } catch (err) {
       console.error("Add category error:", err);
-      alert("Lỗi khi thêm danh mục!");
+      showToast("Lỗi khi thêm danh mục!", "error");
     } finally {
       // Re-enable button
       submitBtn.disabled = false;
@@ -274,7 +284,7 @@
       formData.append("categoryIcon", iconFile);
     }
 
-    if (!confirm("Bạn có chắc chắn muốn lưu các thay đổi này không?")) {
+    if (!(await showConfirmDialog({ title: "Lưu thay đổi", message: "Bạn có chắc chắn muốn lưu các thay đổi này không?" }))) {
       return;
     }
 
@@ -290,15 +300,15 @@
 
       const result = await response.json();
       if (result.status === "success") {
-        alert("Cập nhật danh mục thành công!");
+        showToast("Cập nhật danh mục thành công!", "success");
         cancelEdit();
         await refreshCategoriesTable();
       } else {
-        alert(result.msg || "Cập nhật thất bại");
+        showToast(result.msg || "Cập nhật thất bại", "error");
       }
     } catch (err) {
       console.error("Edit category error:", err);
-      alert("Lỗi khi cập nhật danh mục!");
+      showToast("Lỗi khi cập nhật danh mục!", "error");
     } finally {
       // Re-enable button
       submitBtn.disabled = false;
@@ -308,7 +318,7 @@
 
   // Delete category handler (Xóa mềm)
   async function onDeleteCategory(id) {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
+    if (!(await showConfirmDialog({ title: "Xoá danh mục", message: "Bạn có chắc chắn muốn xóa danh mục này?", confirmText: "Xoá", danger: true }))) return;
 
     try {
       const response = await fetch(`/shop/categories/delete/${id}`, {
@@ -317,10 +327,10 @@
 
       const result = await response.json();
       if (result.status === "success") {
-        alert("Xóa danh mục thành công!");
+        showToast("Xóa danh mục thành công!", "success");
         await refreshCategoriesTable();
       } else {
-        alert(result.msg || "Xóa thất bại");
+        showToast(result.msg || "Xóa thất bại", "error");
       }
     } catch (err) {
       console.error("Delete category error:", err);

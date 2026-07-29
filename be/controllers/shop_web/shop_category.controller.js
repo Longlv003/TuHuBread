@@ -6,7 +6,7 @@ class ShopCategoryController {
    */
   async showCategories(req, res) {
     try {
-      const categories = await shopCategoryService.getCategoriesByShop(req.shop._id);
+      const { categories, total, page, totalPages } = await shopCategoryService.getCategoriesByShopPaginated(req.shop._id, req.query.page);
 
       const firebaseConfig = {
         apiKey: process.env.FIREBASE_API_KEY,
@@ -19,6 +19,9 @@ class ShopCategoryController {
 
       res.render("shop/categories", {
         categories,
+        total,
+        page,
+        totalPages,
         firebaseConfig,
         shop: req.shop,
         user: req.user,

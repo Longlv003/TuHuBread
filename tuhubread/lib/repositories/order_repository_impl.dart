@@ -2,6 +2,7 @@ import 'package:logger/logger.dart';
 
 import '../core/result.dart';
 import '../models/cart_item.model.dart';
+import '../models/delivery_fee_preview.model.dart';
 import '../models/order_result.model.dart';
 import '../services/api_service.dart';
 import 'order_repository.dart';
@@ -86,6 +87,28 @@ class OrderRepositoryImpl implements OrderRepository {
     } catch (e, s) {
       _log.e('[createVnpayPayment] Failed', error: e, stackTrace: s);
       return const Failure('Không thể kết nối đến máy chủ để thanh toán');
+    }
+  }
+
+  @override
+  Future<Result<DeliveryFeePreviewModel>> previewDeliveryFee({
+    required String shopId,
+    required String addressId,
+  }) async {
+    try {
+      final res = await apiService.get(
+        '/api/delivery-fee/preview',
+        query: {'shop_id': shopId, 'address_id': addressId},
+      );
+      if (res['data'] != null) {
+        return Success(
+          DeliveryFeePreviewModel.fromJson(res['data'] as Map<String, dynamic>),
+        );
+      }
+      return Failure(res['msg'] ?? 'Không thể tính phí ship');
+    } catch (e, s) {
+      _log.e('[previewDeliveryFee] Failed', error: e, stackTrace: s);
+      return const Failure('Không thể kết nối đến máy chủ để tính phí ship');
     }
   }
 }

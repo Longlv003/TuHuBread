@@ -49,6 +49,15 @@
           <tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
         </thead>
         <tbody>
+          <% if (users.length === 0) { %>
+            <tr><td colspan="6">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="empty-state-title">Không tìm thấy người dùng nào</div>
+                <div class="empty-state-desc">Thử điều chỉnh lại bộ lọc hoặc từ khóa tìm kiếm.</div>
+              </div>
+            </td></tr>
+          <% } %>
           <% users.forEach(u => { %>
             <tr>
               <td><strong><%= u.full_name %></strong></td>
@@ -70,14 +79,10 @@
       </table>
     </div>
 
-    <% if (totalPages > 1) { %>
-      <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
-        <% for (let p = 1; p <= totalPages; p++) { %>
-          <a href="/admin/users?search=<%= encodeURIComponent(search) %>&role=<%= role %>&status=<%= status %>&page=<%= p %>"
-             class="btn-action" style="<%= p === page ? 'background:var(--primary); border-color:var(--primary);' : '' %>"><%= p %></a>
-        <% } %>
-      </div>
-    <% } %>
+    <%- include('partials/pagination', {
+      page, totalPages, baseUrl: '/admin/users',
+      extraQuery: 'search=' + encodeURIComponent(search) + '&role=' + role + '&status=' + status
+    }) %>
   </div>
 
   <div class="section-card" id="editUserCard" style="display:none; margin-top:24px; max-width: 480px;">
@@ -113,19 +118,19 @@
         body: JSON.stringify(body)
       });
       const result = await response.json();
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   });
 
   async function onToggleLock(id) {
-    if (!confirm("Xác nhận thay đổi trạng thái tài khoản này?")) return;
+    if (!(await showConfirmDialog({ title: "Xác nhận", message: "Xác nhận thay đổi trạng thái tài khoản này?" }))) return;
     try {
       const response = await fetch(`/admin/users/toggle-lock/${id}`, { method: "POST" });
       const result = await response.json();
-      if (result.status === "success") { alert("Cập nhật thành công!"); window.location.reload(); }
-      else alert(result.msg || "Thất bại");
-    } catch (err) { console.error(err); alert("Lỗi"); }
+      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
+      else showToast(result.msg || "Thất bại", "error");
+    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
   }
 </script>
 

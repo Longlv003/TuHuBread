@@ -16,14 +16,17 @@ function buildFirebaseConfig() {
 class ShopProductController {
   async showProducts(req, res) {
     try {
-      const [products, shopCategories, globalCategories] = await Promise.all([
-        productService.getProductsByShop(req.shop._id),
+      const [{ products, total, page, totalPages }, shopCategories, globalCategories] = await Promise.all([
+        productService.getProductsByShopPaginated(req.shop._id, req.query.page),
         shopCategoryRepository.findByShopId(req.shop._id),
         globalCategoryRepository.findAllActive()
       ]);
 
       res.render("shop/products", {
         products,
+        total,
+        page,
+        totalPages,
         shopCategories,
         globalCategories,
         firebaseConfig: buildFirebaseConfig(),
