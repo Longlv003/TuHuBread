@@ -25,6 +25,10 @@ var server = http.createServer(app);
 var { initSocket } = require("../sockets/socket.module");
 initSocket(server);
 
+// Đăng ký job định kỳ (báo voucher sắp hết hạn...)
+var { scheduleVoucherExpiryJob } = require("../jobs/voucherExpiry.job");
+scheduleVoucherExpiryJob();
+
 /**
  * Listen on provided port, on all network interfaces.
  */

@@ -6,7 +6,6 @@ import '../models/product.model.dart';
 import '../models/product_detail.model.dart';
 import '../models/product_sale.model.dart';
 import '../models/shop.model.dart';
-import '../models/shop_category.model.dart';
 import '../models/voucher.model.dart';
 import '../services/api_service.dart';
 import 'home_repository.dart';
@@ -193,24 +192,6 @@ class HomeRepositoryImpl implements HomeRepository {
     } catch (e, s) {
       _log.e('[fetchProductDetail] Failed', error: e, stackTrace: s);
       return const Failure('Lỗi kết nối máy chủ');
-    }
-  }
-
-  @override
-  Future<Result<List<ShopCategoryModel>>> fetchShopCategories(
-    String shopId,
-  ) async {
-    try {
-      final res = await apiService.get('/api/shops/$shopId/categories');
-      final cats = _parseList(
-        res['data'],
-        ShopCategoryModel.fromJson,
-        'fetchShopCategories',
-      );
-      return Success(cats);
-    } catch (e, s) {
-      _log.e('[fetchShopCategories] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải danh mục của cửa hàng');
     }
   }
 }

@@ -9,8 +9,6 @@ class ProductModel {
   final String shopId;
   @JsonKey(name: 'global_category_id')
   final String categoryId;
-  @JsonKey(name: 'shop_category_id')
-  final String? shopCategoryId;
   final String productName;
   final String productSlug;
   final double price; // Giá gốc của sản phẩm (lấy từ variant mặc định)
@@ -26,7 +24,6 @@ class ProductModel {
     required this.id,
     required this.shopId,
     required this.categoryId,
-    this.shopCategoryId,
     required this.productName,
     required this.productSlug,
     required this.price,

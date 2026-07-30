@@ -8,13 +8,13 @@
   <div class="header-bar">
     <div class="welcome-text">
       <h1>Quản lý thông báo</h1>
-      <p>Tạo và gửi thông báo đẩy (push notification) qua Firebase Cloud Messaging</p>
+      <p>Gửi thông báo khuyến mại / hệ thống tới khách hàng của cửa hàng</p>
     </div>
   </div>
 
   <div class="content-grid">
     <div class="section-card">
-      <div class="section-header"><h3>Lịch sử thông báo (<%= total %>)</h3></div>
+      <div class="section-header"><h3>Lịch sử thông báo đã gửi (<%= total %>)</h3></div>
       <div class="table-container">
         <table>
           <thead><tr><th>Tiêu đề</th><th>Nội dung</th><th>Loại</th><th>Người nhận</th><th>Thời gian gửi</th></tr></thead>
@@ -32,24 +32,20 @@
               <tr>
                 <td><strong><%= n.title %></strong></td>
                 <td style="max-width:260px;"><%= n.body %></td>
-                <td><%= n.type %></td>
-                <td><%= n.user_id ? n.user_id.full_name : 'N/A' %></td>
+                <td>
+                  <% if (n.type === 'voucher') { %>Khuyến mại
+                  <% } else if (n.type === 'order') { %>Đơn hàng
+                  <% } else { %>Hệ thống
+                  <% } %>
+                </td>
+                <td><%= n.user_id ? n.user_id.full_name : 'Khách hàng của shop' %></td>
                 <td><%= n.sent_at ? new Date(n.sent_at).toLocaleString('vi-VN') : '-' %></td>
               </tr>
             <% }) %>
-            <% if (notifications.length === 0) { %>
-              <tr><td colspan="5">
-                <div class="empty-state">
-                  <div class="empty-state-icon"><i class="fa-solid fa-bell"></i></div>
-                  <div class="empty-state-title">Chưa gửi thông báo nào</div>
-                  <div class="empty-state-desc">Lịch sử thông báo đã gửi sẽ hiển thị ở đây.</div>
-                </div>
-              </td></tr>
-            <% } %>
           </tbody>
         </table>
       </div>
-      <%- include('partials/pagination', { page, totalPages, baseUrl: '/admin/notifications' }) %>
+      <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/notifications' }) %>
     </div>
 
     <div class="section-card">
@@ -60,12 +56,11 @@
         <div class="form-group">
           <label>Loại</label>
           <select name="type">
+            <option value="voucher">Khuyến mại</option>
             <option value="system">Hệ thống</option>
-            <option value="order">Đơn hàng</option>
-            <option value="voucher">Voucher</option>
           </select>
         </div>
-      
+       
         <button type="submit" class="btn-submit">Tạo và gửi thông báo</button>
       </form>
     </div>
@@ -77,13 +72,13 @@
     e.preventDefault();
     const formData = new FormData(e.target);
     const body = Object.fromEntries(formData.entries());
-    body.target = "all";
+    body.target = "shop_customers";
     const submitBtn = e.target.querySelector(".btn-submit");
     submitBtn.disabled = true;
     submitBtn.innerText = "Đang gửi...";
 
     try {
-      const response = await fetch("/admin/notifications/add", {
+      const response = await fetch("/shop/notifications/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)

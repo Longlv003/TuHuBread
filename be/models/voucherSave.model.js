@@ -24,6 +24,9 @@ const voucherSaveSchema = new db.mongoose.Schema(
     },
     saved_at: { type: Date, required: true, default: Date.now },
     used_at: { type: Date, default: null },
+    // Đã báo "sắp hết hạn" cho user chưa — tránh báo lặp lại mỗi ngày trong
+    // lúc vẫn còn nằm trong khung "sắp hết hạn".
+    expiry_notified: { type: Boolean, default: false },
     deleted_at: { type: Date, default: null },
   },
   { collection: "voucher_saves", timestamps: true },

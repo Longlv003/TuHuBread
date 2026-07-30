@@ -39,15 +39,6 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="editShopCategoryId">Danh mục shop</label>
-          <select id="editShopCategoryId" name="shopCategoryId">
-            <option value="">-- Không thuộc danh mục shop --</option>
-            <% shopCategories.forEach(c => { %>
-              <option value="<%= c._id %>" <%= product.shop_category_id && String(product.shop_category_id._id || product.shop_category_id) === String(c._id) ? 'selected' : '' %>><%= c.category_name %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
           <label for="editPrepTime">Thời gian chuẩn bị (phút)</label>
           <input type="number" id="editPrepTime" name="prepTimeMinutes" min="0" value="<%= product.preparation_time_minutes %>">
         </div>

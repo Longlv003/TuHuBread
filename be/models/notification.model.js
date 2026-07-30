@@ -17,6 +17,18 @@ const notificationSchema = new db.mongoose.Schema(
     data: { type: Object, default: null },
     is_read: { type: Boolean, required: true, default: false },
     sent_at: { type: Date, default: null },
+    // Ai tạo ra thông báo này — để lịch sử "Thông báo đã gửi" ở Admin/Shop
+    // Portal lọc đúng phạm vi (system = tự động sinh, không phải ai chủ động gửi).
+    sender_type: {
+      type: String,
+      enum: ["admin", "shop", "system"],
+      default: "system",
+    },
+    sender_shop_id: {
+      type: db.mongoose.Schema.Types.ObjectId,
+      ref: "shopModel",
+      default: null,
+    },
     deleted_at: { type: Date, default: null },
   },
   { collection: "notifications", timestamps: true },

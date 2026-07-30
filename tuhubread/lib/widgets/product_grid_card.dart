@@ -11,6 +11,11 @@ class ProductGridCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
 
+  /// Tên chi nhánh — chỉ truyền vào khi đang hiển thị món trộn từ nhiều chi
+  /// nhánh (chưa chọn 1 chi nhánh cụ thể), để khách biết món này của chi
+  /// nhánh nào trước khi bấm vào.
+  final String? shopName;
+
   const ProductGridCard({
     super.key,
     required this.product,
@@ -18,6 +23,7 @@ class ProductGridCard extends StatelessWidget {
     required this.now,
     this.onTap,
     this.onAddToCart,
+    this.shopName,
   });
 
   String _formatCountdown(Duration d) {
@@ -133,6 +139,45 @@ class ProductGridCard extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+                  if (shopName != null)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      left: hasSale ? null : 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.55),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.storefront_rounded,
+                              color: Colors.white,
+                              size: 10,
+                            ),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                shopName!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

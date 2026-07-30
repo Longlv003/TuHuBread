@@ -6,9 +6,11 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 import '../blocs/cart/cart_cubit.dart';
 import '../blocs/cart/cart_state.dart';
 import '../blocs/home/home_cubit.dart';
+import '../blocs/notification/notification_cubit.dart';
+import '../blocs/notification/notification_state.dart';
 import '../blocs/order/order_cubit.dart';
-import '../data/mock_notifications.dart';
 import '../di.dart';
+import '../services/push_notification_service.dart';
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
 import '../models/user.model.dart';
@@ -42,12 +44,17 @@ class _MyHomePageState extends State<MyHomePage> {
         context.read<CartCubit>().loadCart();
       }
     });
+    // Có thông báo mới lúc app đang mở — hệ điều hành không tự hiện banner
+    // trong trường hợp này, nên chỉ cần cập nhật lại badge số chưa đọc.
+    getIt<PushNotificationService>().listenForeground(() {
+      getIt<NotificationCubit>().refreshUnreadCount();
+    });
   }
 
   Future<void> _onBellPressed() async {
     await getx.Get.to(() => const NotificationsPage());
-    // Cập nhật lại badge số lượng chưa đọc sau khi rời màn thông báo
-    if (mounted) setState(() {});
+    // Đề phòng có thay đổi từ màn thông báo mà state chưa kịp đồng bộ.
+    getIt<NotificationCubit>().refreshUnreadCount();
   }
 
   @override
@@ -95,7 +102,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             CustomerHeader(
                               user: user,
                               titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                              unreadNotifications: MockNotifications.unreadCount,
+                              unreadNotifications: context.select<NotificationCubit, int>(
+                                (cubit) => cubit.state is NotificationLoaded
+                                    ? (cubit.state as NotificationLoaded).unreadCount
+                                    : 0,
+                              ),
                               onNotificationTap: _onBellPressed,
                             ),
                             const Divider(height: 1, color: Color(0xFFF1EAE1)),

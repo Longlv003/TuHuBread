@@ -11,7 +11,9 @@ const { shopModel } = require("../models/shop.model");
 const orderRepository = require("../repositories/order.repository");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
 const socketService = require("./socket.service");
+const notificationService = require("./notification.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
+const { ORDER_STATUS_LABELS } = require("../utils/orderStatus.util");
 
 const ORDER_FLOW = ["pending", "confirmed", "preparing", "delivering", "completed"];
 
@@ -104,6 +106,14 @@ class OrderService {
     }
 
     socketService.emitOrderUpdate(String(shopId), updated);
+
+    notificationService.notifyUser(updated.user_id, {
+      title: `Đơn hàng #${updated.order_code}`,
+      body: `Đơn hàng của bạn đã chuyển sang trạng thái: ${ORDER_STATUS_LABELS[newStatus] || newStatus}`,
+      type: "order",
+      data: { order_id: String(updated._id), order_status: newStatus },
+    });
+
     return updated;
   }
 

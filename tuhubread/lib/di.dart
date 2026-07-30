@@ -6,6 +6,7 @@ import 'package:tuhubread/blocs/auth/auth_cubit.dart';
 import 'package:tuhubread/blocs/home/home_cubit.dart';
 import 'package:tuhubread/blocs/payment/payment_cubit.dart';
 import 'package:tuhubread/blocs/product_detail/product_detail_cubit.dart';
+import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/voucher/voucher_cubit.dart';
@@ -13,6 +14,8 @@ import 'package:tuhubread/repositories/address_repository.dart';
 import 'package:tuhubread/repositories/address_repository_impl.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
 import 'package:tuhubread/repositories/home_repository_impl.dart';
+import 'package:tuhubread/repositories/notification_repository.dart';
+import 'package:tuhubread/repositories/notification_repository_impl.dart';
 import 'package:tuhubread/repositories/order_repository.dart';
 import 'package:tuhubread/repositories/order_repository_impl.dart';
 import 'package:tuhubread/repositories/voucher_repository.dart';
@@ -23,6 +26,7 @@ import 'package:tuhubread/repositories/payment_repository.dart';
 import 'package:tuhubread/repositories/payment_repository_impl.dart';
 import 'package:tuhubread/services/api_service.dart';
 import 'package:tuhubread/services/location_service.dart';
+import 'package:tuhubread/services/push_notification_service.dart';
 import 'package:tuhubread/services/vietnam_address_service.dart';
 
 final getIt = GetIt.instance;
@@ -93,5 +97,16 @@ Future<void> init() async {
   );
   getIt.registerFactory<PaymentCubit>(
     () => PaymentCubit(repository: getIt<PaymentRepository>()),
+  );
+
+  // ─── Notification ─────────────────────────────────────────────────────────
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerLazySingleton<NotificationCubit>(
+    () => NotificationCubit(repository: getIt<NotificationRepository>()),
+  );
+  getIt.registerLazySingleton<PushNotificationService>(
+    () => PushNotificationService(repository: getIt<NotificationRepository>()),
   );
 }

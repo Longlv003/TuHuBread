@@ -206,8 +206,6 @@
   "homeAllBranches": "All Branches",
   "homeCategories": "Categories",
   "homeAll": "All",
-  "homeShopMenu": "Shop's Menu",
-  "homeAllItems": "All Items",
   "homeNoProductsFound": "No matching products found",
   "homeRemainingVouchers": "{count} vouchers left",
   "homeSoldOutVouchers": "Sold out",
@@ -335,6 +333,11 @@
       "count": {"type": "int"}
     }
   },
+  "notificationsDeleteAllTooltip": "Delete all",
+  "notificationsDeleteConfirmTitle": "Delete notification",
+  "notificationsDeleteConfirmMessage": "Are you sure you want to delete this notification?",
+  "notificationsDeleteAllConfirmTitle": "Delete all notifications",
+  "notificationsDeleteAllConfirmMessage": "All notifications will be permanently deleted. Are you sure?",
   "addressSetDefaultLabel": "Set as default address",
   "addressSaveButton": "Save Address",
   "addressSaveError": "Failed to save address, please try again",

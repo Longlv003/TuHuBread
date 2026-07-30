@@ -12,11 +12,6 @@ const productSchema = new db.mongoose.Schema(
       ref: "globalCategoryModel",
       required: true,
     },
-    shop_category_id: {
-      type: db.mongoose.Schema.Types.ObjectId,
-      ref: "shopCategoryModel",
-      default: null,
-    },
     product_name: { type: String, required: true },
     product_slug: { type: String, required: true },
     description: { type: String, default: null },

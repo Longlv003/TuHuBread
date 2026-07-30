@@ -38,8 +38,6 @@ class ProductDetailModel {
   final String shopId;
   @JsonKey(name: 'global_category_id')
   final String categoryId;
-  @JsonKey(name: 'shop_category_id')
-  final String? shopCategoryId;
   final String productName;
   final String productSlug;
   final String description;
@@ -66,7 +64,6 @@ class ProductDetailModel {
     required this.id,
     required this.shopId,
     required this.categoryId,
-    this.shopCategoryId,
     required this.productName,
     required this.productSlug,
     required this.description,

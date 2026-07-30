@@ -8,9 +8,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import '../../models/user.model.dart';
 import '../../services/api_service.dart';
+import '../../services/push_notification_service.dart';
 import 'auth_state.dart';
 import '../../di.dart';
 import '../cart/cart_cubit.dart';
+import '../notification/notification_cubit.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 2, colors: true, printEmojis: true),
@@ -36,6 +38,10 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthSuccess(user));
         try {
           getIt<CartCubit>().loadCart();
+        } catch (_) {}
+        try {
+          getIt<PushNotificationService>().registerDevice();
+          getIt<NotificationCubit>().refreshUnreadCount();
         } catch (_) {}
       } else {
         emit(AuthFailure(response['msg'] ?? defaultLoginError));
@@ -364,6 +370,12 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> handleLogout() async {
+    // Ngừng nhận push trên thiết bị này — gọi trước khi signOut vì cần
+    // token/phiên đăng nhập còn hợp lệ để xác thực request.
+    try {
+      await getIt<PushNotificationService>().unregisterCurrentDevice();
+    } catch (_) {}
+
     // Logout khỏi Firebase
     await FirebaseAuth.instance.signOut();
 
@@ -383,6 +395,9 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       getIt<CartCubit>().clearCart();
+    } catch (_) {}
+    try {
+      getIt<NotificationCubit>().reset();
     } catch (_) {}
 
     emit(const AuthInitial());

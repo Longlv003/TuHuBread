@@ -12,7 +12,7 @@ exports.getProducts = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
 
   try {
-    const { shop_id, global_category_id, shop_category_id, search, featured } = req.query;
+    const { shop_id, global_category_id, search, featured } = req.query;
 
     const matchStage = { status: "active" };
 
@@ -21,9 +21,6 @@ exports.getProducts = async (req, res) => {
     }
     if (global_category_id && global_category_id !== "all") {
       matchStage.global_category_id = new mongoose.Types.ObjectId(global_category_id);
-    }
-    if (shop_category_id && shop_category_id !== "all") {
-      matchStage.shop_category_id = new mongoose.Types.ObjectId(shop_category_id);
     }
     if (search) {
       matchStage.product_name = { $regex: search, $options: "i" };
@@ -78,7 +75,6 @@ exports.getProducts = async (req, res) => {
           _id: 1,
           shop_id: 1,
           global_category_id: 1,
-          shop_category_id: 1,
           product_name: 1,
           product_slug: 1,
           description: 1,
@@ -205,7 +201,6 @@ exports.getBestSellers = async (req, res) => {
           _id: 1,
           shop_id: 1,
           global_category_id: 1,
-          shop_category_id: 1,
           product_name: 1,
           product_slug: 1,
           description: 1,
@@ -335,7 +330,6 @@ exports.getSaleProducts = async (req, res) => {
           _id: 1,
           shop_id: 1,
           global_category_id: 1,
-          shop_category_id: 1,
           product_name: 1,
           product_slug: 1,
           description: 1,
@@ -463,7 +457,6 @@ exports.getFeaturedProducts = async (req, res) => {
           _id: 1,
           shop_id: 1,
           global_category_id: 1,
-          shop_category_id: 1,
           product_name: 1,
           product_slug: 1,
           description: 1,
@@ -657,7 +650,6 @@ exports.getProductDetail = async (req, res) => {
       _id: product._id,
       shop_id: product.shop_id,
       global_category_id: product.global_category_id,
-      shop_category_id: product.shop_category_id,
       product_name: product.product_name,
       product_slug: product.product_slug,
       description: product.description,

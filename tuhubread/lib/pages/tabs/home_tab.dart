@@ -12,7 +12,6 @@ import '../../models/category.model.dart';
 import '../../models/product.model.dart';
 import '../../models/product_sale.model.dart';
 import '../../models/shop.model.dart';
-import '../../models/shop_category.model.dart';
 import '../../models/user.model.dart';
 import '../../models/voucher.model.dart';
 import '../../helpers/cart_action_helper.dart';
@@ -44,8 +43,7 @@ class _HomeTabContent extends StatefulWidget {
 class _HomeTabContentState extends State<_HomeTabContent> {
   // '' = chưa chọn cửa hàng (xem global), khác '' = đã chọn shop cụ thể
   String _selectedShopId = '';
-  String _selectedGlobalCategoryId = 'all';
-  String _selectedShopCategoryId = 'all';
+  String _selectedCategoryId = 'all';
   String _searchQuery = '';
 
   // Countdown timer — tick mỗi giây để cập nhật UI
@@ -145,16 +143,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       // Filter by shop
       if (_hasShopSelected && p.shopId != _selectedShopId) return false;
       // Filter by category
-      if (_hasShopSelected) {
-        if (_selectedShopCategoryId != 'all' &&
-            p.shopCategoryId != _selectedShopCategoryId) {
-          return false;
-        }
-      } else {
-        if (_selectedGlobalCategoryId != 'all' &&
-            p.categoryId != _selectedGlobalCategoryId) {
-          return false;
-        }
+      if (_selectedCategoryId != 'all' && p.categoryId != _selectedCategoryId) {
+        return false;
       }
       // Filter by search
       if (_searchQuery.isNotEmpty &&
@@ -220,7 +210,6 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           final bestSellers = _getBestSellers(state);
           final discountedProducts = _getDiscountedProducts(state);
           final filteredProducts = _getFilteredProducts(state);
-          final shopCats = state.shopCategories;
 
           return RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().refresh(),
@@ -253,10 +242,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   const SizedBox(height: 24),
 
                   // 6. Category Filter
-                  if (_hasShopSelected)
-                    _buildShopCategoryFilter(shopCats, l10n)
-                  else
-                    _buildGlobalCategoryFilter(state.categories, l10n),
+                  _buildCategoryFilter(state.categories, l10n),
                   const SizedBox(height: 20),
 
                   // 7. Products Grid
@@ -299,10 +285,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   onTap: () {
                     setState(() {
                       _selectedShopId = '';
-                      _selectedShopCategoryId = 'all';
-                      _selectedGlobalCategoryId = 'all';
+                      _selectedCategoryId = 'all';
                     });
-                    context.read<HomeCubit>().loadShopCategories('');
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -352,10 +336,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   final newShopId = isSelected ? '' : shop.id;
                   setState(() {
                     _selectedShopId = newShopId;
-                    _selectedShopCategoryId = 'all';
-                    _selectedGlobalCategoryId = 'all';
+                    _selectedCategoryId = 'all';
                   });
-                  context.read<HomeCubit>().loadShopCategories(newShopId);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -914,9 +896,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     );
   }
 
-  // ─────────── GLOBAL CATEGORY FILTER ───────────
+  // ─────────── CATEGORY FILTER ───────────
 
-  Widget _buildGlobalCategoryFilter(
+  Widget _buildCategoryFilter(
     List<CategoryModel> categories,
     AppLocalizations l10n,
   ) {
@@ -945,67 +927,17 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               _buildCategoryChip(
                 id: 'all',
                 label: l10n.homeAll,
-                isSelected: _selectedGlobalCategoryId == 'all',
-                onTap: () => setState(() => _selectedGlobalCategoryId = 'all'),
+                isSelected: _selectedCategoryId == 'all',
+                onTap: () => setState(() => _selectedCategoryId = 'all'),
               ),
               ...categories.map(
                 (cat) => _buildCategoryChip(
                   id: cat.id,
                   label: cat.categoryName,
                   iconUrl: cat.categoryIcon,
-                  isSelected: _selectedGlobalCategoryId == cat.id,
+                  isSelected: _selectedCategoryId == cat.id,
                   onTap: () =>
-                      setState(() => _selectedGlobalCategoryId = cat.id),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ─────────── SHOP CATEGORY FILTER ───────────
-
-  Widget _buildShopCategoryFilter(
-    List<ShopCategoryModel> shopCats,
-    AppLocalizations l10n,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            l10n.homeShopMenu,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: [
-              _buildCategoryChip(
-                id: 'all',
-                label: l10n.homeAllItems,
-                isSelected: _selectedShopCategoryId == 'all',
-                onTap: () => setState(() => _selectedShopCategoryId = 'all'),
-              ),
-              ...shopCats.map(
-                (cat) => _buildCategoryChip(
-                  id: cat.id,
-                  label: cat.categoryName,
-                  iconUrl: cat.categoryIcon,
-                  isSelected: _selectedShopCategoryId == cat.id,
-                  onTap: () => setState(() => _selectedShopCategoryId = cat.id),
+                      setState(() => _selectedCategoryId = cat.id),
                 ),
               ),
             ],
@@ -1092,6 +1024,17 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── PRODUCTS GRID ───────────
 
+  /// Tên chi nhánh của 1 sản phẩm — chỉ trả về khi đang xem trộn món từ
+  /// nhiều chi nhánh (chưa chọn 1 chi nhánh cụ thể), để hiện badge trên thẻ
+  /// sản phẩm giúp khách biết món này của chi nhánh nào.
+  String? _shopNameFor(HomeLoaded state, String shopId) {
+    if (_hasShopSelected) return null;
+    for (final shop in state.shops) {
+      if (shop.id == shopId) return shop.shopName;
+    }
+    return null;
+  }
+
   Widget _buildProductsSection(
     AppLocalizations l10n,
     List<ProductModel> products,
@@ -1137,6 +1080,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             product: product,
             activeSale: _getActiveSale(state, product.id),
             now: _now,
+            shopName: _shopNameFor(state, product.shopId),
             onTap: () => getx.Get.toNamed(
               Routes.productDetailPage,
               arguments: product.id,

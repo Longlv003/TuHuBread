@@ -447,12 +447,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAll => 'All';
 
   @override
-  String get homeShopMenu => 'Shop\'s Menu';
-
-  @override
-  String get homeAllItems => 'All Items';
-
-  @override
   String get homeNoProductsFound => 'No matching products found';
 
   @override
@@ -811,6 +805,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String notificationsDaysAgo(int count) {
     return '${count}d ago';
   }
+
+  @override
+  String get notificationsDeleteAllTooltip => 'Delete all';
+
+  @override
+  String get notificationsDeleteConfirmTitle => 'Delete notification';
+
+  @override
+  String get notificationsDeleteConfirmMessage =>
+      'Are you sure you want to delete this notification?';
+
+  @override
+  String get notificationsDeleteAllConfirmTitle => 'Delete all notifications';
+
+  @override
+  String get notificationsDeleteAllConfirmMessage =>
+      'All notifications will be permanently deleted. Are you sure?';
 
   @override
   String get addressSetDefaultLabel => 'Set as default address';

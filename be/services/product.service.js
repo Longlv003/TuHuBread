@@ -73,7 +73,7 @@ class ProductService {
 
   async addProduct(shopId, data) {
     const {
-      globalCategoryId, shopCategoryId, productName, description, prepTimeMinutes, status,
+      globalCategoryId, productName, description, prepTimeMinutes, status,
       variantName, price, salePrice, stockQuantity, variantImage,
       isFeatured, isNew, storageNote
     } = data;
@@ -97,7 +97,6 @@ class ProductService {
     const product = await productRepository.create({
       shop_id: shopId,
       global_category_id: globalCategoryId,
-      shop_category_id: shopCategoryId || null,
       product_name: productName.trim(),
       product_slug: slug,
       description: description || null,
@@ -136,7 +135,7 @@ class ProductService {
     }
 
     const {
-      productName, description, globalCategoryId, shopCategoryId, prepTimeMinutes, status,
+      productName, description, globalCategoryId, prepTimeMinutes, status,
       isFeatured, isNew, storageNote
     } = data;
     const updateData = {};
@@ -151,7 +150,6 @@ class ProductService {
     }
     if (description !== undefined) updateData.description = description || null;
     if (globalCategoryId) updateData.global_category_id = globalCategoryId;
-    if (shopCategoryId !== undefined) updateData.shop_category_id = shopCategoryId || null;
     if (prepTimeMinutes !== undefined) updateData.preparation_time_minutes = parseInt(prepTimeMinutes) || 0;
     if (status) updateData.status = status;
     if (isFeatured !== undefined) updateData.is_featured = isFeatured === "on" || isFeatured === true;

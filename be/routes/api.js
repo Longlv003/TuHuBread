@@ -8,6 +8,7 @@ var shopCtrl = require("../controllers/shop.controller");
 var addressCtrl = require("../controllers/address.controller");
 var orderCtrl = require("../controllers/order.controller");
 var bannerCtrl = require("../controllers/banner.controller");
+var notificationCtrl = require("../controllers/notification.controller");
 
 router.post("/auth/firebase", accCtrl.verifyFirebaseUser);
 
@@ -19,7 +20,6 @@ router.get("/shops", shopCtrl.getShops);
 
 // Category Routes
 router.get("/categories", catCtrl.getGlobalCategories);
-router.get("/shops/:shopId/categories", catCtrl.getShopCategories);
 
 // Product Routes
 router.get("/products/best-sellers", prodCtrl.getBestSellers);
@@ -59,6 +59,18 @@ router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
 router.get("/delivery-fee/preview", firebaseAuth, orderCtrl.previewDeliveryFee);
+
+// Notification Routes
+router.get("/notifications", firebaseAuth, notificationCtrl.getMyNotifications);
+router.get("/notifications/unread-count", firebaseAuth, notificationCtrl.getUnreadCount);
+router.put("/notifications/read-all", firebaseAuth, notificationCtrl.markAllAsRead);
+router.put("/notifications/:id/read", firebaseAuth, notificationCtrl.markAsRead);
+router.delete("/notifications", firebaseAuth, notificationCtrl.deleteAllNotifications);
+router.delete("/notifications/:id", firebaseAuth, notificationCtrl.deleteNotification);
+
+// Device (FCM) Routes
+router.post("/devices/register", firebaseAuth, notificationCtrl.registerDevice);
+router.post("/devices/unregister", firebaseAuth, notificationCtrl.unregisterDevice);
 
 // Cart Routes
 var cartCtrl = require("../controllers/cart.controller");

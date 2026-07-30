@@ -5,8 +5,6 @@ const shopDashboardController = require("../controllers/shop_web/shop_dashboard.
 const { authMiddleware, guestMiddleware } = require("../middlewares/shop_auth.middlewares");
 
 const upload = require("../middlewares/upload.middleware");
-const uploadCategory = require("../middlewares/upload_category.middleware");
-const shopCategoryController = require("../controllers/shop_web/shop_category.controller");
 const shopOrderController = require("../controllers/shop_web/shop_order.controller");
 const shopProductController = require("../controllers/shop_web/shop_product.controller");
 const shopProductVariantController = require("../controllers/shop_web/shop_product_variant.controller");
@@ -18,6 +16,7 @@ const shopVoucherController = require("../controllers/shop_web/shop_voucher.cont
 const shopReviewController = require("../controllers/shop_web/shop_review.controller");
 const shopSettingsController = require("../controllers/shop_web/shop_settings.controller");
 const shopReportController = require("../controllers/shop_web/shop_report.controller");
+const shopNotificationController = require("../controllers/shop_web/shop_notification.controller");
 const uploadProduct = require("../middlewares/upload_product.middleware");
 const uploadShopBanner = require("../middlewares/upload_shop_banner.middleware");
 
@@ -31,12 +30,6 @@ router.post("/register", guestMiddleware, shopAuthController.register);
 router.get("/dashboard", authMiddleware, shopDashboardController.showDashboard);
 router.post("/update-logo", authMiddleware, upload.single("logo"), shopAuthController.updateLogo);
 router.get("/logout", authMiddleware, shopAuthController.logout);
-
-// Shop Categories CRUD routes
-router.get("/categories", authMiddleware, shopCategoryController.showCategories);
-router.post("/categories/add", authMiddleware, uploadCategory.single("categoryIcon"), shopCategoryController.addCategory);
-router.post("/categories/edit/:id", authMiddleware, uploadCategory.single("categoryIcon"), shopCategoryController.editCategory);
-router.post("/categories/delete/:id", authMiddleware, shopCategoryController.deleteCategory);
 
 // Order management routes
 router.get("/orders", authMiddleware, shopOrderController.showOrders);
@@ -90,5 +83,8 @@ router.post("/settings/banner", authMiddleware, uploadShopBanner.single("banner"
 
 // Revenue report route
 router.get("/reports", authMiddleware, shopReportController.showReport);
+
+router.get("/notifications", authMiddleware, shopNotificationController.showNotifications);
+router.post("/notifications/add", authMiddleware, shopNotificationController.createNotification);
 
 module.exports = router;

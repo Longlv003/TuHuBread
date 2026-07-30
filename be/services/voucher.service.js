@@ -1,4 +1,29 @@
 const voucherRepository = require("../repositories/voucher.repository");
+const notificationService = require("./notification.service");
+
+function buildVoucherNotificationBody(voucher) {
+  if (voucher.discount_type === "percent") {
+    return `Giảm ${voucher.discount_value}% cho đơn từ ${voucher.min_order_amount.toLocaleString("vi-VN")}đ. Lưu ngay mã ${voucher.voucher_code}!`;
+  }
+  if (voucher.discount_type === "amount") {
+    return `Giảm ${voucher.discount_value.toLocaleString("vi-VN")}đ cho đơn từ ${voucher.min_order_amount.toLocaleString("vi-VN")}đ. Lưu ngay mã ${voucher.voucher_code}!`;
+  }
+  return `Miễn phí giao hàng cho đơn từ ${voucher.min_order_amount.toLocaleString("vi-VN")}đ. Lưu ngay mã ${voucher.voucher_code}!`;
+}
+
+/** Báo cho toàn bộ khách hàng khi có voucher mới — không để lỗi gửi thông
+ * báo làm hỏng luồng tạo voucher chính. */
+function notifyNewVoucher(voucher) {
+  notificationService
+    .createAndSend({
+      title: `Mã giảm giá mới: ${voucher.voucher_name}`,
+      body: buildVoucherNotificationBody(voucher),
+      type: "voucher",
+      target: "all",
+      senderType: "system",
+    })
+    .catch((err) => console.error("notifyNewVoucher failed:", err.message));
+}
 
 class VoucherService {
   async getVouchersByShop(shopId) {
@@ -53,7 +78,7 @@ class VoucherService {
       throw new Error("Mã voucher đã tồn tại");
     }
 
-    return voucherRepository.create({
+    const voucher = await voucherRepository.create({
       shop_id: shopId,
       voucher_code: voucherCode.trim().toUpperCase(),
       voucher_name: voucherName.trim(),
@@ -68,6 +93,8 @@ class VoucherService {
       end_date: endDateObj,
       status: "active"
     });
+    notifyNewVoucher(voucher);
+    return voucher;
   }
 
   async editVoucher(shopId, id, data) {
@@ -184,7 +211,7 @@ class VoucherService {
       throw new Error("Mã voucher đã tồn tại");
     }
 
-    return voucherRepository.create({
+    const voucher = await voucherRepository.create({
       shop_id: null,
       voucher_code: voucherCode.trim().toUpperCase(),
       voucher_name: voucherName.trim(),
@@ -199,6 +226,8 @@ class VoucherService {
       end_date: endDateObj,
       status: "active"
     });
+    notifyNewVoucher(voucher);
+    return voucher;
   }
 
   async editPlatformVoucher(id, data) {

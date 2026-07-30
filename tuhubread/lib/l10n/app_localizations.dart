@@ -902,18 +902,6 @@ abstract class AppLocalizations {
   /// **'All'**
   String get homeAll;
 
-  /// No description provided for @homeShopMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Shop\'s Menu'**
-  String get homeShopMenu;
-
-  /// No description provided for @homeAllItems.
-  ///
-  /// In en, this message translates to:
-  /// **'All Items'**
-  String get homeAllItems;
-
   /// No description provided for @homeNoProductsFound.
   ///
   /// In en, this message translates to:
@@ -1585,6 +1573,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count}d ago'**
   String notificationsDaysAgo(int count);
+
+  /// No description provided for @notificationsDeleteAllTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get notificationsDeleteAllTooltip;
+
+  /// No description provided for @notificationsDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete notification'**
+  String get notificationsDeleteConfirmTitle;
+
+  /// No description provided for @notificationsDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this notification?'**
+  String get notificationsDeleteConfirmMessage;
+
+  /// No description provided for @notificationsDeleteAllConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all notifications'**
+  String get notificationsDeleteAllConfirmTitle;
+
+  /// No description provided for @notificationsDeleteAllConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications will be permanently deleted. Are you sure?'**
+  String get notificationsDeleteAllConfirmMessage;
 
   /// No description provided for @addressSetDefaultLabel.
   ///

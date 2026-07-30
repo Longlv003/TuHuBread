@@ -99,15 +99,6 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="shopCategoryId">Danh mục shop</label>
-          <select id="shopCategoryId" name="shopCategoryId">
-            <option value="">-- Không thuộc danh mục shop --</option>
-            <% shopCategories.forEach(c => { %>
-              <option value="<%= c._id %>"><%= c.category_name %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
           <label for="description">Mô tả</label>
           <textarea id="description" name="description" rows="2"></textarea>
         </div>

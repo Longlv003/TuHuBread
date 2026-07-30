@@ -2,7 +2,6 @@ import '../../models/category.model.dart';
 import '../../models/product.model.dart';
 import '../../models/product_sale.model.dart';
 import '../../models/shop.model.dart';
-import '../../models/shop_category.model.dart';
 import '../../models/voucher.model.dart';
 
 abstract class HomeState {
@@ -29,7 +28,6 @@ class HomeLoaded extends HomeState {
   final List<ProductModel> saleProducts;
   final List<ProductSaleModel> productSales;
   final List<VoucherModel> vouchers;
-  final List<ShopCategoryModel> shopCategories;
 
   /// Map<sectionKey, errorMessage> — section nào fail thì có entry ở đây.
   /// UI có thể dùng để hiện banner "Không tải được [section]" thay vì crash.
@@ -43,7 +41,6 @@ class HomeLoaded extends HomeState {
     required this.saleProducts,
     required this.productSales,
     required this.vouchers,
-    this.shopCategories = const [],
     this.sectionErrors = const {},
   });
 
@@ -59,7 +56,6 @@ class HomeLoaded extends HomeState {
     List<ProductModel>? saleProducts,
     List<ProductSaleModel>? productSales,
     List<VoucherModel>? vouchers,
-    List<ShopCategoryModel>? shopCategories,
     Map<String, String>? sectionErrors,
   }) {
     return HomeLoaded(
@@ -70,7 +66,6 @@ class HomeLoaded extends HomeState {
       saleProducts: saleProducts ?? this.saleProducts,
       productSales: productSales ?? this.productSales,
       vouchers: vouchers ?? this.vouchers,
-      shopCategories: shopCategories ?? this.shopCategories,
       sectionErrors: sectionErrors ?? this.sectionErrors,
     );
   }

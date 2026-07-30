@@ -17,6 +17,7 @@ const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const socketService = require("./socket.service");
+const notificationService = require("./notification.service");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,12 @@ class PaymentService {
 
       createdOrders.push(order);
       socketService.emitNewOrder(shopId, order);
+      notificationService.notifyUser(session.user_id, {
+        title: "Thanh toán thành công",
+        body: `Đơn hàng #${order.order_code} đã thanh toán qua VNPay và được tiếp nhận.`,
+        type: "order",
+        data: { order_id: String(order._id), order_status: order.order_status },
+      });
       shopIndex++;
     }
 

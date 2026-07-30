@@ -12,6 +12,7 @@ const { cartItemModel } = require("../models/cartItem.model");
 const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 const socketService = require("../services/socket.service");
+const notificationService = require("../services/notification.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
@@ -478,6 +479,12 @@ exports.createOrder = async (req, res) => {
       });
 
       socketService.emitNewOrder(shopId, order);
+      notificationService.notifyUser(user._id, {
+        title: "Đặt hàng thành công",
+        body: `Đơn hàng #${order.order_code} của bạn đã được tiếp nhận.`,
+        type: "order",
+        data: { order_id: String(order._id), order_status: order.order_status },
+      });
     }
 
     // Đánh dấu voucher đã sử dụng

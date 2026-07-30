@@ -1,5 +1,4 @@
 const productService = require("../../services/product.service");
-const shopCategoryRepository = require("../../repositories/shopCategory.repository");
 const globalCategoryRepository = require("../../repositories/globalCategory.repository");
 
 function buildFirebaseConfig() {
@@ -16,9 +15,8 @@ function buildFirebaseConfig() {
 class ShopProductController {
   async showProducts(req, res) {
     try {
-      const [{ products, total, page, totalPages }, shopCategories, globalCategories] = await Promise.all([
+      const [{ products, total, page, totalPages }, globalCategories] = await Promise.all([
         productService.getProductsByShopPaginated(req.shop._id, req.query.page),
-        shopCategoryRepository.findByShopId(req.shop._id),
         globalCategoryRepository.findAllActive()
       ]);
 
@@ -27,7 +25,6 @@ class ShopProductController {
         total,
         page,
         totalPages,
-        shopCategories,
         globalCategories,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,
@@ -47,10 +44,7 @@ class ShopProductController {
   async showProductDetail(req, res) {
     try {
       const { product, variants, options, attributes, batches } = await productService.getProductDetail(req.shop._id, req.params.id);
-      const [shopCategories, globalCategories] = await Promise.all([
-        shopCategoryRepository.findByShopId(req.shop._id),
-        globalCategoryRepository.findAllActive()
-      ]);
+      const globalCategories = await globalCategoryRepository.findAllActive();
 
       res.render("shop/product_detail", {
         product,
@@ -58,7 +52,6 @@ class ShopProductController {
         options,
         attributes,
         batches,
-        shopCategories,
         globalCategories,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,

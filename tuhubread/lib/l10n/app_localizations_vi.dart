@@ -450,12 +450,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get homeAll => 'Tất cả';
 
   @override
-  String get homeShopMenu => 'Thực đơn của cửa hàng';
-
-  @override
-  String get homeAllItems => 'Tất cả món';
-
-  @override
   String get homeNoProductsFound => 'Không tìm thấy món phù hợp';
 
   @override
@@ -813,6 +807,23 @@ class AppLocalizationsVi extends AppLocalizations {
   String notificationsDaysAgo(int count) {
     return '$count ngày trước';
   }
+
+  @override
+  String get notificationsDeleteAllTooltip => 'Xoá tất cả';
+
+  @override
+  String get notificationsDeleteConfirmTitle => 'Xoá thông báo';
+
+  @override
+  String get notificationsDeleteConfirmMessage =>
+      'Bạn có chắc muốn xoá thông báo này không?';
+
+  @override
+  String get notificationsDeleteAllConfirmTitle => 'Xoá tất cả thông báo';
+
+  @override
+  String get notificationsDeleteAllConfirmMessage =>
+      'Tất cả thông báo sẽ bị xoá vĩnh viễn. Bạn có chắc chắn?';
 
   @override
   String get addressSetDefaultLabel => 'Đặt làm địa chỉ mặc định';

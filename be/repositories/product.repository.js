@@ -12,14 +12,12 @@ class ProductRepository {
   async findByShopId(shopId) {
     return productModel.find({ shop_id: shopId, deleted_at: null })
       .populate("global_category_id")
-      .populate("shop_category_id")
       .sort({ createdAt: -1 });
   }
 
   async findByShopIdPaginated(shopId, { page = 1, limit = 50 }) {
     return productModel.find({ shop_id: shopId, deleted_at: null })
       .populate("global_category_id")
-      .populate("shop_category_id")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);

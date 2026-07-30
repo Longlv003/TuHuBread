@@ -88,23 +88,16 @@
 
     /**
      * Âm báo "ting ting" khi có sự kiện realtime (đơn hàng mới...).
-     * Dùng file âm thanh thật thay vì tổng hợp bằng Web Audio API. Trình
-     * duyệt vẫn có thể chặn phát tự động nếu trang chưa có tương tác nào từ
-     * người dùng — "mở khoá" bằng cách play+pause ngay lần click/gõ phím/
-     * chạm đầu tiên trên trang.
+     * Dùng file âm thanh thật thay vì tổng hợp bằng Web Audio API.
+     *
+     * preload để mặc định (không ép "auto") và KHÔNG chủ động gọi play()
+     * lúc trang vừa tải/mới tương tác — chỉ gọi play() đúng lúc thật sự cần
+     * phát (trong playAlertSound()). Tải sẵn/phát thử toàn bộ file ngay khi
+     * mở trang từng khiến trình duyệt (hoặc phần mềm tải xuống kiểu IDM cài
+     * trên máy) hiểu nhầm là đang tải 1 file media và tự động "Tải xuống".
      */
     const notificationAudio = new Audio("/sound/tieng%20ting%20ting.mp3");
-    notificationAudio.preload = "auto";
     notificationAudio.volume = 0.7;
-
-    ["click", "keydown", "touchstart"].forEach((evt) => {
-      document.addEventListener(evt, () => {
-        notificationAudio.play().then(() => {
-          notificationAudio.pause();
-          notificationAudio.currentTime = 0;
-        }).catch(() => {});
-      }, { once: true });
-    });
 
     function playAlertSound() {
       try {
