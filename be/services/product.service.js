@@ -74,7 +74,7 @@ class ProductService {
   async addProduct(shopId, data) {
     const {
       globalCategoryId, productName, description, prepTimeMinutes, status,
-      variantName, price, salePrice, stockQuantity, variantImage,
+      variantName, price, salePrice, stockQuantity, variantImage, expiredAt,
       isFeatured, isNew, storageNote
     } = data;
 
@@ -89,6 +89,15 @@ class ProductService {
     const slug = toSlug(productName);
     if (!slug) {
       throw new Error("Tên sản phẩm không hợp lệ!");
+    }
+
+    const parsedStock = stockQuantity ? parseInt(stockQuantity) : 0;
+    let expiredAtObj = null;
+    if (parsedStock > 0 && expiredAt) {
+      expiredAtObj = new Date(expiredAt);
+      if (isNaN(expiredAtObj.getTime()) || expiredAtObj <= new Date()) {
+        throw new Error("Hạn sử dụng phải sau ngày hôm nay");
+      }
     }
 
     // Note: this MongoDB deployment is a standalone instance (no replica set), so
@@ -117,9 +126,22 @@ class ProductService {
         image: variantImage || null,
         price: parsedPrice,
         sale_price: salePrice ? parseFloat(salePrice) : null,
-        stock_quantity: stockQuantity ? parseInt(stockQuantity) : 0,
+        stock_quantity: parsedStock,
         status: "active"
       });
+
+      if (expiredAtObj) {
+        await productBatchRepository.create({
+          product_id: product._id,
+          variant_id: variant._id,
+          batch_code: `LOT-${Date.now()}`,
+          quantity_imported: parsedStock,
+          quantity_remaining: parsedStock,
+          production_date: new Date(),
+          expired_at: expiredAtObj,
+          status: "active"
+        });
+      }
 
       return { product, variant };
     } catch (err) {

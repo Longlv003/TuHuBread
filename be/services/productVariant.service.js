@@ -1,5 +1,6 @@
 const productRepository = require("../repositories/product.repository");
 const productVariantRepository = require("../repositories/productVariant.repository");
+const productBatchRepository = require("../repositories/productBatch.repository");
 const { toSlug } = require("../utils/slug.util");
 
 class ProductVariantService {
@@ -9,7 +10,7 @@ class ProductVariantService {
       throw new Error("Product not found");
     }
 
-    const { variantName, price, salePrice, stockQuantity, status, image } = data;
+    const { variantName, price, salePrice, stockQuantity, status, image, expiredAt } = data;
     if (!variantName) {
       throw new Error("Tên biến thể là bắt buộc");
     }
@@ -18,16 +19,40 @@ class ProductVariantService {
       throw new Error("Giá biến thể phải lớn hơn 0");
     }
 
-    return productVariantRepository.create({
+    const parsedStock = stockQuantity ? parseInt(stockQuantity) : 0;
+    let expiredAtObj = null;
+    if (parsedStock > 0 && expiredAt) {
+      expiredAtObj = new Date(expiredAt);
+      if (isNaN(expiredAtObj.getTime()) || expiredAtObj <= new Date()) {
+        throw new Error("Hạn sử dụng phải sau ngày hôm nay");
+      }
+    }
+
+    const variant = await productVariantRepository.create({
       product_id: productId,
       variant_name: variantName.trim(),
       variant_slug: toSlug(variantName) || `variant-${Date.now()}`,
       image: image || null,
       price: parsedPrice,
       sale_price: salePrice ? parseFloat(salePrice) : null,
-      stock_quantity: stockQuantity ? parseInt(stockQuantity) : 0,
+      stock_quantity: parsedStock,
       status: status || "active"
     });
+
+    if (expiredAtObj) {
+      await productBatchRepository.create({
+        product_id: productId,
+        variant_id: variant._id,
+        batch_code: `LOT-${Date.now()}`,
+        quantity_imported: parsedStock,
+        quantity_remaining: parsedStock,
+        production_date: new Date(),
+        expired_at: expiredAtObj,
+        status: "active"
+      });
+    }
+
+    return variant;
   }
 
   async editVariant(shopId, productId, variantId, data) {

@@ -50,16 +50,6 @@
           <label for="editStorageNote">Ghi chú bảo quản (hiển thị cho khách)</label>
           <textarea id="editStorageNote" name="storageNote" rows="2" placeholder="Ví dụ: Làm khi có đơn, dùng ngay trong 2h. Bảo quản nơi khô ráo, thoáng mát."><%= product.storage_note || '' %></textarea>
         </div>
-        <div class="form-group" style="display:flex; align-items:center; gap:20px;">
-          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:14px; margin-bottom:0;">
-            <input type="hidden" name="isFeatured" value="off">
-            <input type="checkbox" name="isFeatured" style="width:auto;" <%= product.is_featured ? 'checked' : '' %>> Sản phẩm nổi bật
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:14px; margin-bottom:0;">
-            <input type="hidden" name="isNew" value="off">
-            <input type="checkbox" name="isNew" style="width:auto;" <%= product.is_new ? 'checked' : '' %>> Sản phẩm mới
-          </label>
-        </div>
       </div>
       <button type="submit" class="btn-submit" style="width:auto; padding: 12px 24px;">Lưu thông tin sản phẩm</button>
     </form>
@@ -108,6 +98,7 @@
           <div class="form-group"><label>Giá bán *</label><input type="number" name="price" required min="0"></div>
           <div class="form-group"><label>Giá khuyến mãi</label><input type="number" name="salePrice" min="0"></div>
           <div class="form-group"><label>Tồn kho</label><input type="number" name="stockQuantity" min="0" value="0"></div>
+          <div class="form-group"><label>Hạn sử dụng</label><input type="date" name="expiredAt"></div>
           <div class="form-group"><label>Ảnh</label><input type="file" name="variantImage" accept="image/*"></div>
           <button type="submit" class="btn-submit">Thêm biến thể</button>
         </form>
