@@ -1,9 +1,8 @@
 import 'package:logger/logger.dart';
-
 import '../core/result.dart';
 import '../models/notification_list_result.model.dart';
-import '../services/api_service.dart';
 import 'notification_repository.dart';
+import '../services/api_service.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -51,8 +50,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<Result<bool>> markAsRead(String id) async {
     try {
-      final res = await apiService.put('/api/notifications/$id/read', {});
-      if (res['data'] != null) {
+      final res = await apiService.request(
+        '/api/notifications/$id/read',
+        method: 'PATCH',
+      );
+      if (res['data'] != null || res['msg'] == 'OK') {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể đánh dấu đã đọc');
@@ -65,8 +67,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<Result<bool>> markAllAsRead() async {
     try {
-      final res = await apiService.put('/api/notifications/read-all', {});
-      if (res['data'] != null) {
+      final res = await apiService.request(
+        '/api/notifications/read-all',
+        method: 'PATCH',
+      );
+      if (res['msg'] == 'OK' || res['data'] != null) {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể đánh dấu đã đọc tất cả');
@@ -112,13 +117,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
     String? deviceName,
   }) async {
     try {
-      final res = await apiService.post('/api/devices/register', {
-        'fcm_token': fcmToken,
+      final res = await apiService.post('/api/notifications/device-token', {
+        'token': fcmToken,
         'platform': platform,
-        if (deviceId != null) 'device_id': deviceId,
-        if (deviceName != null) 'device_name': deviceName,
       });
-      if (res['data'] != null) {
+      if (res['data'] != null || res['msg'] == 'OK') {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể đăng ký nhận thông báo');
@@ -131,10 +134,12 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<Result<bool>> unregisterDevice(String fcmToken) async {
     try {
-      final res = await apiService.post('/api/devices/unregister', {
-        'fcm_token': fcmToken,
-      });
-      if (res['data'] != null) {
+      final res = await apiService.request(
+        '/api/notifications/device-token',
+        method: 'DELETE',
+        data: {'token': fcmToken},
+      );
+      if (res['msg'] == 'OK' || res['data'] != null) {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể huỷ đăng ký thông báo');
@@ -142,5 +147,28 @@ class NotificationRepositoryImpl implements NotificationRepository {
       _log.e('[unregisterDevice] Failed', error: e, stackTrace: s);
       return const Failure('Không thể kết nối đến máy chủ');
     }
+  }
+
+  @override
+  Future<Result<void>> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) async {
+    final res = await registerDevice(fcmToken: token, platform: platform);
+    if (res is Success<bool>) {
+      return const Success(null);
+    }
+    return Failure((res as Failure).message);
+  }
+
+  @override
+  Future<Result<void>> deactivateDeviceToken({
+    required String token,
+  }) async {
+    final res = await unregisterDevice(token);
+    if (res is Success<bool>) {
+      return const Success(null);
+    }
+    return Failure((res as Failure).message);
   }
 }

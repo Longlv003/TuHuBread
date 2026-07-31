@@ -1,8 +1,13 @@
+const mongoose = require("mongoose");
 const { messaging } = require("../configs/firebase.config");
+const { notificationModel } = require("../models/notification.model");
+const { userDeviceModel } = require("../models/userDevice.model");
 const notificationRepository = require("../repositories/notification.repository");
 const userDeviceRepository = require("../repositories/userDevice.repository");
 const { userModel } = require("../models/user.model");
 const { orderModel } = require("../models/order.model");
+const fcmService = require("./fcm.service");
+const { NOTIFICATION_TYPES, SOCKET_EVENTS } = require("../constants/notification.constants");
 
 const CUSTOMER_PAGE_SIZE = 20;
 
@@ -143,11 +148,26 @@ class NotificationService {
    */
   async notifyUser(userId, { title, body, type, data }) {
     try {
-      await notificationRepository.create({
+      const savedNotification = await notificationRepository.create({
         user_id: userId, title, body, type, data: data || null, sent_at: new Date(), sender_type: "system",
       });
       const tokens = await userDeviceRepository.findActiveTokensByUserId(userId);
       await sendPushInBatches(tokens, title, body, data);
+
+      // Emit via Socket.IO for real-time updates
+      try {
+        const { getIo } = require("../sockets/socket.module");
+        const io = getIo();
+        if (io) {
+          const roomName = `user:${userId}`;
+          io.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_NEW, savedNotification);
+          
+          const unreadCount = await notificationRepository.countUnreadByUserId(userId);
+          io.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED, { count: unreadCount });
+        }
+      } catch (socketError) {
+        console.warn("[SocketService] Failed to emit notification via Socket.IO:", socketError.message);
+      }
     } catch (err) {
       // Thông báo là tác vụ phụ — không để lỗi gửi thông báo làm hỏng luồng
       // chính (cập nhật đơn hàng...).
@@ -194,6 +214,126 @@ class NotificationService {
       : await userDeviceRepository.findAllActiveTokens();
     const pushResult = await sendPushInBatches(tokens, title, body);
     return { recipientCount: customerIds.length, ...pushResult };
+  }
+
+  /**
+   * Main notification orchestrator
+   * @param {Object} params
+   * @param {string|mongoose.Types.ObjectId} params.userId - Target user ID
+   * @param {string} params.type - One of NOTIFICATION_TYPES
+   * @param {string} params.title - Notification title
+   * @param {string} params.message - Notification body
+   * @param {Object} [params.data] - Extra payload data
+   * @param {string|mongoose.Types.ObjectId} [params.orderId] - Associated Order ID
+   * @returns {Promise<Object>} The saved notification document
+   */
+  async notify({ userId, type, title, message, data = {}, orderId }) {
+    // 1. Validate Input
+    if (!userId) {
+      throw new Error("[NotificationService] Missing target userId");
+    }
+    if (!type || !NOTIFICATION_TYPES[type]) {
+      throw new Error(`[NotificationService] Invalid or missing notification type: ${type}`);
+    }
+    if (!title || !message) {
+      throw new Error("[NotificationService] Title and message are required");
+    }
+
+    // 2. Prepare and save notification document to MongoDB
+    const notificationPayload = {
+      user_id: userId,
+      title,
+      body: message,
+      type,
+      data: {
+        ...data,
+        notificationId: "", // Will update after save or just place orderId
+        orderId: orderId ? orderId.toString() : (data.orderId || ""),
+        type,
+      },
+      is_read: false,
+      sent_at: new Date(),
+    };
+
+    let savedNotification;
+    try {
+      savedNotification = await notificationModel.create(notificationPayload);
+      // Append notification ID to payload data for Socket & FCM
+      savedNotification.data = {
+        ...savedNotification.data,
+        notificationId: savedNotification._id.toString(),
+      };
+      await savedNotification.save();
+    } catch (dbError) {
+      console.error("[NotificationService] Database save failed:", dbError.message);
+      throw dbError; // DB error is critical
+    }
+
+    // 3. Emit via Socket.IO
+    try {
+      const { getIo } = require("../sockets/socket.module");
+      const io = getIo();
+      if (io) {
+        const roomName = `user:${userId}`;
+        io.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_NEW, savedNotification);
+        
+        // Also emit count update
+        const unreadCount = await notificationModel.countDocuments({
+          user_id: userId,
+          is_read: false,
+          deleted_at: null,
+        });
+        io.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED, { count: unreadCount });
+        console.log(`[SocketService] Emitted notification to ${roomName}`);
+      }
+    } catch (socketError) {
+      console.warn("[SocketService] Failed to emit notification via Socket.IO:", socketError.message);
+    }
+
+    // 4. Get active FCM device tokens
+    let activeDevices = [];
+    try {
+      activeDevices = await userDeviceModel.find({
+        user_id: userId,
+        is_active: true,
+        deleted_at: null,
+      });
+    } catch (deviceError) {
+      console.warn("[NotificationService] Failed to retrieve user devices:", deviceError.message);
+    }
+
+    // 5. Send FCM Notifications
+    if (activeDevices.length > 0) {
+      const tokens = activeDevices.map(d => d.fcm_token);
+      
+      // Async call so it doesn't block response, but we handle results safely
+      fcmService.sendToMultipleTokens({
+        tokens,
+        notification: { title, body: message },
+        data: savedNotification.data,
+      }).then(async (result) => {
+        console.log(`[NotificationService] FCM Send results: Success=${result.successCount}, Failures=${result.failureCount}`);
+        
+        // 6. Deactivate invalid/expired tokens returned from FCM service
+        if (result.invalidTokens && result.invalidTokens.length > 0) {
+          try {
+            const updateResult = await userDeviceModel.updateMany(
+              { fcm_token: { $in: result.invalidTokens } },
+              { $set: { is_active: false } }
+            );
+            console.log(`[NotificationService] Deactivated ${updateResult.modifiedCount} invalid FCM tokens`);
+          } catch (deactivateError) {
+            console.error("[NotificationService] Failed to deactivate invalid FCM tokens in DB:", deactivateError.message);
+          }
+        }
+      }).catch((fcmPromiseError) => {
+        console.error("[NotificationService] FCM async processing encountered error:", fcmPromiseError.message);
+      });
+    } else {
+      console.log(`[NotificationService] No active FCM devices found for user: ${userId}`);
+    }
+
+    return savedNotification;
   }
 }
 

@@ -7,6 +7,7 @@ import '../blocs/notification/notification_cubit.dart';
 import '../blocs/notification/notification_state.dart';
 import '../di.dart';
 import '../models/notification_item.model.dart';
+import '../routes/routes.dart';
 import '../widgets/app_confirm_dialog.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -234,77 +235,87 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                       child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
                                     ),
                                     child: InkWell(
-                                    borderRadius: BorderRadius.circular(16),
-                                    onTap: () => getIt<NotificationCubit>().markAsRead(item.id),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(14),
-                                      decoration: BoxDecoration(
-                                        color: item.isRead ? Colors.white : const Color(0xFFFDF6EE),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: item.isRead ? const Color(0xFFF1EAE1) : const Color(0xFFF5D5B0),
+                                      borderRadius: BorderRadius.circular(16),
+                                      onTap: () {
+                                        if (!item.isRead) {
+                                          getIt<NotificationCubit>().markAsRead(item.id);
+                                        }
+                                        
+                                        // Navigate to TrackOrderPage if order-related notification clicked
+                                        final dynamic orderIdRaw = item.data?['orderId'] ?? item.data?['order_id'];
+                                        if (orderIdRaw is String && orderIdRaw.isNotEmpty) {
+                                          getx.Get.toNamed(Routes.trackOrderPage, arguments: orderIdRaw);
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: item.isRead ? Colors.white : const Color(0xFFFDF6EE),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: item.isRead ? const Color(0xFFF1EAE1) : const Color(0xFFF5D5B0),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              width: 42,
+                                              height: 42,
+                                              decoration: BoxDecoration(
+                                                color: style.color.withOpacity(0.12),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: Icon(style.icon, color: style.color, size: 22),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          item.title,
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
+                                                            color: const Color(0xFF2C3E50),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (!item.isRead)
+                                                        Container(
+                                                          width: 8,
+                                                          height: 8,
+                                                          margin: const EdgeInsets.only(left: 6, top: 4),
+                                                          decoration: const BoxDecoration(
+                                                            color: Color(0xFFE74C3C),
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    item.body,
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D), height: 1.4),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    _formatTime(l10n, item.time),
+                                                    style: const TextStyle(fontSize: 11, color: Color(0xFFBDC3C7)),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: 42,
-                                            height: 42,
-                                            decoration: BoxDecoration(
-                                              color: style.color.withOpacity(0.12),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Icon(style.icon, color: style.color, size: 22),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        item.title,
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
-                                                          color: const Color(0xFF2C3E50),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    if (!item.isRead)
-                                                      Container(
-                                                        width: 8,
-                                                        height: 8,
-                                                        margin: const EdgeInsets.only(left: 6, top: 4),
-                                                        decoration: const BoxDecoration(
-                                                          color: Color(0xFFE74C3C),
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  item.body,
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D), height: 1.4),
-                                                ),
-                                                const SizedBox(height: 6),
-                                                Text(
-                                                  _formatTime(l10n, item.time),
-                                                  style: const TextStyle(fontSize: 11, color: Color(0xFFBDC3C7)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
                                     ),
                                   );
                                 },
@@ -353,6 +364,7 @@ class _FilterChip extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const SizedBox(width: double.infinity),
                   Icon(icon, size: 18, color: selected ? Colors.white : const Color(0xFF7F8C8D)),
                   const SizedBox(height: 4),
                   Text(

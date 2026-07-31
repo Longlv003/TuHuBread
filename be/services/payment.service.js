@@ -18,6 +18,7 @@ const { voucherModel } = require("../models/voucher.model");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const socketService = require("./socket.service");
 const notificationService = require("./notification.service");
+const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -361,6 +362,25 @@ class PaymentService {
     session.order_ids = createdOrders.map((o) => o._id);
     await session.save();
 
+    // Send notifications for each order
+    for (const order of createdOrders) {
+      try {
+        await notificationService.notify({
+          userId: session.user_id,
+          type: NOTIFICATION_TYPES.PAYMENT_SUCCESS,
+          title: "Thanh toán thành công",
+          message: `Đơn hàng ${order.order_code} đã được thanh toán thành công`,
+          orderId: order._id,
+          data: {
+            orderId: order._id.toString(),
+            type: NOTIFICATION_TYPES.PAYMENT_SUCCESS,
+          },
+        });
+      } catch (notifyErr) {
+        console.error(`[PaymentService] Notification error for order ${order.order_code}:`, notifyErr.message);
+      }
+    }
+
     return {
       RspCode: "00",
       Message: "Confirm Success",
@@ -377,6 +397,21 @@ class PaymentService {
     session.vnp_transaction_no = transactionNo || null;
     session.vnp_response_code = responseCode || null;
     await session.save();
+
+    try {
+      await notificationService.notify({
+        userId: session.user_id,
+        type: NOTIFICATION_TYPES.PAYMENT_FAILED,
+        title: "Thanh toán thất bại",
+        message: `Giao dịch thanh toán VNPAY của bạn đã không thành công hoặc bị hủy.`,
+        data: {
+          sessionId: session._id.toString(),
+          type: NOTIFICATION_TYPES.PAYMENT_FAILED,
+        },
+      });
+    } catch (notifyErr) {
+      console.error(`[PaymentService] Notification error for failed payment session ${session._id}:`, notifyErr.message);
+    }
 
     return { RspCode: "00", Message: "Payment failed recorded" };
   }

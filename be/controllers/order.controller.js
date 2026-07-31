@@ -16,6 +16,7 @@ const notificationService = require("../services/notification.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
+const orderService = require("../services/order.service");
 
 const PAYMENT_METHODS = ["cash", "vnpay"];
 
@@ -152,9 +153,13 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
+<<<<<<< HEAD
     const previousStatus = order.order_status;
     order.order_status = "cancelled";
     await order.save();
+=======
+    const updatedOrder = await orderService.updateStatus(order._id, { orderStatus: "cancelled" });
+>>>>>>> feature/notification
 
     // Lưu lịch sử thay đổi trạng thái (khách hàng tự huỷ) + báo realtime cho shop
     await orderStatusHistoryRepository.create({
@@ -168,7 +173,7 @@ exports.cancelOrder = async (req, res) => {
     socketService.emitOrderUpdate(String(order.shop_id), order);
 
     dataRes.msg = "Hủy đơn hàng thành công";
-    dataRes.data = order;
+    dataRes.data = updatedOrder;
 
   } catch (err) {
     console.error("cancelOrder error:", err.message);

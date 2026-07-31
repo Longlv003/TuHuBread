@@ -10,6 +10,7 @@ import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/voucher/voucher_cubit.dart';
+import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/repositories/address_repository.dart';
 import 'package:tuhubread/repositories/address_repository_impl.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
@@ -28,6 +29,9 @@ import 'package:tuhubread/services/api_service.dart';
 import 'package:tuhubread/services/location_service.dart';
 import 'package:tuhubread/services/push_notification_service.dart';
 import 'package:tuhubread/services/vietnam_address_service.dart';
+import 'package:tuhubread/services/notification_service.dart';
+import 'package:tuhubread/repositories/notification_repository.dart';
+import 'package:tuhubread/repositories/notification_repository_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -35,6 +39,12 @@ Future<void> init() async {
   // ─── Core services ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<Logger>(() => Logger());
   getIt.registerLazySingleton<ApiService>(() => ApiService());
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationService(repository: getIt<NotificationRepository>()),
+  );
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
   getIt.registerLazySingleton<AuthCubit>(
@@ -100,9 +110,6 @@ Future<void> init() async {
   );
 
   // ─── Notification ─────────────────────────────────────────────────────────
-  getIt.registerLazySingleton<NotificationRepository>(
-    () => NotificationRepositoryImpl(apiService: getIt<ApiService>()),
-  );
   getIt.registerLazySingleton<NotificationCubit>(
     () => NotificationCubit(repository: getIt<NotificationRepository>()),
   );

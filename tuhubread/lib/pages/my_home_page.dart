@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
+import 'package:tuhubread/models/user.model.dart';
 
+import '../blocs/auth/auth_cubit.dart';
+import '../blocs/auth/auth_state.dart';
 import '../blocs/cart/cart_cubit.dart';
-import '../blocs/cart/cart_state.dart';
 import '../blocs/home/home_cubit.dart';
 import '../blocs/notification/notification_cubit.dart';
 import '../blocs/notification/notification_state.dart';
 import '../blocs/order/order_cubit.dart';
 import '../di.dart';
-import '../services/push_notification_service.dart';
-import '../blocs/auth/auth_cubit.dart';
-import '../blocs/auth/auth_state.dart';
-import '../models/user.model.dart';
 import '../routes/routes.dart';
 import '../widgets/customer_bottom_nav.dart';
 import '../widgets/customer_header.dart';
@@ -42,12 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CartCubit>().loadCart();
+        getIt<NotificationCubit>().refreshUnreadCount();
       }
-    });
-    // Có thông báo mới lúc app đang mở — hệ điều hành không tự hiện banner
-    // trong trường hợp này, nên chỉ cần cập nhật lại badge số chưa đọc.
-    getIt<PushNotificationService>().listenForeground(() {
-      getIt<NotificationCubit>().refreshUnreadCount();
     });
   }
 
@@ -130,18 +124,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           _currentIndex = index;
                         });
-                        if (index == 2) {
-                          context.read<OrderCubit>().loadOrders();
-                        }
                       },
                     ),
                   );
-                }
+                },
               ),
             );
           }
           return const Scaffold(
-            backgroundColor: Color(0xFFFDFBF7),
             body: Center(
               child: CircularProgressIndicator(
                 color: Color(0xFFE67E22),
@@ -153,46 +143,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Header Custom Widget depending on current tab
   Widget _buildHeaderWidgetForTab(UserModel user, AppLocalizations l10n) {
     switch (_currentIndex) {
-      case 0: // Home Tab Header: User Welcome Info
-        final avatar = user.avatarUrl;
-        final hasAvatar = avatar != null && avatar.isNotEmpty;
-        return Row(
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: const Color(0xFFE67E22).withOpacity(0.2),
-              backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
-              child: !hasAvatar
-                  ? const Icon(
-                      Icons.person_rounded,
-                      size: 20,
-                      color: Color(0xFFD35400),
-                    )
-                  : null,
+            Text(
+              l10n.homeWelcome,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${l10n.welcomeMessage},',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
-                  ),
-                  Text(
-                    user.fullName.isNotEmpty ? user.fullName : l10n.guestUser,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            const SizedBox(height: 2),
+            Text(
+              user.fullName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50),
               ),
             ),
           ],
@@ -200,17 +167,29 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         return Text(
           l10n.cartTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       case 2:
         return Text(
           l10n.historyTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       case 3:
         return Text(
           l10n.profileTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
         );
       default:
         return const SizedBox.shrink();

@@ -106,13 +106,8 @@ class OrderService {
     }
 
     socketService.emitOrderUpdate(String(shopId), updated);
-
-    notificationService.notifyUser(updated.user_id, {
-      title: `Đơn hàng #${updated.order_code}`,
-      body: `Đơn hàng của bạn đã chuyển sang trạng thái: ${ORDER_STATUS_LABELS[newStatus] || newStatus}`,
-      type: "order",
-      data: { order_id: String(updated._id), order_status: newStatus },
-    });
+    // Gửi thông báo đẩy & thời gian thực đến khách hàng
+    this.sendOrderStatusNotification(updated, newStatus);
 
     return updated;
   }
@@ -402,6 +397,81 @@ class OrderService {
       orders: createdOrders,
       totalAmount: calc.totalAmount,
     };
+  }
+
+  /**
+   * Cập nhật trạng thái đơn hàng và gửi notification tương ứng
+   * @param {string} orderId 
+   * @param {Object} statusData - { orderStatus, paymentStatus }
+   * @returns {Promise<Object>}
+   */
+  async updateStatus(orderId, { orderStatus, paymentStatus }) {
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      throw new Error("Không tìm thấy đơn hàng");
+    }
+
+    if (orderStatus) order.order_status = orderStatus;
+    if (paymentStatus) order.payment_status = paymentStatus;
+    await order.save();
+
+    if (orderStatus) {
+      await this.sendOrderStatusNotification(order, orderStatus);
+    }
+
+    return order;
+  }
+
+  /**
+   * Helper gửi thông báo trạng thái đơn hàng qua FCM & Socket.IO
+   */
+  async sendOrderStatusNotification(order, orderStatus) {
+    const notificationService = require("./notification.service");
+    const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
+
+    let type = null;
+    let title = "";
+    let message = "";
+
+    if (orderStatus === "confirmed") {
+      type = NOTIFICATION_TYPES.ORDER_CONFIRMED;
+      title = "Đơn hàng đã xác nhận";
+      message = `Đơn hàng ${order.order_code} đã được cửa hàng xác nhận`;
+    } else if (orderStatus === "preparing") {
+      type = NOTIFICATION_TYPES.ORDER_PREPARING;
+      title = "Đang chuẩn bị đơn hàng";
+      message = `Cửa hàng đang chuẩn bị món ăn cho đơn hàng ${order.order_code}`;
+    } else if (orderStatus === "shipping" || orderStatus === "delivering") {
+      type = NOTIFICATION_TYPES.ORDER_SHIPPING;
+      title = "Đơn hàng đang giao";
+      message = `Đơn hàng ${order.order_code} đang được giao đến bạn`;
+    } else if (orderStatus === "completed") {
+      type = NOTIFICATION_TYPES.ORDER_COMPLETED;
+      title = "Đơn hàng hoàn thành";
+      message = `Đơn hàng ${order.order_code} đã hoàn thành. Cảm ơn bạn đã đặt hàng!`;
+    } else if (orderStatus === "cancelled") {
+      type = NOTIFICATION_TYPES.ORDER_CANCELLED;
+      title = "Đơn hàng đã hủy";
+      message = `Đơn hàng ${order.order_code} đã bị hủy`;
+    }
+
+    if (type) {
+      try {
+        await notificationService.notify({
+          userId: order.user_id,
+          type,
+          title,
+          message,
+          orderId: order._id,
+          data: {
+            orderId: order._id.toString(),
+            type,
+          },
+        });
+      } catch (notifyErr) {
+        console.error(`[OrderService] Failed to send status notification for order ${order._id}:`, notifyErr.message);
+      }
+    }
   }
 }
 
