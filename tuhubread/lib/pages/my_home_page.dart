@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
-import 'package:tuhubread/models/user.model.dart';
+import '../models/user.model.dart';
 
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
@@ -150,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.homeWelcome,
+              l10n.welcomeMessage,
               style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
             ),
             const SizedBox(height: 2),

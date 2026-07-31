@@ -36,6 +36,9 @@ exports.getNotifications = async (req, res) => {
   }
 };
 
+// Alias for API routes
+exports.getMyNotifications = exports.getNotifications;
+
 // GET /api/notifications/unread-count
 exports.getUnreadCount = async (req, res) => {
   const dataRes = { msg: "OK", data: null };
@@ -57,7 +60,7 @@ exports.getUnreadCount = async (req, res) => {
   }
 };
 
-// PATCH /api/notifications/:notificationId/read
+// PATCH /api/notifications/:notificationId/read or PUT /api/notifications/:id/read
 exports.markAsRead = async (req, res) => {
   const dataRes = { msg: "OK", data: null };
   try {
@@ -67,7 +70,7 @@ exports.markAsRead = async (req, res) => {
       return res.status(401).json(dataRes);
     }
 
-    const { notificationId } = req.params;
+    const notificationId = req.params.notificationId || req.params.id;
     if (!notificationId) {
       dataRes.msg = "Missing notificationId parameter";
       return res.status(400).json(dataRes);
@@ -84,7 +87,7 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// PATCH /api/notifications/read-all
+// PATCH /api/notifications/read-all or PUT /api/notifications/read-all
 exports.markAllAsRead = async (req, res) => {
   const dataRes = { msg: "OK", data: null };
   try {
@@ -105,7 +108,50 @@ exports.markAllAsRead = async (req, res) => {
   }
 };
 
-// POST /api/notifications/device-token
+// DELETE /api/notifications/:id
+exports.deleteNotification = async (req, res) => {
+  const dataRes = { msg: "OK", data: null };
+  try {
+    const user = await findCurrentUser(req);
+    if (!user) {
+      dataRes.msg = "Unauthorized - User not found";
+      return res.status(401).json(dataRes);
+    }
+
+    const id = req.params.id;
+    await notificationService.deleteNotification(user._id, id);
+    dataRes.msg = "Notification deleted successfully";
+    dataRes.data = { success: true };
+    return res.status(200).json(dataRes);
+  } catch (err) {
+    console.error("Delete notification error:", err.message);
+    dataRes.msg = err.message || "Server error";
+    return res.status(400).json(dataRes);
+  }
+};
+
+// DELETE /api/notifications
+exports.deleteAllNotifications = async (req, res) => {
+  const dataRes = { msg: "OK", data: null };
+  try {
+    const user = await findCurrentUser(req);
+    if (!user) {
+      dataRes.msg = "Unauthorized - User not found";
+      return res.status(401).json(dataRes);
+    }
+
+    await notificationService.deleteAllNotifications(user._id);
+    dataRes.msg = "All notifications deleted successfully";
+    dataRes.data = { success: true };
+    return res.status(200).json(dataRes);
+  } catch (err) {
+    console.error("Delete all notifications error:", err.message);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};
+
+// POST /api/notifications/device-token or POST /api/devices/register
 exports.registerDeviceToken = async (req, res) => {
   const dataRes = { msg: "OK", data: null };
   try {
@@ -115,7 +161,8 @@ exports.registerDeviceToken = async (req, res) => {
       return res.status(401).json(dataRes);
     }
 
-    const { token, platform } = req.body;
+    const token = req.body.token || req.body.fcm_token;
+    const platform = req.body.platform;
     if (!token || !platform) {
       dataRes.msg = "Missing token or platform in request body";
       return res.status(400).json(dataRes);
@@ -135,7 +182,10 @@ exports.registerDeviceToken = async (req, res) => {
   }
 };
 
-// DELETE /api/notifications/device-token
+// Alias for API routes
+exports.registerDevice = exports.registerDeviceToken;
+
+// DELETE /api/notifications/device-token or POST /api/devices/unregister
 exports.deactivateDeviceToken = async (req, res) => {
   const dataRes = { msg: "OK", data: null };
   try {
@@ -145,7 +195,7 @@ exports.deactivateDeviceToken = async (req, res) => {
       return res.status(401).json(dataRes);
     }
 
-    const { token } = req.body;
+    const token = req.body.token || req.body.fcm_token;
     if (!token) {
       dataRes.msg = "Missing token in request body";
       return res.status(400).json(dataRes);
@@ -161,3 +211,6 @@ exports.deactivateDeviceToken = async (req, res) => {
     return res.status(400).json(dataRes);
   }
 };
+
+// Alias for API routes
+exports.unregisterDevice = exports.deactivateDeviceToken;

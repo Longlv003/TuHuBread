@@ -153,13 +153,8 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
-<<<<<<< HEAD
     const previousStatus = order.order_status;
-    order.order_status = "cancelled";
-    await order.save();
-=======
     const updatedOrder = await orderService.updateStatus(order._id, { orderStatus: "cancelled" });
->>>>>>> feature/notification
 
     // Lưu lịch sử thay đổi trạng thái (khách hàng tự huỷ) + báo realtime cho shop
     await orderStatusHistoryRepository.create({
@@ -170,7 +165,7 @@ exports.cancelOrder = async (req, res) => {
       changed_by_name: user.full_name,
       note: "Khách hàng tự hủy đơn",
     });
-    socketService.emitOrderUpdate(String(order.shop_id), order);
+    socketService.emitOrderUpdate(String(order.shop_id), updatedOrder);
 
     dataRes.msg = "Hủy đơn hàng thành công";
     dataRes.data = updatedOrder;
@@ -456,8 +451,8 @@ exports.createOrder = async (req, res) => {
 
     socketService.emitNewOrder(shopId, order);
     notificationService.notifyUser(user._id, {
-      title: "Đặt hàng thành công",
-      body: `Đơn hàng #${order.order_code} của bạn đã được tiếp nhận.`,
+      title: "Đơn hàng đang chờ xác nhận",
+      body: `Đơn hàng #${order.order_code} đã được tiếp nhận, đang chờ cửa hàng xác nhận.`,
       type: "order",
       data: { order_id: String(order._id), order_status: order.order_status },
     });
