@@ -142,45 +142,6 @@ class ProductGridCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (shopName != null)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      left: hasSale ? null : 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.55),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.storefront_rounded,
-                              color: Colors.white,
-                              size: 10,
-                            ),
-                            const SizedBox(width: 3),
-                            Flexible(
-                              child: Text(
-                                shopName!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
               Expanded(
@@ -201,7 +162,7 @@ class ProductGridCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        product.description,
+                        product.description ?? '',
                         style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF7F8C8D),
@@ -209,7 +170,7 @@ class ProductGridCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           if (product.rating > 0) ...[
@@ -246,7 +207,7 @@ class ProductGridCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

@@ -79,6 +79,8 @@ router.delete("/carts", firebaseAuth, cartCtrl.clearCart);
 router.post("/carts/items", firebaseAuth, cartCtrl.addToCart);
 router.put("/carts/items/:itemId", firebaseAuth, cartCtrl.updateCartItem);
 router.delete("/carts/items/:itemId", firebaseAuth, cartCtrl.deleteCartItem);
+router.post("/carts/switch-shop-options", firebaseAuth, cartCtrl.getSwitchShopOptions);
+router.post("/carts/switch-shop", firebaseAuth, cartCtrl.switchShop);
 
 // Payment Routes
 var paymentCtrl = require("../controllers/payment.controller");

@@ -207,9 +207,6 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
         if (state is HomeLoaded) {
           final visibleVouchers = _getVisibleVouchers(state);
-          final bestSellers = _getBestSellers(state);
-          final discountedProducts = _getDiscountedProducts(state);
-          final filteredProducts = _getFilteredProducts(state);
 
           return RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().refresh(),
@@ -220,33 +217,14 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Shop Selector
-                  _buildShopSelectorSection(state.shops, l10n),
-                  const SizedBox(height: 16),
-
-                  // 2. Search Bar
-                  _buildSearchBar(l10n),
-                  const SizedBox(height: 20),
-
-                  // 3. Voucher Slider
+                  // 1. Voucher Slider
                   if (visibleVouchers.isNotEmpty) ...[
                     _buildVoucherSlider(l10n, visibleVouchers),
                     const SizedBox(height: 24),
                   ],
 
-                  // 4. Bán chạy nhất
-                  _buildBestSellersSection(bestSellers, state, l10n),
-
-                  // 5. Đang giảm giá
-                  _buildDiscountedSection(discountedProducts, state, l10n),
-                  const SizedBox(height: 24),
-
-                  // 6. Category Filter
-                  _buildCategoryFilter(state.categories, l10n),
-                  const SizedBox(height: 20),
-
-                  // 7. Products Grid
-                  _buildProductsSection(l10n, filteredProducts, state),
+                  // 2. Danh sách Shop
+                  _buildShopsSection(state.shops, l10n),
                 ],
               ),
             ),
@@ -259,6 +237,153 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   }
 
   // ─────────── SHOP SELECTOR ───────────
+
+  Widget _buildShopsSection(List<ShopModel> shops, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Danh sách cửa hàng",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          itemCount: shops.length,
+          itemBuilder: (context, idx) {
+            final shop = shops[idx];
+            return GestureDetector(
+              onTap: () {
+                getx.Get.toNamed(
+                  Routes.shopHomePage,
+                  arguments: {
+                    'shop': shop,
+                    'homeCubit': context.read<HomeCubit>(),
+                  },
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFF1EAE1),
+                    width: 1.5,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x06000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        shop.logo,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Container(
+                          width: 60,
+                          height: 60,
+                          color: const Color(0xFFF1EAE1),
+                          child: const Icon(
+                            Icons.store_rounded,
+                            color: Color(0xFFE67E22),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            shop.shopName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2C3E50),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Color(0xFFF1C40F),
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                               Text(
+                                 shop.rating == 99 ? "Chưa có đánh giá" : "${shop.rating}",
+                                 style: const TextStyle(
+                                   fontSize: 12,
+                                   fontWeight: FontWeight.bold,
+                                   color: Color(0xFF7F8C8D),
+                                 ),
+                               ),
+                              const SizedBox(width: 12),
+                              const Icon(
+                                Icons.phone_in_talk_rounded,
+                                color: Color(0xFF95A5A6),
+                                size: 12,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                shop.phone,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF7F8C8D),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            shop.address,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF95A5A6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: Color(0xFFBDC3C7),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
 
   Widget _buildShopSelectorSection(
     List<ShopModel> shops,
@@ -1071,7 +1196,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.68,
+          childAspectRatio: 0.78,
         ),
         itemCount: products.length,
         itemBuilder: (context, idx) {

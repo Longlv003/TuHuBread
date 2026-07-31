@@ -98,19 +98,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           // Extracted Reusable Header Customer — ẩn ở tab Giỏ hàng
                           // để nhường thêm diện tích cho danh sách sản phẩm.
-                          if (_currentIndex != 1) ...[
-                            CustomerHeader(
-                              user: user,
-                              titleWidget: _buildHeaderWidgetForTab(user, l10n),
-                              unreadNotifications: context.select<NotificationCubit, int>(
-                                (cubit) => cubit.state is NotificationLoaded
-                                    ? (cubit.state as NotificationLoaded).unreadCount
-                                    : 0,
-                              ),
-                              onNotificationTap: _onBellPressed,
+                          CustomerHeader(
+                            user: user,
+                            titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                            unreadNotifications: context.select<NotificationCubit, int>(
+                              (cubit) => cubit.state is NotificationLoaded
+                                  ? (cubit.state as NotificationLoaded).unreadCount
+                                  : 0,
                             ),
-                            const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                          ],
+                            onNotificationTap: _onBellPressed,
+                          ),
+                          const Divider(height: 1, color: Color(0xFFF1EAE1)),
                           // Active Tab View Content — IndexedStack giữ nguyên state của
                           // từng tab (không rebuild/dispose khi chuyển tab) để tránh giật/lag
                           Expanded(
@@ -125,6 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     // Extracted Reusable Bottom Navigation Bar
                     bottomNavigationBar: CustomerBottomNav(
                       currentIndex: _currentIndex,
+                      cartItemCount: context.select<CartCubit, int>(
+                        (cubit) => cubit.state.totalQuantity,
+                      ),
                       onTap: (index) {
                         setState(() {
                           _currentIndex = index;

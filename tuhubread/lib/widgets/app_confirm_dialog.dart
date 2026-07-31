@@ -171,14 +171,16 @@ class AppConfirmDialog extends StatelessWidget {
               // ── Buttons — ngoài card ──────────────────────────────────
               Row(
                 children: [
-                  // Huỷ: outline
-                  Expanded(
-                    child: _OutlineBtn(
-                      label: cancelTitle,
-                      onTap: () => Navigator.of(context).pop(false),
+                  // Huỷ: outline (only show if not empty)
+                  if (cancelTitle.isNotEmpty) ...[
+                    Expanded(
+                      child: _OutlineBtn(
+                        label: cancelTitle,
+                        onTap: () => Navigator.of(context).pop(false),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
+                    const SizedBox(width: 16),
+                  ],
                   // Xác nhận: gradient filled
                   Expanded(
                     child: _GradientBtn(

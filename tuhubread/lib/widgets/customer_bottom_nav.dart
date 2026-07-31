@@ -52,6 +52,7 @@ class CustomerBottomNav extends StatelessWidget {
                 label: item.label,
                 selected: selected,
                 onTap: () => onTap(index),
+                badgeCount: index == 1 ? cartItemCount : 0,
               ),
             );
           }),
@@ -66,16 +67,39 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.selected,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget iconWidget = Icon(
+      icon,
+      size: 22,
+      color: selected ? Colors.white : const Color(0xFF95A5A6),
+    );
+
+    if (badgeCount > 0) {
+      iconWidget = Badge(
+        label: Text(
+          badgeCount > 99 ? '99+' : '$badgeCount',
+          style: const TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFFE74C3C),
+        child: iconWidget,
+      );
+    }
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -91,11 +115,7 @@ class _NavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: selected ? Colors.white : const Color(0xFF95A5A6),
-            ),
+            iconWidget,
             Flexible(
               child: AnimatedSize(
                 duration: const Duration(milliseconds: 250),
@@ -120,21 +140,6 @@ class _NavItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildCartIcon(int count) {
-    if (count <= 0) {
-      return const Icon(Icons.shopping_cart_rounded);
-    }
-
-    return Badge(
-      label: Text(
-        count > 99 ? '99+' : '$count',
-        style: const TextStyle(fontSize: 10),
-      ),
-      backgroundColor: const Color(0xFFE74C3C),
-      child: const Icon(Icons.shopping_cart_rounded),
     );
   }
 }
