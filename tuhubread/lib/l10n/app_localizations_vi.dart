@@ -767,6 +767,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get selectAddressEmpty => 'Chưa có địa chỉ đã lưu';
 
   @override
+  String homeDeliverTo(Object address) {
+    return 'Giao đến: $address';
+  }
+
+  @override
+  String get homeAddAddressPrompt => 'Thêm địa chỉ giao hàng';
+
+  @override
   String get notificationsTitle => 'Thông báo';
 
   @override
@@ -1019,6 +1027,31 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyTotalLabel => 'Tổng tiền:';
+
+  @override
+  String get historyReviewButton => 'Đánh giá đơn hàng';
+
+  @override
+  String get historyReviewedLabel => 'Đã đánh giá';
+
+  @override
+  String get historyReviewSheetTitle => 'Đánh giá đơn hàng';
+
+  @override
+  String get historyReviewCommentHint =>
+      'Chia sẻ cảm nhận của bạn (không bắt buộc)';
+
+  @override
+  String get historyReviewSubmitButton => 'Gửi đánh giá';
+
+  @override
+  String get historyReviewSuccess => 'Cảm ơn bạn đã đánh giá!';
+
+  @override
+  String get historyReviewError => 'Không thể gửi đánh giá, thử lại sau';
+
+  @override
+  String get historyReviewRatingRequired => 'Vui lòng chọn số sao đánh giá';
 
   @override
   String detailSoldAmount(int count) {

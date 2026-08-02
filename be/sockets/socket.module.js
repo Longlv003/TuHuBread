@@ -33,20 +33,15 @@ function initSocket(server) {
         return next(new Error("Authentication error: Account not found"));
       }
 
-      // Allow shop_owner and admin (if applicable)
-      if (user.role !== "shop_owner" && user.role !== "admin") {
-        return next(new Error("Authentication error: Access denied. Only shop owners allowed."));
-      }
-
+      // Allow any role to connect
       socket.user = user;
 
       // Find the corresponding shop for this shop owner
       if (user.role === "shop_owner") {
         const shop = await shopModel.findOne({ owner_user_id: user._id });
-        if (!shop) {
-          return next(new Error("Authentication error: No shop associated with this owner"));
+        if (shop) {
+          socket.shop = shop;
         }
-        socket.shop = shop;
       }
 
       next();
@@ -60,11 +55,16 @@ function initSocket(server) {
   ioInstance.on("connection", (socket) => {
     console.log(`📡 Socket connected: ID=${socket.id}, User=${socket.user.full_name}, Role=${socket.user.role}`);
 
+    // Join private user room
+    const userRoom = `user:${socket.user._id}`;
+    socket.join(userRoom);
+    console.log(`🚪 Socket ${socket.id} joined private room: ${userRoom}`);
+
     // Join room corresponding to the shop
     if (socket.shop) {
       const shopRoom = `shop_${socket.shop._id}`;
       socket.join(shopRoom);
-      console.log(`🚪 Socket ${socket.id} joined room: ${shopRoom}`);
+      console.log(`🚪 Socket ${socket.id} joined shop room: ${shopRoom}`);
     }
 
     // Prepare other common rooms

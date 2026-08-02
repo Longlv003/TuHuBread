@@ -765,6 +765,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectAddressEmpty => 'No saved addresses yet';
 
   @override
+  String homeDeliverTo(Object address) {
+    return 'Deliver to: $address';
+  }
+
+  @override
+  String get homeAddAddressPrompt => 'Add delivery address';
+
+  @override
   String get notificationsTitle => 'Notifications';
 
   @override
@@ -1016,6 +1024,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyTotalLabel => 'Total:';
+
+  @override
+  String get historyReviewButton => 'Rate this order';
+
+  @override
+  String get historyReviewedLabel => 'Reviewed';
+
+  @override
+  String get historyReviewSheetTitle => 'Rate your order';
+
+  @override
+  String get historyReviewCommentHint => 'Share your thoughts (optional)';
+
+  @override
+  String get historyReviewSubmitButton => 'Submit review';
+
+  @override
+  String get historyReviewSuccess => 'Thanks for your review!';
+
+  @override
+  String get historyReviewError => 'Couldn\'t submit review, please try again';
+
+  @override
+  String get historyReviewRatingRequired => 'Please select a star rating';
 
   @override
   String detailSoldAmount(int count) {

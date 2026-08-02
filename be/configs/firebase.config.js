@@ -10,5 +10,4 @@ const app = initializeApp({
 
 const auth = getAuth(app);
 const messaging = getMessaging(app);
-
 module.exports = { app, auth, messaging };

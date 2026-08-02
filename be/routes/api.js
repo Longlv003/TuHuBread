@@ -58,6 +58,7 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
+router.post("/orders/:id/review", firebaseAuth, orderCtrl.createReview);
 router.get("/delivery-fee/preview", firebaseAuth, orderCtrl.previewDeliveryFee);
 
 // Notification Routes
@@ -79,6 +80,8 @@ router.delete("/carts", firebaseAuth, cartCtrl.clearCart);
 router.post("/carts/items", firebaseAuth, cartCtrl.addToCart);
 router.put("/carts/items/:itemId", firebaseAuth, cartCtrl.updateCartItem);
 router.delete("/carts/items/:itemId", firebaseAuth, cartCtrl.deleteCartItem);
+router.post("/carts/switch-shop-options", firebaseAuth, cartCtrl.getSwitchShopOptions);
+router.post("/carts/switch-shop", firebaseAuth, cartCtrl.switchShop);
 
 // Payment Routes
 var paymentCtrl = require("../controllers/payment.controller");
@@ -86,5 +89,8 @@ router.post("/payments/vnpay", firebaseAuth, paymentCtrl.createVnpayPayment);
 router.get("/payment/vnpay-return", paymentCtrl.vnpayReturn);
 router.get("/payment/vnpay-ipn", paymentCtrl.vnpayIpn);
 router.get("/payment/vnpay-verify", firebaseAuth, paymentCtrl.verifyPayment);
+// Notification Routes
+const notificationRouter = require("./notification.routes");
+router.use("/notifications", notificationRouter);
 
 module.exports = router;

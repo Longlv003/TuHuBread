@@ -6,7 +6,7 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 import 'package:tuhubread/routes/routes.dart';
 import '../../blocs/order/order_cubit.dart';
 import '../../blocs/order/order_state.dart';
-import '../../di.dart';
+import '../../models/order.model.dart';
 import '../../models/user.model.dart';
 import '../../utils/currency_formatter.dart';
 
@@ -419,6 +419,10 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                                                 ),
                                               ],
                                             ),
+                                            if (order.orderStatus.toLowerCase() == 'completed') ...[
+                                              const Divider(height: 24, color: Color(0xFFF1EAE1)),
+                                              _buildReviewRow(context, l10n, order),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -436,6 +440,210 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  /// Khối đánh giá ở cuối thẻ đơn — chỉ hiện cho đơn đã hoàn thành. Đã đánh
+  /// giá thì hiện lại số sao (chỉ đọc), chưa thì cho bấm vào chọn sao ngay.
+  Widget _buildReviewRow(BuildContext context, AppLocalizations l10n, OrderModel order) {
+    if (order.hasReview) {
+      return Row(
+        children: [
+          ...List.generate(
+            5,
+            (i) => Icon(
+              i < order.reviewRating! ? Icons.star_rounded : Icons.star_border_rounded,
+              color: const Color(0xFFF1C40F),
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.historyReviewedLabel,
+            style: const TextStyle(fontSize: 12, color: Color(0xFFBDC3C7), fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _showReviewSheet(context, l10n, order.id),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          const Icon(Icons.star_border_rounded, color: Color(0xFFE67E22), size: 16),
+          const SizedBox(width: 6),
+          Text(
+            l10n.historyReviewButton,
+            style: const TextStyle(fontSize: 12, color: Color(0xFFE67E22), fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showReviewSheet(BuildContext context, AppLocalizations l10n, String orderId) async {
+    final orderCubit = context.read<OrderCubit>();
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => BlocProvider.value(
+        value: orderCubit,
+        child: _ReviewSheet(orderId: orderId, l10n: l10n),
+      ),
+    );
+    if (result == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.historyReviewSuccess), backgroundColor: const Color(0xFF2ECC71)),
+      );
+    }
+  }
+}
+
+class _ReviewSheet extends StatefulWidget {
+  final String orderId;
+  final AppLocalizations l10n;
+
+  const _ReviewSheet({required this.orderId, required this.l10n});
+
+  @override
+  State<_ReviewSheet> createState() => _ReviewSheetState();
+}
+
+class _ReviewSheetState extends State<_ReviewSheet> {
+  int _rating = 0;
+  final _commentController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final l10n = widget.l10n;
+    if (_rating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.historyReviewRatingRequired), backgroundColor: const Color(0xFFE74C3C)),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+    final success = await context.read<OrderCubit>().submitReview(
+          widget.orderId,
+          rating: _rating,
+          comment: _commentController.text,
+        );
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pop(true);
+    } else {
+      setState(() => _submitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.historyReviewError), backgroundColor: const Color(0xFFE74C3C)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFFDFBF7),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1EAE1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              l10n.historyReviewSheetTitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (i) {
+                final starIndex = i + 1;
+                return IconButton(
+                  onPressed: () => setState(() => _rating = starIndex),
+                  icon: Icon(
+                    starIndex <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: const Color(0xFFF1C40F),
+                    size: 34,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _commentController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: l10n.historyReviewCommentHint,
+                hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.all(14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFF1EAE1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFF1EAE1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE67E22)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submitting ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE67E22),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _submitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(
+                        l10n.historyReviewSubmitButton,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

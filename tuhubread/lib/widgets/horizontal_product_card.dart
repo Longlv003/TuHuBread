@@ -159,7 +159,7 @@ class HorizontalProductCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        product.description,
+                        product.description ?? '',
                         style: const TextStyle(
                           fontSize: 9,
                           color: Color(0xFF7F8C8D),

@@ -30,12 +30,16 @@ class CustomerBottomNav extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.45),
           borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.6),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2C3E50).withOpacity(0.10),
-              blurRadius: 20,
+              color: const Color(0xFF2C3E50).withOpacity(0.12),
+              blurRadius: 22,
               offset: const Offset(0, 8),
             ),
           ],
@@ -52,6 +56,7 @@ class CustomerBottomNav extends StatelessWidget {
                 label: item.label,
                 selected: selected,
                 onTap: () => onTap(index),
+                badgeCount: index == 1 ? cartItemCount : 0,
               ),
             );
           }),
@@ -66,16 +71,39 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.selected,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget iconWidget = Icon(
+      icon,
+      size: 22,
+      color: selected ? Colors.white : const Color(0xFF95A5A6),
+    );
+
+    if (badgeCount > 0) {
+      iconWidget = Badge(
+        label: Text(
+          badgeCount > 99 ? '99+' : '$badgeCount',
+          style: const TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFFE74C3C),
+        child: iconWidget,
+      );
+    }
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -91,11 +119,7 @@ class _NavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: selected ? Colors.white : const Color(0xFF95A5A6),
-            ),
+            iconWidget,
             Flexible(
               child: AnimatedSize(
                 duration: const Duration(milliseconds: 250),
@@ -120,21 +144,6 @@ class _NavItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildCartIcon(int count) {
-    if (count <= 0) {
-      return const Icon(Icons.shopping_cart_rounded);
-    }
-
-    return Badge(
-      label: Text(
-        count > 99 ? '99+' : '$count',
-        style: const TextStyle(fontSize: 10),
-      ),
-      backgroundColor: const Color(0xFFE74C3C),
-      child: const Icon(Icons.shopping_cart_rounded),
     );
   }
 }

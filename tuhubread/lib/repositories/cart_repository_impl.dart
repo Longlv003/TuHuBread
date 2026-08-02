@@ -2,6 +2,7 @@ import 'package:logger/logger.dart';
 
 import '../core/result.dart';
 import '../models/cart_item.model.dart';
+import '../models/shop.model.dart';
 import '../services/api_service.dart';
 import 'cart_repository.dart';
 
@@ -109,6 +110,52 @@ class CartRepositoryImpl implements CartRepository {
     } catch (e, s) {
       _log.e('[deleteCartItem] Failed', error: e, stackTrace: s);
       return const Failure('Không thể kết nối đến máy chủ để xóa khỏi giỏ hàng');
+    }
+  }
+
+  @override
+  Future<Result<List<ShopModel>>> getSwitchShopOptions({
+    required String productId,
+  }) async {
+    try {
+      final res = await apiService.post('/api/carts/switch-shop-options', {
+        'product_id': productId,
+      });
+      if (res['data'] != null) {
+        final list = (res['data'] as List? ?? []);
+        final shops = list.map((e) => ShopModel.fromJson(e as Map<String, dynamic>)).toList();
+        return Success(shops);
+      }
+      return Failure(res['msg'] ?? 'Không thể tìm chi nhánh thay thế');
+    } catch (e, s) {
+      _log.e('[getSwitchShopOptions] Failed', error: e, stackTrace: s);
+      return const Failure('Không thể kết nối đến máy chủ để tìm chi nhánh thay thế');
+    }
+  }
+
+  @override
+  Future<Result<List<CartItemModel>>> switchShop({
+    required String shopId,
+    required String productId,
+    required String variantId,
+    required List<String> optionIds,
+    required int quantity,
+  }) async {
+    try {
+      final res = await apiService.post('/api/carts/switch-shop', {
+        'shop_id': shopId,
+        'product_id': productId,
+        'variant_id': variantId,
+        'selected_options': optionIds.map((id) => {'option_id': id}).toList(),
+        'quantity': quantity,
+      });
+      if (res['data'] != null) {
+        return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
+      }
+      return Failure(res['msg'] ?? 'Không thể chuyển đổi cửa hàng');
+    } catch (e, s) {
+      _log.e('[switchShop] Failed', error: e, stackTrace: s);
+      return const Failure('Không thể kết nối đến máy chủ để chuyển đổi cửa hàng');
     }
   }
 }

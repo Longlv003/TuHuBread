@@ -18,6 +18,10 @@ class OrderModel {
   final String? receiverName;
   final String? receiverPhone;
   final String? addressDetail;
+  final int? reviewRating;
+  final String? reviewComment;
+
+  bool get hasReview => reviewRating != null;
 
   OrderModel({
     required this.id,
@@ -37,12 +41,15 @@ class OrderModel {
     this.receiverName,
     this.receiverPhone,
     this.addressDetail,
+    this.reviewRating,
+    this.reviewComment,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final shop = (json['shop_id'] ?? json['shop']) as Map<String, dynamic>?;
     final addressObj = json['address_id'];
     final address = addressObj is Map<String, dynamic> ? addressObj : null;
+    final review = json['review'] as Map<String, dynamic>?;
 
     String? logoUrl = shop?['logo'] as String?;
     if (logoUrl != null && !logoUrl.startsWith('http')) {
@@ -67,6 +74,8 @@ class OrderModel {
       receiverName: address?['receiver_name'] as String?,
       receiverPhone: address?['receiver_phone'] as String?,
       addressDetail: address?['address_detail'] as String?,
+      reviewRating: (review?['rating'] as num?)?.toInt(),
+      reviewComment: review?['comment'] as String?,
     );
   }
 }

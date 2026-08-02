@@ -13,7 +13,7 @@ class ProductModel {
   final String productSlug;
   final double price; // Giá gốc của sản phẩm (lấy từ variant mặc định)
   final String image;
-  final String description;
+  final String? description;
   @JsonKey(defaultValue: 5.0)
   final double rating;
   @JsonKey(defaultValue: 0)
@@ -28,7 +28,7 @@ class ProductModel {
     required this.productSlug,
     required this.price,
     required this.image,
-    required this.description,
+    this.description,
     required this.rating,
     required this.salesCount,
     required this.status,

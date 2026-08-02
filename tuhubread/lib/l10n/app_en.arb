@@ -306,6 +306,8 @@
   "selectAddressSearchHint": "Search location",
   "selectAddressSavedTitle": "Saved Addresses",
   "selectAddressEmpty": "No saved addresses yet",
+  "homeDeliverTo": "Deliver to: {address}",
+  "homeAddAddressPrompt": "Add delivery address",
   "notificationsTitle": "Notifications",
   "notificationsMarkAllRead": "Mark all as read",
   "notificationsFilterAll": "All",
@@ -413,6 +415,14 @@
   "historyFilterAll": "All",
   "historyNoOrdersInStatus": "No orders in this status",
   "historyTotalLabel": "Total:",
+  "historyReviewButton": "Rate this order",
+  "historyReviewedLabel": "Reviewed",
+  "historyReviewSheetTitle": "Rate your order",
+  "historyReviewCommentHint": "Share your thoughts (optional)",
+  "historyReviewSubmitButton": "Submit review",
+  "historyReviewSuccess": "Thanks for your review!",
+  "historyReviewError": "Couldn't submit review, please try again",
+  "historyReviewRatingRequired": "Please select a star rating",
   "detailSoldAmount": "Sold {count}",
   "@detailSoldAmount": {
     "placeholders": {

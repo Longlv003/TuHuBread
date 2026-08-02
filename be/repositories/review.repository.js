@@ -30,6 +30,18 @@ class ReviewRepository {
   async updateStatus(id, status) {
     return reviewModel.findByIdAndUpdate(id, { status }, { new: true });
   }
+
+  async findByOrderId(orderId) {
+    return reviewModel.findOne({ order_id: orderId, deleted_at: null });
+  }
+
+  async findByOrderIds(orderIds) {
+    return reviewModel.find({ order_id: { $in: orderIds }, deleted_at: null });
+  }
+
+  async create(data) {
+    return reviewModel.create(data);
+  }
 }
 
 module.exports = new ReviewRepository();

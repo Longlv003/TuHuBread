@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/product_detail/product_detail_state.dart';
 import '../../models/cart_item.model.dart';
+import '../../models/shop.model.dart';
 import '../../repositories/cart_repository.dart';
 import '../../core/result.dart';
 import 'cart_state.dart';
@@ -9,6 +10,32 @@ class CartCubit extends Cubit<CartState> {
   final CartRepository cartRepository;
 
   CartCubit({required this.cartRepository}) : super(const CartState());
+
+  Future<Result<List<ShopModel>>> getSwitchShopOptions({
+    required String productId,
+  }) async {
+    return cartRepository.getSwitchShopOptions(productId: productId);
+  }
+
+  Future<Result<List<CartItemModel>>> switchShop({
+    required String shopId,
+    required String productId,
+    required String variantId,
+    required List<String> optionIds,
+    required int quantity,
+  }) async {
+    final result = await cartRepository.switchShop(
+      shopId: shopId,
+      productId: productId,
+      variantId: variantId,
+      optionIds: optionIds,
+      quantity: quantity,
+    );
+    if (result is Success<List<CartItemModel>>) {
+      emit(state.copyWith(items: result.data));
+    }
+    return result;
+  }
 
   /// Tải giỏ hàng từ máy chủ khi mở app hoặc login.
   Future<void> loadCart() async {

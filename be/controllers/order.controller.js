@@ -16,6 +16,9 @@ const notificationService = require("../services/notification.service");
 const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
+const orderService = require("../services/order.service");
+const reviewService = require("../services/review.service");
+const reviewRepository = require("../repositories/review.repository");
 
 const PAYMENT_METHODS = ["cash", "vnpay"];
 
@@ -44,19 +47,24 @@ exports.getOrders = async (req, res) => {
       .populate("shop_id")
       .sort({ createdAt: -1 });
 
+    const reviews = await reviewRepository.findByOrderIds(orders.map(o => o._id));
+    const reviewByOrderId = new Map(reviews.map(r => [String(r.order_id), r]));
+
     dataRes.data = orders.map(order => {
       const shopLogo = order.shop_id?.logo
         ? (order.shop_id.logo.startsWith("http")
           ? order.shop_id.logo
           : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
         : null;
+      const review = reviewByOrderId.get(String(order._id)) || null;
 
       return {
         ...order.toObject(),
         shop: order.shop_id ? {
           shop_name: order.shop_id.shop_name,
           logo: shopLogo
-        } : null
+        } : null,
+        review: review ? { rating: review.rating, comment: review.comment } : null
       };
     });
 
@@ -91,6 +99,7 @@ exports.getOrderById = async (req, res) => {
     }
 
     const items = await orderDetailModel.find({ order_id: order._id });
+    const review = await reviewRepository.findByOrderId(order._id);
 
     const shopLogo = order.shop_id?.logo
       ? (order.shop_id.logo.startsWith("http")
@@ -105,7 +114,8 @@ exports.getOrderById = async (req, res) => {
           shop_name: order.shop_id.shop_name,
           logo: shopLogo,
           phone: order.shop_id.phone_number
-        } : null
+        } : null,
+        review: review ? { rating: review.rating, comment: review.comment } : null
       },
       items: items.map(item => {
         const itemImage = item.product_image
@@ -153,8 +163,7 @@ exports.cancelOrder = async (req, res) => {
     }
 
     const previousStatus = order.order_status;
-    order.order_status = "cancelled";
-    await order.save();
+    const updatedOrder = await orderService.updateStatus(order._id, { orderStatus: "cancelled" });
 
     // Lưu lịch sử thay đổi trạng thái (khách hàng tự huỷ) + báo realtime cho shop
     await orderStatusHistoryRepository.create({
@@ -165,15 +174,39 @@ exports.cancelOrder = async (req, res) => {
       changed_by_name: user.full_name,
       note: "Khách hàng tự hủy đơn",
     });
-    socketService.emitOrderUpdate(String(order.shop_id), order);
+    socketService.emitOrderUpdate(String(order.shop_id), updatedOrder);
 
     dataRes.msg = "Hủy đơn hàng thành công";
-    dataRes.data = order;
+    dataRes.data = updatedOrder;
 
   } catch (err) {
     console.error("cancelOrder error:", err.message);
     dataRes.msg = "Server error: " + err.message;
     return res.status(500).json(dataRes);
+  }
+  return res.json(dataRes);
+};
+
+// POST /api/orders/:id/review
+exports.createReview = async (req, res) => {
+  let dataRes = { msg: "OK", data: null };
+  try {
+    const { id } = req.params;
+    const { uid } = req.user;
+
+    const user = await userModel.findOne({ firebase_uid: uid });
+    if (!user) {
+      dataRes.msg = "User not found";
+      return res.status(404).json(dataRes);
+    }
+
+    const review = await reviewService.createReviewForOrder(user._id, id, req.body);
+    dataRes.msg = "Đánh giá thành công, cảm ơn bạn!";
+    dataRes.data = review;
+  } catch (err) {
+    console.error("createReview error:", err.message);
+    dataRes.msg = err.message || "Server error";
+    return res.status(400).json(dataRes);
   }
   return res.json(dataRes);
 };
@@ -373,49 +406,38 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Order model chỉ hỗ trợ 1 shop/đơn — gộp giỏ hàng theo shop_id, mỗi
-    // shop tạo 1 đơn riêng. Mỗi đơn tự tính phí giao hàng theo khoảng cách
-    // thực tế từ chính chi nhánh đó tới địa chỉ giao (không còn dùng chung
-    // 1 mức phí cố định cho cả giỏ hàng).
-    const itemsByShop = new Map();
+    // Verify all items belong to the same shop
+    const shopId = items[0].shop_id;
     for (const item of items) {
-      const key = String(item.shop_id);
-      if (!itemsByShop.has(key)) itemsByShop.set(key, []);
-      itemsByShop.get(key).push(item);
-    }
-
-    // Tính trước items_total + phí ship thực tế cho từng shop (cần tọa độ shop)
-    const shopEntries = [];
-    for (const [shopId, shopItems] of itemsByShop) {
-      const shop = await shopModel.findOne({ _id: shopId, deleted_at: null });
-      if (!shop) {
-        dataRes.msg = "Không tìm thấy cửa hàng cho một số sản phẩm trong giỏ hàng";
-        return res.status(404).json(dataRes);
+      if (String(item.shop_id) !== String(shopId)) {
+        dataRes.msg = "Tất cả sản phẩm trong đơn hàng phải thuộc cùng một cửa hàng";
+        return res.status(400).json(dataRes);
       }
-
-      const itemsTotal = shopItems.reduce(
-        (sum, it) => sum + it.unit_price * it.quantity,
-        0,
-      );
-      const deliveryFee = calculateDeliveryFee(
-        shop.location ? shop.location.coordinates : undefined,
-        address.location ? address.location.coordinates : undefined,
-        delivery_option,
-      );
-
-      shopEntries.push({ shopId, shopItems, itemsTotal, deliveryFee });
     }
 
-    const overallItemsTotal = shopEntries.reduce((sum, e) => sum + e.itemsTotal, 0);
-    const overallDeliveryFee = shopEntries.reduce((sum, e) => sum + e.deliveryFee, 0);
+    const shop = await shopModel.findOne({ _id: shopId, deleted_at: null });
+    if (!shop) {
+      dataRes.msg = "Không tìm thấy cửa hàng cho một số sản phẩm trong giỏ hàng";
+      return res.status(404).json(dataRes);
+    }
+
+    const itemsTotal = items.reduce(
+      (sum, it) => sum + it.unit_price * it.quantity,
+      0,
+    );
+    const deliveryFee = calculateDeliveryFee(
+      shop.location ? shop.location.coordinates : undefined,
+      address.location ? address.location.coordinates : undefined,
+      delivery_option,
+    );
 
     // Tính toán lượng giảm giá tổng của voucher
     let totalDiscount = 0;
     if (appliedVoucher) {
       if (appliedVoucher.discountType === "free_shipping") {
-        totalDiscount = overallDeliveryFee;
+        totalDiscount = deliveryFee;
       } else if (appliedVoucher.discountType === "percent") {
-        let discount = overallItemsTotal * (appliedVoucher.discountValue / 100);
+        let discount = itemsTotal * (appliedVoucher.discountValue / 100);
         if (appliedVoucher.maxDiscountAmount && discount > appliedVoucher.maxDiscountAmount) {
           discount = appliedVoucher.maxDiscountAmount;
         }
@@ -425,67 +447,59 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    const createdOrders = [];
-    let remainingDiscount = totalDiscount;
+    const orderDiscount = Math.min(totalDiscount, itemsTotal + deliveryFee);
+    const totalAmount = Math.max(0, itemsTotal + deliveryFee - orderDiscount);
 
-    for (const { shopId, shopItems, itemsTotal, deliveryFee: shopDeliveryFee } of shopEntries) {
-      let orderDiscount = 0;
-      if (remainingDiscount > 0) {
-        orderDiscount = Math.min(remainingDiscount, itemsTotal + shopDeliveryFee);
-        remainingDiscount -= orderDiscount;
-      }
+    const order = await orderModel.create({
+      order_code: generateOrderCode(),
+      user_id: user._id,
+      shop_id: shopId,
+      voucher_id: appliedVoucher ? appliedVoucher._id : null,
+      address_id: address._id,
+      payment_method,
+      delivery_option,
+      items_total: itemsTotal,
+      discount_amount: orderDiscount,
+      delivery_fee: deliveryFee,
+      total_amount: totalAmount,
+      note: note || null,
+    });
 
-      const totalAmount = Math.max(0, itemsTotal + shopDeliveryFee - orderDiscount);
+    await orderDetailModel.insertMany(
+      items.map((it) => ({
+        order_id: order._id,
+        product_id: it.product_id,
+        variant_id: it.variant_id,
+        quantity: it.quantity,
+        product_name: it.product_name,
+        variant_name: it.variant_name,
+        product_image: it.product_image || null,
+        base_price: it.base_price,
+        selected_options: it.selected_options || [],
+        option_total_price: it.option_total_price || 0,
+        unit_price: it.unit_price,
+        subtotal: it.unit_price * it.quantity,
+      })),
+    );
 
-      const order = await orderModel.create({
-        order_code: generateOrderCode(),
-        user_id: user._id,
-        shop_id: shopId,
-        voucher_id: appliedVoucher ? appliedVoucher._id : null,
-        address_id: address._id,
-        payment_method,
-        delivery_option,
-        items_total: itemsTotal,
-        discount_amount: orderDiscount,
-        delivery_fee: shopDeliveryFee,
-        total_amount: totalAmount,
-        note: note || null,
-      });
+    socketService.emitNewOrder(shopId, order);
+    notificationService.notifyUser(user._id, {
+      title: "Đơn hàng đang chờ xác nhận",
+      body: `Đơn hàng #${order.order_code} đã được tiếp nhận, đang chờ cửa hàng xác nhận.`,
+      type: "order",
+      data: { order_id: String(order._id), order_status: order.order_status },
+    });
 
-      await orderDetailModel.insertMany(
-        shopItems.map((it) => ({
-          order_id: order._id,
-          product_id: it.product_id,
-          variant_id: it.variant_id,
-          quantity: it.quantity,
-          product_name: it.product_name,
-          variant_name: it.variant_name,
-          product_image: it.product_image || null,
-          base_price: it.base_price,
-          selected_options: it.selected_options || [],
-          option_total_price: it.option_total_price || 0,
-          unit_price: it.unit_price,
-          subtotal: it.unit_price * it.quantity,
-        })),
-      );
-
-      createdOrders.push({
+    const createdOrders = [
+      {
         order_id: order._id,
         order_code: order.order_code,
         shop_id: shopId,
         items_total: itemsTotal,
-        delivery_fee: shopDeliveryFee,
+        delivery_fee: deliveryFee,
         total_amount: totalAmount,
-      });
-
-      socketService.emitNewOrder(shopId, order);
-      notificationService.notifyUser(user._id, {
-        title: "Đặt hàng thành công",
-        body: `Đơn hàng #${order.order_code} của bạn đã được tiếp nhận.`,
-        type: "order",
-        data: { order_id: String(order._id), order_status: order.order_status },
-      });
-    }
+      }
+    ];
 
     // Đánh dấu voucher đã sử dụng
     if (savedVoucherDoc) {

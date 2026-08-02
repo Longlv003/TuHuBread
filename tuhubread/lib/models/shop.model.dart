@@ -11,9 +11,10 @@ class ShopModel {
   final String phone;
   final String logo;
   final String banner;
-  @JsonKey(defaultValue: 5.0)
+  @JsonKey(name: 'rating_average', defaultValue: 0.0)
   final double rating;
   final String status;
+  final String address;
 
   ShopModel({
     required this.id,
@@ -23,6 +24,7 @@ class ShopModel {
     required this.banner,
     required this.rating,
     required this.status,
+    required this.address,
   });
 
   factory ShopModel.fromJson(Map<String, dynamic> json) =>

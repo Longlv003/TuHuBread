@@ -322,3 +322,273 @@ exports.deleteCartItem = async (req, res) => {
     return res.status(500).json(dataRes);
   }
 };
+
+exports.getSwitchShopOptions = async (req, res) => {
+  const dataRes = { status: "error", msg: "" };
+  try {
+    const user = await findCurrentUser(req);
+    if (!user) {
+      dataRes.msg = "Không tìm thấy user";
+      return res.status(404).json(dataRes);
+    }
+
+    const { product_id } = req.body;
+    if (!product_id || !mongoose.Types.ObjectId.isValid(product_id)) {
+      dataRes.msg = "Thiếu hoặc sai product_id";
+      return res.status(400).json(dataRes);
+    }
+
+    const newProduct = await productModel.findOne({ _id: product_id, deleted_at: null, status: "active" });
+    if (!newProduct) {
+      dataRes.msg = "Sản phẩm không khả dụng";
+      return res.status(400).json(dataRes);
+    }
+
+    const activeCart = await getOrCreateActiveCart(user._id);
+    const cartItems = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
+
+    const requiredNames = [...new Set(cartItems.map(item => item.product_name).concat(newProduct.product_name))];
+
+    // Find valid, active, non-blocked shops that have products for ALL requiredNames
+    const activeProductShopIds = await productModel.distinct("shop_id", { status: "active", deleted_at: null });
+    const shops = await shopModel.find({
+      _id: { $in: activeProductShopIds },
+      status: "active",
+      deleted_at: null
+    }).populate("owner_user_id");
+
+    const validShops = shops.filter(shop => {
+      const owner = shop.owner_user_id;
+      return owner && owner.status !== "blocked" && owner.deleted_at === null;
+    });
+
+    const candidateShops = [];
+    for (const shop of validShops) {
+      const shopProductsCount = await productModel.countDocuments({
+        shop_id: shop._id,
+        product_name: { $in: requiredNames },
+        status: "active",
+        deleted_at: null
+      });
+      if (shopProductsCount === requiredNames.length) {
+        candidateShops.push(shop);
+      }
+    }
+
+    if (candidateShops.length === 0) {
+      dataRes.msg = "Các sản phẩm hiện có trong giỏ hàng và sản phẩm bạn vừa chọn không được bán đồng thời tại bất kỳ cửa hàng nào khác.";
+      return res.status(400).json(dataRes);
+    }
+
+    dataRes.status = "success";
+    dataRes.data = candidateShops.map(shop => {
+      const logoFile = shop.logo ? shop.logo.split("/").pop() : "default_avatar.jpg";
+      const bannerFile = shop.banner ? shop.banner.split("/").pop() : "default_banner.jpg";
+      const shopObj = { ...shop._doc };
+      delete shopObj.avatar;
+      delete shopObj.owner_user_id;
+      if (shopObj.total_reviews === 0) {
+        shopObj.rating_average = 99;
+      }
+      return {
+        ...shopObj,
+        logo: `${req.protocol}://${req.get("host")}/images/shops/${logoFile}`,
+        banner: `${req.protocol}://${req.get("host")}/images/shops/${bannerFile}`,
+      };
+    });
+
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("getSwitchShopOptions error:", err);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};
+
+exports.switchShop = async (req, res) => {
+  const dataRes = { status: "error", msg: "" };
+  try {
+    const user = await findCurrentUser(req);
+    if (!user) {
+      dataRes.msg = "Không tìm thấy user";
+      return res.status(404).json(dataRes);
+    }
+
+    const { shop_id, product_id, variant_id, selected_options, quantity } = req.body;
+    if (!shop_id || !mongoose.Types.ObjectId.isValid(shop_id) ||
+        !product_id || !mongoose.Types.ObjectId.isValid(product_id) ||
+        !variant_id || !mongoose.Types.ObjectId.isValid(variant_id) ||
+        !quantity || quantity <= 0) {
+      dataRes.msg = "Dữ liệu chuyển đổi shop không hợp lệ";
+      return res.status(400).json(dataRes);
+    }
+
+    const targetShop = await shopModel.findOne({ _id: shop_id, status: "active", deleted_at: null });
+    if (!targetShop) {
+      dataRes.msg = "Cửa hàng không tồn tại hoặc đã ngừng hoạt động";
+      return res.status(404).json(dataRes);
+    }
+
+    const activeCart = await getOrCreateActiveCart(user._id);
+    const cartItems = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
+
+    // 1. Map existing cart items to the new shop's corresponding products, variants and options
+    for (const item of cartItems) {
+      const targetProduct = await productModel.findOne({
+        shop_id: shop_id,
+        product_name: item.product_name,
+        status: "active",
+        deleted_at: null
+      });
+      if (!targetProduct) {
+        dataRes.msg = `Sản phẩm "${item.product_name}" không có sẵn tại cửa hàng mới`;
+        return res.status(400).json(dataRes);
+      }
+
+      const targetVariant = await productVariantModel.findOne({
+        product_id: targetProduct._id,
+        variant_name: item.variant_name,
+        status: "active",
+        deleted_at: null
+      });
+      if (!targetVariant) {
+        dataRes.msg = `Phiên bản "${item.variant_name}" của "${item.product_name}" không có sẵn tại cửa hàng mới`;
+        return res.status(400).json(dataRes);
+      }
+
+      let basePrice = targetVariant.price;
+      if (targetVariant.sale_price !== null && targetVariant.sale_price !== undefined) {
+        basePrice = targetVariant.sale_price;
+      }
+
+      let optionTotalPrice = 0;
+      const verifiedOptions = [];
+      if (Array.isArray(item.selected_options) && item.selected_options.length > 0) {
+        for (const opt of item.selected_options) {
+          const optionDoc = await productOptionModel.findOne({
+            product_id: targetProduct._id,
+            option_name: opt.option_name,
+            status: "active",
+            deleted_at: null
+          });
+          if (!optionDoc) {
+            dataRes.msg = `Tùy chọn "${opt.option_name}" không có sẵn tại cửa hàng mới`;
+            return res.status(400).json(dataRes);
+          }
+          optionTotalPrice += optionDoc.extra_price;
+          verifiedOptions.push({
+            option_id: optionDoc._id,
+            option_name: optionDoc.option_name,
+            extra_price: optionDoc.extra_price,
+          });
+        }
+      }
+
+      const unitPrice = basePrice + optionTotalPrice;
+
+      item.shop_id = targetShop._id;
+      item.product_id = targetProduct._id;
+      item.variant_id = targetVariant._id;
+      item.product_image = targetVariant.image || null;
+      item.base_price = basePrice;
+      item.selected_options = verifiedOptions;
+      item.option_total_price = optionTotalPrice;
+      item.unit_price = unitPrice;
+      item.subtotal = unitPrice * item.quantity;
+
+      await item.save();
+    }
+
+    // 2. Add the new product
+    const product = await productModel.findOne({ _id: product_id, deleted_at: null, status: "active" });
+    if (!product) {
+      dataRes.msg = "Sản phẩm mới không khả dụng";
+      return res.status(400).json(dataRes);
+    }
+    if (String(product.shop_id) !== String(shop_id)) {
+      dataRes.msg = "Sản phẩm không thuộc cửa hàng đã chọn";
+      return res.status(400).json(dataRes);
+    }
+
+    const variant = await productVariantModel.findOne({ _id: variant_id, product_id, deleted_at: null, status: "active" });
+    if (!variant) {
+      dataRes.msg = "Phiên bản sản phẩm không khả dụng";
+      return res.status(400).json(dataRes);
+    }
+
+    let basePrice = variant.price;
+    if (variant.sale_price !== null && variant.sale_price !== undefined) {
+      basePrice = variant.sale_price;
+    }
+
+    let optionTotalPrice = 0;
+    const verifiedOptions = [];
+    if (Array.isArray(selected_options) && selected_options.length > 0) {
+      for (const opt of selected_options) {
+        const optId = opt.option_id || opt._id;
+        const optionDoc = await productOptionModel.findOne({ _id: optId, product_id, deleted_at: null, status: "active" });
+        if (!optionDoc) {
+          dataRes.msg = "Tùy chọn sản phẩm không khả dụng";
+          return res.status(400).json(dataRes);
+        }
+        optionTotalPrice += optionDoc.extra_price;
+        verifiedOptions.push({
+          option_id: optionDoc._id,
+          option_name: optionDoc.option_name,
+          extra_price: optionDoc.extra_price,
+        });
+      }
+    }
+
+    const unitPrice = basePrice + optionTotalPrice;
+
+    const existingItems = await cartItemModel.find({ cart_id: activeCart._id, product_id, variant_id, deleted_at: null });
+    let matchedItem = null;
+    const targetOptIds = verifiedOptions.map(o => String(o.option_id)).sort().join(",");
+
+    for (const item of existingItems) {
+      const itemOptIds = (item.selected_options || []).map(o => String(o.option_id || o._id)).sort().join(",");
+      if (itemOptIds === targetOptIds) {
+        matchedItem = item;
+        break;
+      }
+    }
+
+    if (matchedItem) {
+      matchedItem.quantity += quantity;
+      matchedItem.subtotal = matchedItem.quantity * matchedItem.unit_price;
+      await matchedItem.save();
+    } else {
+      await cartItemModel.create({
+        cart_id: activeCart._id,
+        product_id,
+        variant_id,
+        shop_id: targetShop._id,
+        quantity,
+        product_name: product.product_name,
+        variant_name: variant.variant_name,
+        product_image: variant.image || null,
+        base_price: basePrice,
+        selected_options: verifiedOptions,
+        option_total_price: optionTotalPrice,
+        unit_price: unitPrice,
+        subtotal: unitPrice * quantity,
+      });
+    }
+
+    const newTotal = await recalculateCartTotal(activeCart._id);
+    const items = await cartItemModel.find({ cart_id: activeCart._id, deleted_at: null });
+
+    dataRes.status = "success";
+    dataRes.data = {
+      cart_id: activeCart._id,
+      cart_total: newTotal,
+      items: formatCartItems(items, req),
+    };
+    return res.json(dataRes);
+  } catch (err) {
+    console.error("switchShop error:", err);
+    dataRes.msg = "Server error: " + err.message;
+    return res.status(500).json(dataRes);
+  }
+};

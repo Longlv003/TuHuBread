@@ -12,8 +12,9 @@ ShopModel _$ShopModelFromJson(Map<String, dynamic> json) => ShopModel(
   phone: json['phone_number'] as String,
   logo: json['logo'] as String,
   banner: json['banner'] as String,
-  rating: (json['rating'] as num?)?.toDouble() ?? 5.0,
+  rating: (json['rating_average'] as num?)?.toDouble() ?? 0.0,
   status: json['status'] as String,
+  address: json['address'] as String,
 );
 
 Map<String, dynamic> _$ShopModelToJson(ShopModel instance) => <String, dynamic>{
@@ -22,6 +23,7 @@ Map<String, dynamic> _$ShopModelToJson(ShopModel instance) => <String, dynamic>{
   'phone_number': instance.phone,
   'logo': instance.logo,
   'banner': instance.banner,
-  'rating': instance.rating,
+  'rating_average': instance.rating,
   'status': instance.status,
+  'address': instance.address,
 };

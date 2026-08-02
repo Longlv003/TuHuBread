@@ -22,4 +22,14 @@ abstract class NotificationRepository {
   });
 
   Future<Result<bool>> unregisterDevice(String fcmToken);
+
+  // Methods used by the FCM NotificationService
+  Future<Result<void>> registerDeviceToken({
+    required String token,
+    required String platform,
+  });
+
+  Future<Result<void>> deactivateDeviceToken({
+    required String token,
+  });
 }

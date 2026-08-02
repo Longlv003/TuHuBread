@@ -1502,6 +1502,18 @@ abstract class AppLocalizations {
   /// **'No saved addresses yet'**
   String get selectAddressEmpty;
 
+  /// No description provided for @homeDeliverTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver to: {address}'**
+  String homeDeliverTo(Object address);
+
+  /// No description provided for @homeAddAddressPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add delivery address'**
+  String get homeAddAddressPrompt;
+
   /// No description provided for @notificationsTitle.
   ///
   /// In en, this message translates to:
@@ -1951,6 +1963,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total:'**
   String get historyTotalLabel;
+
+  /// No description provided for @historyReviewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate this order'**
+  String get historyReviewButton;
+
+  /// No description provided for @historyReviewedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get historyReviewedLabel;
+
+  /// No description provided for @historyReviewSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate your order'**
+  String get historyReviewSheetTitle;
+
+  /// No description provided for @historyReviewCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your thoughts (optional)'**
+  String get historyReviewCommentHint;
+
+  /// No description provided for @historyReviewSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit review'**
+  String get historyReviewSubmitButton;
+
+  /// No description provided for @historyReviewSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your review!'**
+  String get historyReviewSuccess;
+
+  /// No description provided for @historyReviewError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t submit review, please try again'**
+  String get historyReviewError;
+
+  /// No description provided for @historyReviewRatingRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a star rating'**
+  String get historyReviewRatingRequired;
 
   /// No description provided for @detailSoldAmount.
   ///

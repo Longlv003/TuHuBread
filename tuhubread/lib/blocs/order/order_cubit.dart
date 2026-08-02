@@ -47,6 +47,52 @@ class OrderCubit extends Cubit<OrderState> {
     }
   }
 
+  /// Gửi đánh giá cho 1 đơn hàng đã hoàn thành — cập nhật lại đúng đơn đó
+  /// trong danh sách (không cần tải lại toàn bộ lịch sử).
+  Future<bool> submitReview(
+    String orderId, {
+    required int rating,
+    String? comment,
+  }) async {
+    try {
+      final res = await apiService.post('/api/orders/$orderId/review', {
+        'rating': rating,
+        if (comment != null && comment.trim().isNotEmpty)
+          'comment': comment.trim(),
+      });
+      if (res['data'] == null) return false;
+
+      final reviewData = res['data'] as Map<String, dynamic>;
+      final currentState = state;
+      if (currentState is OrderLoaded) {
+        final updatedOrders = currentState.orders.map((o) {
+          if (o.id != orderId) return o;
+          return OrderModel.fromJson({
+            ...o.toJsonMock(),
+            'review': {
+              'rating': reviewData['rating'],
+              'comment': reviewData['comment'],
+            },
+          });
+        }).toList();
+        emit(OrderLoaded(updatedOrders));
+      } else if (currentState is OrderDetailLoaded &&
+          currentState.order.id == orderId) {
+        final updatedOrder = OrderModel.fromJson({
+          ...currentState.order.toJsonMock(),
+          'review': {
+            'rating': reviewData['rating'],
+            'comment': reviewData['comment'],
+          },
+        });
+        emit(currentState.copyWith(order: updatedOrder));
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> cancelOrder(String orderId) async {
     if (state is! OrderDetailLoaded) return false;
     final current = state as OrderDetailLoaded;
@@ -100,7 +146,10 @@ extension OrderModelExtension on OrderModel {
         'receiver_name': receiverName,
         'receiver_phone': receiverPhone,
         'address_detail': addressDetail,
-      }
+      },
+      'review': hasReview
+          ? {'rating': reviewRating, 'comment': reviewComment}
+          : null,
     };
   }
 }

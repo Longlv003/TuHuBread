@@ -10,6 +10,7 @@ import '../di.dart';
 import '../models/cart_item.model.dart';
 import '../models/product_detail.model.dart';
 import '../models/product_variant.model.dart';
+import '../models/shop.model.dart';
 import '../repositories/home_repository.dart';
 import '../utils/cart_price_calculator.dart';
 import '../widgets/app_confirm_dialog.dart';
@@ -25,11 +26,18 @@ class CartActionHelper {
 
     final cubit = getIt<CartCubit>();
     final detail = detailState.productDetail;
+    final variant = detailState.selectedVariant;
+    final optionIds = detailState.selectedOptionIds;
+
     final canProceed = await _ensureSameShop(
       context,
       cubit,
       shopId: detail.shopId,
       shopName: detail.shop?.shopName,
+      productId: detail.id,
+      variantId: variant.id,
+      optionIds: optionIds.toList(),
+      quantity: detailState.quantity,
     );
     if (!canProceed) return false;
     if (!context.mounted) return false;
@@ -62,16 +70,6 @@ class CartActionHelper {
       return;
     }
 
-    final cubit = getIt<CartCubit>();
-    final canProceed = await _ensureSameShop(
-      context,
-      cubit,
-      shopId: detail.shopId,
-      shopName: detail.shop?.shopName,
-    );
-    if (!canProceed) return;
-    if (!context.mounted) return;
-
     ProductVariantModel variant;
     Set<String> selectedOptions = {};
     int quantity = 1;
@@ -86,6 +84,20 @@ class CartActionHelper {
       selectedOptions = picked.selectedOptionIds;
       quantity = picked.quantity;
     }
+
+    final cubit = getIt<CartCubit>();
+    final canProceed = await _ensureSameShop(
+      context,
+      cubit,
+      shopId: detail.shopId,
+      shopName: detail.shop?.shopName,
+      productId: detail.id,
+      variantId: variant.id,
+      optionIds: selectedOptions.toList(),
+      quantity: quantity,
+    );
+    if (!canProceed) return;
+    if (!context.mounted) return;
 
     final unitPrice = CartPriceCalculator.calculateUnitPrice(
       detail,
@@ -112,37 +124,238 @@ class CartActionHelper {
   }
 
   /// Giỏ hàng chỉ được chứa sản phẩm của 1 chi nhánh (giống Grab/Shopee Food).
-  /// Nếu giỏ đang có sản phẩm của chi nhánh khác [shopId], hỏi xác nhận xoá
-  /// giỏ cũ trước khi thêm. Trả về true nếu có thể tiếp tục thêm vào giỏ.
+  /// Nếu giỏ đang có sản phẩm của chi nhánh khác [shopId], hỏi xác nhận chuyển
+  /// shop hoặc hủy. Trả về true nếu không có xung đột và có thể tiếp tục thêm bình thường.
   static Future<bool> _ensureSameShop(
     BuildContext context,
     CartCubit cubit, {
     required String shopId,
     String? shopName,
+    required String productId,
+    required String variantId,
+    required List<String> optionIds,
+    required int quantity,
   }) async {
     final items = cubit.state.items;
     if (items.isEmpty) return true;
     if (items.first.shopId == shopId) return true;
 
-    final l10n = AppLocalizations.of(context)!;
     final confirmed = await AppConfirmDialog.show(
       context,
       type: ConfirmDialogType.warning,
-      title: l10n.cartShopConflictTitle,
-      description: l10n.cartShopConflictMessage(
-        items.first.shopName ?? '',
-      ),
-      confirmTitle: l10n.cartShopConflictConfirm,
-      cancelTitle: l10n.cartCancel,
+      title: "Trùng sản phẩm shop khác",
+      description: "Giỏ hàng của bạn đang chứa sản phẩm của cửa hàng khác.\n\nBạn có muốn tự động tìm cửa hàng bán tất cả các sản phẩm này để chuyển đổi không?",
+      confirmTitle: "Tìm cửa hàng",
+      cancelTitle: "Hủy",
     );
     if (confirmed != true) return false;
     if (!context.mounted) return false;
 
-    final cleared = await cubit.requestClearCart();
-    if (!cleared && context.mounted) {
-      _showSnackBar(context, false, l10n.cartShopConflictClearFailed);
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFE67E22)),
+      ),
+    );
+
+    final candidatesRes = await cubit.getSwitchShopOptions(productId: productId);
+    
+    if (context.mounted) {
+      Navigator.pop(context); // Dismiss loading
     }
-    return cleared;
+    if (!context.mounted) return false;
+
+    if (candidatesRes is Failure) {
+      await AppConfirmDialog.show(
+        context,
+        type: ConfirmDialogType.warning,
+        title: "Không thể chuyển đổi",
+        description: "${(candidatesRes as Failure).errorOrNull ?? "Không có cửa hàng nào có đầy đủ sản phẩm."}\n\nNếu bạn vẫn muốn đặt sản phẩm này, vui lòng thanh toán đơn hàng đang có trong giỏ hàng trước, sau đó quay lại đặt mua sản phẩm mới.",
+        confirmTitle: "Đóng",
+        cancelTitle: "",
+      );
+      return false;
+    }
+
+    final shops = (candidatesRes as Success<List<ShopModel>>).data;
+    if (shops.isEmpty) {
+      await AppConfirmDialog.show(
+        context,
+        type: ConfirmDialogType.warning,
+        title: "Không thể chuyển đổi",
+        description: "Không có cửa hàng nào khác bán đồng thời tất cả sản phẩm trong giỏ hàng.\n\nNếu bạn vẫn muốn đặt sản phẩm này, vui lòng thanh toán đơn hàng đang có trong giỏ hàng trước, sau đó quay lại chọn mua sản phẩm mới.",
+        confirmTitle: "Đóng",
+        cancelTitle: "",
+      );
+      return false;
+    }
+
+    // Show shop selection dialog
+    final selectedShop = await showDialog<ShopModel>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Chọn cửa hàng mới",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF2C3E50)),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: shops.length,
+            itemBuilder: (context, idx) {
+              final shop = shops[idx];
+              return GestureDetector(
+                onTap: () => Navigator.pop(context, shop),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFF1EAE1),
+                      width: 1.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x06000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          shop.logo,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => Container(
+                            width: 50,
+                            height: 50,
+                            color: const Color(0xFFF1EAE1),
+                            child: const Icon(
+                              Icons.store_rounded,
+                              color: Color(0xFFE67E22),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              shop.shopName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2C3E50),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: Color(0xFFF1C40F),
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  shop.rating == 99 ? "Chưa có đánh giá" : "${shop.rating}",
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF7F8C8D),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Icon(
+                                  Icons.phone_in_talk_rounded,
+                                  color: Color(0xFF95A5A6),
+                                  size: 11,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  shop.phone,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF7F8C8D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              shop.address,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF95A5A6),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Hủy", style: TextStyle(color: Color(0xFF7F8C8D))),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedShop == null) return false;
+    if (!context.mounted) return false;
+
+    // Show loading for switch confirmation
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFE67E22)),
+      ),
+    );
+
+    final switchRes = await cubit.switchShop(
+      shopId: selectedShop.id,
+      productId: productId,
+      variantId: variantId,
+      optionIds: optionIds,
+      quantity: quantity,
+    );
+
+    if (context.mounted) {
+      Navigator.pop(context); // Dismiss loading
+    }
+    if (!context.mounted) return false;
+
+    if (switchRes is Success) {
+      _showSnackBar(context, true, "Chuyển đổi cửa hàng và thêm sản phẩm thành công!");
+    } else {
+      _showSnackBar(context, false, (switchRes as Failure).message);
+    }
+    return false;
   }
 
   /// Xây dựng 1 [CartItemModel] cục bộ (không lưu server) từ lựa chọn hiện
