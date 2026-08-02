@@ -87,6 +87,73 @@
     }
 
     /**
+     * Modal xin nhập nội dung (có ô nhập liệu) thay cho window.prompt() mặc
+     * định của trình duyệt. Trả về chuỗi đã trim (không rỗng) hoặc null nếu
+     * người dùng huỷ / không nhập gì.
+     * Dùng: const reason = await showPromptDialog({ title: "...", message: "..." });
+     */
+    function showPromptDialog({ title = "Nhập nội dung", message = "", placeholder = "", confirmText = "Xác nhận", cancelText = "Huỷ", danger = false } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "confirm-modal-overlay";
+        overlay.innerHTML = `
+          <div class="confirm-modal-card">
+            <div class="confirm-modal-icon${danger ? " danger" : ""}">
+              <i class="fa-solid ${danger ? "fa-triangle-exclamation" : "fa-circle-question"}"></i>
+            </div>
+            <h3 class="confirm-modal-title"></h3>
+            <p class="confirm-modal-message"></p>
+            <textarea class="confirm-modal-input" rows="2"></textarea>
+            <p class="confirm-modal-error">Vui lòng nhập nội dung</p>
+            <div class="confirm-modal-actions">
+              <button type="button" class="confirm-modal-btn cancel"></button>
+              <button type="button" class="confirm-modal-btn confirm${danger ? " danger" : ""}"></button>
+            </div>
+          </div>
+        `;
+        overlay.querySelector(".confirm-modal-title").innerText = title;
+        overlay.querySelector(".confirm-modal-message").innerText = message;
+        overlay.querySelector(".cancel").innerText = cancelText;
+        overlay.querySelector(".confirm").innerText = confirmText;
+        const input = overlay.querySelector(".confirm-modal-input");
+        input.placeholder = placeholder;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => {
+          overlay.classList.add("show");
+          input.focus();
+        });
+
+        let settled = false;
+        const cleanup = (result) => {
+          if (settled) return;
+          settled = true;
+          document.removeEventListener("keydown", onKeyDown);
+          overlay.classList.remove("show");
+          setTimeout(() => overlay.remove(), 200);
+          resolve(result);
+        };
+        const onKeyDown = (e) => {
+          if (e.key === "Escape") cleanup(null);
+        };
+
+        overlay.querySelector(".cancel").addEventListener("click", () => cleanup(null));
+        overlay.querySelector(".confirm").addEventListener("click", () => {
+          const value = input.value.trim();
+          if (!value) {
+            overlay.querySelector(".confirm-modal-error").classList.add("show");
+            input.focus();
+            return;
+          }
+          cleanup(value);
+        });
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) cleanup(null);
+        });
+        document.addEventListener("keydown", onKeyDown);
+      });
+    }
+
+    /**
      * Âm báo "ting ting" khi có sự kiện realtime (đơn hàng mới...).
      * Dùng file âm thanh thật thay vì tổng hợp bằng Web Audio API.
      *

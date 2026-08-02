@@ -66,7 +66,7 @@ class ProductVariantService {
       throw new Error("Variant not found");
     }
 
-    const { variantName, price, salePrice, stockQuantity, status, image } = data;
+    const { variantName, price, salePrice, stockQuantity, status, image, expiredAt } = data;
     const updateData = {};
 
     if (variantName) {
@@ -81,9 +81,33 @@ class ProductVariantService {
       updateData.price = parsedPrice;
     }
     if (salePrice !== undefined) updateData.sale_price = salePrice ? parseFloat(salePrice) : null;
-    if (stockQuantity !== undefined) updateData.stock_quantity = parseInt(stockQuantity) || 0;
+
+    let parsedStock;
+    if (stockQuantity !== undefined) {
+      parsedStock = parseInt(stockQuantity) || 0;
+      updateData.stock_quantity = parsedStock;
+    }
     if (status) updateData.status = status;
     if (image) updateData.image = image;
+
+    // Nhập thêm hạn sử dụng khi sửa — ghi nhận thành 1 lô hàng mới, chỉ khi
+    // lần sửa này thực sự có nhập số lượng kèm HSD.
+    if (parsedStock > 0 && expiredAt) {
+      const expiredAtObj = new Date(expiredAt);
+      if (isNaN(expiredAtObj.getTime()) || expiredAtObj <= new Date()) {
+        throw new Error("Hạn sử dụng phải sau ngày hôm nay");
+      }
+      await productBatchRepository.create({
+        product_id: productId,
+        variant_id: variantId,
+        batch_code: `LOT-${Date.now()}`,
+        quantity_imported: parsedStock,
+        quantity_remaining: parsedStock,
+        production_date: new Date(),
+        expired_at: expiredAtObj,
+        status: "active"
+      });
+    }
 
     return productVariantRepository.update(variantId, updateData);
   }

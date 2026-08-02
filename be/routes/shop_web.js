@@ -9,8 +9,6 @@ const shopOrderController = require("../controllers/shop_web/shop_order.controll
 const shopProductController = require("../controllers/shop_web/shop_product.controller");
 const shopProductVariantController = require("../controllers/shop_web/shop_product_variant.controller");
 const shopProductOptionController = require("../controllers/shop_web/shop_product_option.controller");
-const shopProductAttributeController = require("../controllers/shop_web/shop_product_attribute.controller");
-const shopProductBatchController = require("../controllers/shop_web/shop_product_batch.controller");
 const shopSaleController = require("../controllers/shop_web/shop_sale.controller");
 const shopVoucherController = require("../controllers/shop_web/shop_voucher.controller");
 const shopReviewController = require("../controllers/shop_web/shop_review.controller");
@@ -50,14 +48,6 @@ router.post("/products/:productId/variants/delete/:id", authMiddleware, shopProd
 router.post("/products/:productId/options/add", authMiddleware, shopProductOptionController.addOption);
 router.post("/products/:productId/options/edit/:id", authMiddleware, shopProductOptionController.editOption);
 router.post("/products/:productId/options/delete/:id", authMiddleware, shopProductOptionController.deleteOption);
-
-router.post("/products/:productId/attributes/add", authMiddleware, shopProductAttributeController.addAttribute);
-router.post("/products/:productId/attributes/edit/:id", authMiddleware, shopProductAttributeController.editAttribute);
-router.post("/products/:productId/attributes/delete/:id", authMiddleware, shopProductAttributeController.deleteAttribute);
-
-router.post("/products/:productId/batches/add", authMiddleware, shopProductBatchController.addBatch);
-router.post("/products/:productId/batches/edit/:id", authMiddleware, shopProductBatchController.editBatch);
-router.post("/products/:productId/batches/delete/:id", authMiddleware, shopProductBatchController.deleteBatch);
 
 // Promotions / Sales routes
 router.get("/sales", authMiddleware, shopSaleController.showSales);

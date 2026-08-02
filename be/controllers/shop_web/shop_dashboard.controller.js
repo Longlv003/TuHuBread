@@ -8,7 +8,7 @@ class ShopDashboardController {
   async showDashboard(req, res) {
     try {
       const shopId = req.shop._id;
-      const stats = await dashboardService.getDashboardData(shopId);
+      const stats = await dashboardService.getDashboardData(shopId, req.query.page);
 
       const firebaseConfig = {
         apiKey: process.env.FIREBASE_API_KEY,

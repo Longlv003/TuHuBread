@@ -56,7 +56,7 @@
               </td></tr>
             <% } %>
             <% products.forEach(p => { %>
-              <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>">
+              <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>" style="cursor:pointer;" onclick="window.location='/shop/products/<%= p._id %>'">
                 <td class="col-icon">
                   <img src="<%= p.display_variant && p.display_variant.image ? p.display_variant.image : 'https://placehold.co/50' %>" onerror="this.src='https://placehold.co/50'">
                 </td>
@@ -67,10 +67,9 @@
                 <td class="col-status">
                   <span class="status-badge <%= p.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= p.status %></span>
                 </td>
-                <td class="col-actions">
-                  <div class="actions-wrap">
-                    <a href="/shop/products/<%= p._id %>" class="btn-action">Chi tiết</a>
-                    <button type="button" class="btn-action btn-delete" onclick="onDeleteProduct('<%= p._id %>')">Xóa</button>
+                <td class="col-actions" style="text-align:center;">
+                  <div class="actions-wrap" style="justify-content:center;">
+                    <button type="button" class="btn-action btn-delete" onclick="event.stopPropagation(); onDeleteProduct('<%= p._id %>')">Xóa</button>
                   </div>
                 </td>
               </tr>

@@ -17,7 +17,7 @@ class ReportRepository {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          revenue: { $sum: "$total_amount" },
+          revenue: { $sum: { $subtract: ["$items_total", "$discount_amount"] } },
           orders_count: { $sum: 1 }
         }
       },
@@ -85,7 +85,7 @@ class ReportRepository {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          revenue: { $sum: "$total_amount" },
+          revenue: { $sum: { $subtract: ["$items_total", "$discount_amount"] } },
           orders_count: { $sum: 1 }
         }
       },

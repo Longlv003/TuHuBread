@@ -54,9 +54,6 @@ ProductDetailModel _$ProductDetailModelFromJson(
   options: (json['options'] as List<dynamic>)
       .map((e) => ProductOptionModel.fromJson(e as Map<String, dynamic>))
       .toList(),
-  attributes: (json['attributes'] as List<dynamic>)
-      .map((e) => ProductAttributeModel.fromJson(e as Map<String, dynamic>))
-      .toList(),
   activeSale: json['active_sale'] == null
       ? null
       : ProductSaleModel.fromJson(json['active_sale'] as Map<String, dynamic>),
@@ -89,7 +86,6 @@ Map<String, dynamic> _$ProductDetailModelToJson(ProductDetailModel instance) =>
       'reviews': instance.reviews,
       'variants': instance.variants,
       'options': instance.options,
-      'attributes': instance.attributes,
       'active_sale': instance.activeSale,
       'other_shops': instance.otherShops,
     };

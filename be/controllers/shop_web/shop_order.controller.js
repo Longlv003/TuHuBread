@@ -77,9 +77,9 @@ class ShopOrderController {
   async updateStatus(req, res) {
     try {
       const { id } = req.params;
-      const { order_status } = req.body;
+      const { order_status, reason } = req.body;
 
-      const result = await orderService.updateOrderStatus(req.shop._id, id, order_status, req.user);
+      const result = await orderService.updateOrderStatus(req.shop._id, id, order_status, req.user, reason);
       return res.json({ status: "success", msg: "Cập nhật trạng thái đơn hàng thành công!", data: result });
     } catch (err) {
       console.error("Update order status controller error:", err.message);

@@ -744,6 +744,38 @@ tbody tr:hover {
   margin-bottom: 22px;
 }
 
+.confirm-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  box-sizing: border-box;
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.confirm-modal-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.confirm-modal-error {
+  display: none;
+  color: var(--danger);
+  font-size: 12px;
+  text-align: left;
+  margin: 0 0 12px;
+}
+
+.confirm-modal-error.show {
+  display: block;
+}
+
 .confirm-modal-actions {
   display: flex;
   gap: 10px;

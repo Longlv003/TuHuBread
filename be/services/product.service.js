@@ -1,7 +1,6 @@
 const productRepository = require("../repositories/product.repository");
 const productVariantRepository = require("../repositories/productVariant.repository");
 const productOptionRepository = require("../repositories/productOption.repository");
-const productAttributeRepository = require("../repositories/productAttribute.repository");
 const productBatchRepository = require("../repositories/productBatch.repository");
 const { toSlug } = require("../utils/slug.util");
 
@@ -61,14 +60,13 @@ class ProductService {
       throw new Error("Product not found");
     }
 
-    const [variants, options, attributes, batches] = await Promise.all([
+    const [variants, options, batches] = await Promise.all([
       productVariantRepository.findByProductId(productId),
       productOptionRepository.findByProductId(productId),
-      productAttributeRepository.findByProductId(productId),
       productBatchRepository.findByProductId(productId)
     ]);
 
-    return { product, variants, options, attributes, batches };
+    return { product, variants, options, batches };
   }
 
   async addProduct(shopId, data) {
@@ -189,17 +187,15 @@ class ProductService {
 
     await productRepository.softDelete(productId);
 
-    const [variants, options, attributes, batches] = await Promise.all([
+    const [variants, options, batches] = await Promise.all([
       productVariantRepository.findByProductId(productId),
       productOptionRepository.findByProductId(productId),
-      productAttributeRepository.findByProductId(productId),
       productBatchRepository.findByProductId(productId)
     ]);
 
     await Promise.all([
       ...variants.map(v => productVariantRepository.softDelete(v._id)),
       ...options.map(o => productOptionRepository.softDelete(o._id)),
-      ...attributes.map(a => productAttributeRepository.softDelete(a._id)),
       ...batches.map(b => productBatchRepository.softDelete(b._id))
     ]);
 

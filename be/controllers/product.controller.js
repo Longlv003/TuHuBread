@@ -1,7 +1,6 @@
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
-const { productAttributeModel } = require("../models/productAttribute.model");
 const { productSaleModel } = require("../models/productSale.model");
 const { shopModel } = require("../models/shop.model");
 const { reviewModel } = require("../models/review.model");
@@ -545,10 +544,9 @@ exports.getProductDetail = async (req, res) => {
     const now = new Date();
 
     // Query các dữ liệu liên quan song song
-    const [variants, options, attributes, activeSales, shop, dbReviews] = await Promise.all([
+    const [variants, options, activeSales, shop, dbReviews] = await Promise.all([
       productVariantModel.find({ product_id: product._id, status: "active" }),
       productOptionModel.find({ product_id: product._id, status: "active" }),
-      productAttributeModel.find({ product_id: product._id, status: "active" }).sort({ sort_order: 1 }),
       productSaleModel.findOne({
         product_id: product._id,
         status: "active",
@@ -673,7 +671,6 @@ exports.getProductDetail = async (req, res) => {
       reviews: formattedReviews,
       variants: formattedVariants,
       options: options,
-      attributes: attributes,
       active_sale: activeSales,
       other_shops: otherShops
     };

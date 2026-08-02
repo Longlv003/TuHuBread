@@ -54,17 +54,23 @@ class OrderRepository {
     return orderModel.findByIdAndUpdate(id, updateData, { new: true });
   }
 
-  async getDashboardStats(shopId) {
+  async getDashboardStats(shopId, page = 1) {
     const orders = await orderModel.find({ shop_id: shopId, deleted_at: null }).populate("user_id");
 
     const totalRevenue = orders
       .filter(o => o.order_status === "completed" && o.payment_status === "paid")
-      .reduce((sum, o) => sum + o.total_amount, 0);
+      .reduce((sum, o) => sum + (o.items_total - o.discount_amount), 0);
 
     const pendingOrders = orders.filter(o => o.order_status === "pending").length;
     const processingOrders = orders.filter(o => ["confirmed", "preparing", "delivering"].includes(o.order_status)).length;
     const completedOrders = orders.filter(o => o.order_status === "completed").length;
     const cancelledOrders = orders.filter(o => o.order_status === "cancelled").length;
+
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const limit = 10;
+    const sortedOrders = orders.slice().sort((a, b) => b.createdAt - a.createdAt);
+    const totalPages = Math.max(Math.ceil(sortedOrders.length / limit), 1);
+    const recentOrders = sortedOrders.slice((parsedPage - 1) * limit, parsedPage * limit);
 
     return {
       totalRevenue,
@@ -73,7 +79,9 @@ class OrderRepository {
       processingOrders,
       completedOrders,
       cancelledOrders,
-      recentOrders: orders.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10)
+      recentOrders,
+      page: parsedPage,
+      totalPages
     };
   }
 }

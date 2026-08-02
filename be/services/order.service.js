@@ -76,7 +76,7 @@ class OrderService {
     return { order, items, history, nextStatuses: getAllowedNextStatuses(order.order_status) };
   }
 
-  async updateOrderStatus(shopId, orderId, newStatus, changedByAccount) {
+  async updateOrderStatus(shopId, orderId, newStatus, changedByAccount, reason) {
     const order = await orderRepository.findByIdScoped(orderId, shopId);
     if (!order) {
       throw new Error("Order not found");
@@ -85,6 +85,10 @@ class OrderService {
     const allowed = getAllowedNextStatuses(order.order_status);
     if (!allowed.includes(newStatus)) {
       throw new Error(`Không thể chuyển từ '${order.order_status}' sang '${newStatus}'`);
+    }
+
+    if (newStatus === "cancelled" && !reason) {
+      throw new Error("Vui lòng nhập lý do hủy đơn");
     }
 
     let paymentStatus;
@@ -101,15 +105,20 @@ class OrderService {
         from_status: previousStatus,
         to_status: newStatus,
         changed_by: changedByAccount._id,
-        changed_by_name: changedByAccount.full_name
+        changed_by_name: changedByAccount.full_name,
+        note: newStatus === "cancelled" ? reason : null
       });
     }
 
     socketService.emitOrderUpdate(String(shopId), updated);
 
+    const notifyBody = newStatus === "cancelled"
+      ? `Đơn hàng của bạn đã bị hủy. Lý do: ${reason}`
+      : `Đơn hàng của bạn đã chuyển sang trạng thái: ${ORDER_STATUS_LABELS[newStatus] || newStatus}`;
+
     notificationService.notifyUser(updated.user_id, {
       title: `Đơn hàng #${updated.order_code}`,
-      body: `Đơn hàng của bạn đã chuyển sang trạng thái: ${ORDER_STATUS_LABELS[newStatus] || newStatus}`,
+      body: notifyBody,
       type: "order",
       data: { order_id: String(updated._id), order_status: newStatus },
     });

@@ -101,6 +101,9 @@
         </tbody>
       </table>
     </div>
+    <div id="dashboardPagination">
+      <%- include('partials/pagination', { page: stats.page, totalPages: stats.totalPages, baseUrl: '/shop/dashboard' }) %>
+    </div>
   </div>
 </div>
 
@@ -161,6 +164,7 @@
       document.getElementById("pendingText").innerHTML = doc.getElementById("pendingText").innerHTML;
       document.getElementById("completedText").innerHTML = doc.getElementById("completedText").innerHTML;
       document.getElementById("ordersTableBody").innerHTML = doc.getElementById("ordersTableBody").innerHTML;
+      document.getElementById("dashboardPagination").innerHTML = doc.getElementById("dashboardPagination").innerHTML;
     } catch (err) {
       console.error("Failed to refresh dashboard:", err);
     }

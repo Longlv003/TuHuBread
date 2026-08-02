@@ -8,7 +8,7 @@
   <div class="header-bar">
     <div class="welcome-text">
       <h1><%= product.product_name %></h1>
-      <p>Quản lý biến thể, topping, thuộc tính và lô hàng của sản phẩm</p>
+      <p>Quản lý biến thể, topping của sản phẩm</p>
     </div>
     <a href="/shop/products" class="btn-action"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
   </div>
@@ -59,8 +59,6 @@
   <div class="tab-nav">
     <button type="button" class="tab-btn active" data-tab="variants">Biến thể</button>
     <button type="button" class="tab-btn" data-tab="options">Topping</button>
-    <button type="button" class="tab-btn" data-tab="attributes">Thuộc tính</button>
-    <button type="button" class="tab-btn" data-tab="batches">Lô hàng</button>
   </div>
 
   <!-- TAB: Variants -->
@@ -70,7 +68,7 @@
         <div class="section-header"><h3>Danh sách biến thể</h3></div>
         <div class="table-container">
           <table>
-            <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+            <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
             <tbody>
               <% variants.forEach(v => { %>
                 <tr>
@@ -78,6 +76,7 @@
                   <td><%= v.price.toLocaleString('vi-VN') %>đ</td>
                   <td><%= v.sale_price ? v.sale_price.toLocaleString('vi-VN') + 'đ' : '-' %></td>
                   <td><%= v.stock_quantity %></td>
+                  <td><%= variantExpiry[v._id] ? new Date(variantExpiry[v._id]).toLocaleDateString('vi-VN') : '-' %></td>
                   <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
                   <td class="col-actions">
                     <div class="actions-wrap">
@@ -111,6 +110,7 @@
           <div class="form-group"><label>Giá bán *</label><input type="number" id="editVariantPrice" name="price" required min="0"></div>
           <div class="form-group"><label>Giá khuyến mãi</label><input type="number" id="editVariantSalePrice" name="salePrice" min="0"></div>
           <div class="form-group"><label>Tồn kho</label><input type="number" id="editVariantStock" name="stockQuantity" min="0"></div>
+          <div class="form-group"><label>Hạn sử dụng (nếu vừa nhập thêm tồn kho)</label><input type="date" id="editVariantExpiredAt" name="expiredAt"></div>
           <div class="form-group"><label>Trạng thái</label>
             <select id="editVariantStatus" name="status">
               <option value="active">Active</option><option value="inactive">Inactive</option><option value="out_of_stock">Out of stock</option>
@@ -174,118 +174,6 @@
     </div>
   </div>
 
-  <!-- TAB: Attributes -->
-  <div class="tab-panel" id="tab-attributes">
-    <div class="content-grid">
-      <div class="section-card">
-        <div class="section-header"><h3>Danh sách thuộc tính</h3></div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Key</th><th>Nhãn</th><th>Giá trị</th><th>Thứ tự</th><th class="col-actions">Hành động</th></tr></thead>
-            <tbody>
-              <% attributes.forEach(a => { %>
-                <tr>
-                  <td><%= a.attribute_key %></td>
-                  <td><%= a.attribute_label %></td>
-                  <td><%= a.attribute_value %></td>
-                  <td><%= a.sort_order %></td>
-                  <td class="col-actions">
-                    <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditAttribute(<%- JSON.stringify(a) %>)'>Sửa</button>
-                      <button type="button" class="btn-action btn-delete" onclick="onDeleteAttribute('<%= a._id %>')">Xóa</button>
-                    </div>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="section-card" id="attributeAddCard">
-        <div class="section-header"><h3>Thêm thuộc tính</h3></div>
-        <form id="addAttributeForm">
-          <div class="form-group"><label>Key *</label><input type="text" name="attributeKey" required placeholder="Ví dụ: weight"></div>
-          <div class="form-group"><label>Nhãn hiển thị *</label><input type="text" name="attributeLabel" required placeholder="Ví dụ: Trọng lượng"></div>
-          <div class="form-group"><label>Giá trị *</label><input type="text" name="attributeValue" required placeholder="Ví dụ: 250g"></div>
-          <div class="form-group"><label>Thứ tự</label><input type="number" name="sortOrder" min="0" value="0"></div>
-          <button type="submit" class="btn-submit">Thêm thuộc tính</button>
-        </form>
-      </div>
-      <div class="section-card" id="attributeEditCard" style="display:none;">
-        <div class="section-header"><h3>Sửa thuộc tính</h3></div>
-        <form id="editAttributeForm">
-          <input type="hidden" id="editAttributeId">
-          <div class="form-group"><label>Key *</label><input type="text" id="editAttributeKey" name="attributeKey" required></div>
-          <div class="form-group"><label>Nhãn hiển thị *</label><input type="text" id="editAttributeLabel" name="attributeLabel" required></div>
-          <div class="form-group"><label>Giá trị *</label><input type="text" id="editAttributeValue" name="attributeValue" required></div>
-          <div class="form-group"><label>Thứ tự</label><input type="number" id="editAttributeSortOrder" name="sortOrder" min="0"></div>
-          <button type="submit" class="btn-submit">Lưu</button>
-          <button type="button" class="btn-cancel" onclick="cancelAttributeEdit()">Hủy</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: Batches -->
-  <div class="tab-panel" id="tab-batches">
-    <div class="content-grid">
-      <div class="section-card">
-        <div class="section-header"><h3>Danh sách lô hàng</h3></div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Mã lô</th><th>Biến thể</th><th>SL nhập</th><th>SL còn</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
-            <tbody>
-              <% batches.forEach(b => { %>
-                <tr>
-                  <td><strong><%= b.batch_code %></strong></td>
-                  <td><%= b.variant_id ? b.variant_id.variant_name : 'Tất cả biến thể' %></td>
-                  <td><%= b.quantity_imported %></td>
-                  <td><%= b.quantity_remaining %></td>
-                  <td><%= new Date(b.expired_at).toLocaleDateString('vi-VN') %></td>
-                  <td><span class="status-badge <%= b.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= b.status %></span></td>
-                  <td class="col-actions">
-                    <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditBatch("<%= b._id %>", <%= b.quantity_remaining %>, "<%= b.status %>")'>Sửa</button>
-                      <button type="button" class="btn-action btn-delete" onclick="onDeleteBatch('<%= b._id %>')">Xóa</button>
-                    </div>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="section-card" id="batchAddCard">
-        <div class="section-header"><h3>Nhập lô hàng mới</h3></div>
-        <form id="addBatchForm">
-          <div class="form-group">
-            <label>Biến thể áp dụng</label>
-            <select name="variantId">
-              <option value="">Tất cả biến thể</option>
-              <% variants.forEach(v => { %><option value="<%= v._id %>"><%= v.variant_name %></option><% }) %>
-            </select>
-          </div>
-          <div class="form-group"><label>Mã lô *</label><input type="text" name="batchCode" required placeholder="Ví dụ: LOT-001"></div>
-          <div class="form-group"><label>Số lượng nhập *</label><input type="number" name="quantityImported" required min="1"></div>
-          <div class="form-group"><label>Ngày sản xuất *</label><input type="date" name="productionDate" required></div>
-          <div class="form-group"><label>Hạn sử dụng *</label><input type="date" name="expiredAt" required></div>
-          <button type="submit" class="btn-submit">Nhập lô hàng</button>
-        </form>
-      </div>
-      <div class="section-card" id="batchEditCard" style="display:none;">
-        <div class="section-header"><h3>Cập nhật lô hàng</h3></div>
-        <form id="editBatchForm">
-          <input type="hidden" id="editBatchId">
-          <div class="form-group"><label>Số lượng còn lại</label><input type="number" id="editBatchQuantityRemaining" name="quantityRemaining" min="0"></div>
-          <div class="form-group"><label>Trạng thái</label>
-            <select id="editBatchStatus" name="status"><option value="active">Active</option><option value="expired">Expired</option><option value="sold_out">Sold out</option></select>
-          </div>
-          <button type="submit" class="btn-submit">Lưu</button>
-          <button type="button" class="btn-cancel" onclick="cancelBatchEdit()">Hủy</button>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -350,6 +238,7 @@
     document.getElementById("editVariantPrice").value = v.price;
     document.getElementById("editVariantSalePrice").value = v.sale_price || "";
     document.getElementById("editVariantStock").value = v.stock_quantity;
+    document.getElementById("editVariantExpiredAt").value = "";
     document.getElementById("editVariantStatus").value = v.status;
   }
   function cancelVariantEdit() {
@@ -411,81 +300,6 @@
     else showToast(result.msg || "Thất bại", "error");
   }
 
-  // ---- ATTRIBUTES ----
-  document.getElementById("addAttributeForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/attributes/add`, e.target);
-      if (result.status === "success") { showToast("Thêm thuộc tính thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
-  });
-  function onEditAttribute(a) {
-    document.getElementById("attributeAddCard").style.display = "none";
-    document.getElementById("attributeEditCard").style.display = "block";
-    document.getElementById("editAttributeId").value = a._id;
-    document.getElementById("editAttributeKey").value = a.attribute_key;
-    document.getElementById("editAttributeLabel").value = a.attribute_label;
-    document.getElementById("editAttributeValue").value = a.attribute_value;
-    document.getElementById("editAttributeSortOrder").value = a.sort_order;
-  }
-  function cancelAttributeEdit() {
-    document.getElementById("attributeEditCard").style.display = "none";
-    document.getElementById("attributeAddCard").style.display = "block";
-  }
-  document.getElementById("editAttributeForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("editAttributeId").value;
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/attributes/edit/${id}`, e.target);
-      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
-  });
-  async function onDeleteAttribute(id) {
-    if (!(await showConfirmDialog({ title: "Xoá thuộc tính", message: "Xóa thuộc tính này?", confirmText: "Xoá", danger: true }))) return;
-    const response = await fetch(`/shop/products/${PRODUCT_ID}/attributes/delete/${id}`, { method: "POST" });
-    const result = await response.json();
-    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
-    else showToast(result.msg || "Thất bại", "error");
-  }
-
-  // ---- BATCHES ----
-  document.getElementById("addBatchForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/batches/add`, e.target);
-      if (result.status === "success") { showToast("Nhập lô hàng thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
-  });
-  function onEditBatch(id, quantityRemaining, status) {
-    document.getElementById("batchAddCard").style.display = "none";
-    document.getElementById("batchEditCard").style.display = "block";
-    document.getElementById("editBatchId").value = id;
-    document.getElementById("editBatchQuantityRemaining").value = quantityRemaining;
-    document.getElementById("editBatchStatus").value = status;
-  }
-  function cancelBatchEdit() {
-    document.getElementById("batchEditCard").style.display = "none";
-    document.getElementById("batchAddCard").style.display = "block";
-  }
-  document.getElementById("editBatchForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("editBatchId").value;
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/batches/edit/${id}`, e.target);
-      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
-  });
-  async function onDeleteBatch(id) {
-    if (!(await showConfirmDialog({ title: "Xoá lô hàng", message: "Xóa lô hàng này?", confirmText: "Xoá", danger: true }))) return;
-    const response = await fetch(`/shop/products/${PRODUCT_ID}/batches/delete/${id}`, { method: "POST" });
-    const result = await response.json();
-    if (result.status === "success") { showToast("Đã xóa!", "success"); setTimeout(() => window.location.reload(), 900); }
-    else showToast(result.msg || "Thất bại", "error");
-  }
 </script>
 
 <%- include('partials/footer') %>

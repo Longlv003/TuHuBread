@@ -12,6 +12,23 @@ function buildFirebaseConfig() {
   };
 }
 
+/**
+ * Hạn sử dụng gần nhất còn hiệu lực cho từng biến thể — lấy từ các lô hàng
+ * (được tự tạo ngầm mỗi khi nhập tồn kho kèm HSD), để hiện thẳng lên bảng
+ * biến thể thay vì phải mở 1 tab Lô hàng riêng.
+ */
+function buildVariantExpiryMap(batches) {
+  const map = {};
+  for (const b of batches) {
+    if (!b.variant_id || b.status !== "active") continue;
+    const variantId = String(b.variant_id._id || b.variant_id);
+    if (!map[variantId] || b.expired_at < map[variantId]) {
+      map[variantId] = b.expired_at;
+    }
+  }
+  return map;
+}
+
 class ShopProductController {
   async showProducts(req, res) {
     try {
@@ -43,15 +60,14 @@ class ShopProductController {
 
   async showProductDetail(req, res) {
     try {
-      const { product, variants, options, attributes, batches } = await productService.getProductDetail(req.shop._id, req.params.id);
+      const { product, variants, options, batches } = await productService.getProductDetail(req.shop._id, req.params.id);
       const globalCategories = await globalCategoryRepository.findAllActive();
 
       res.render("shop/product_detail", {
         product,
         variants,
         options,
-        attributes,
-        batches,
+        variantExpiry: buildVariantExpiryMap(batches),
         globalCategories,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,
