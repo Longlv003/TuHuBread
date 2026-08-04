@@ -13,6 +13,10 @@ class AddressModel {
   final bool isDefault;
   @JsonKey(defaultValue: 'other')
   final String label;
+  @JsonKey(includeToJson: false)
+  final double? latitude;
+  @JsonKey(includeToJson: false)
+  final double? longitude;
 
   AddressModel({
     required this.id,
@@ -21,6 +25,8 @@ class AddressModel {
     required this.addressDetail,
     required this.isDefault,
     this.label = 'other',
+    this.latitude,
+    this.longitude,
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) =>

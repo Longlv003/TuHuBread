@@ -1,7 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'product_variant.model.dart';
 import 'product_option.model.dart';
-import 'product_sale.model.dart';
 
 import 'product_review.model.dart';
 
@@ -54,7 +53,6 @@ class ProductDetailModel {
   final List<ProductReviewModel>? reviews;
   final List<ProductVariantModel> variants;
   final List<ProductOptionModel> options;
-  final ProductSaleModel? activeSale;
   @JsonKey(defaultValue: [])
   final List<ProductDetailOtherShopModel> otherShops;
 
@@ -76,7 +74,6 @@ class ProductDetailModel {
     this.reviews,
     required this.variants,
     required this.options,
-    this.activeSale,
     required this.otherShops,
   });
 

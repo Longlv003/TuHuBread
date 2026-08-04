@@ -5,13 +5,13 @@ const { productModel } = require("../models/product.model");
 const { userModel } = require("../models/user.model");
 
 class ReportRepository {
-  async getPlatformRevenueByDay(sinceDate) {
+  async getPlatformRevenueByDay(sinceDate, untilDate) {
     return orderModel.aggregate([
       {
         $match: {
           order_status: "completed",
           deleted_at: null,
-          createdAt: { $gte: sinceDate }
+          createdAt: { $gte: sinceDate, $lte: untilDate }
         }
       },
       {
@@ -25,13 +25,13 @@ class ReportRepository {
     ]);
   }
 
-  async getPlatformTopProducts(sinceDate, limit = 10) {
+  async getPlatformTopProducts(sinceDate, untilDate, limit = 10) {
     return orderModel.aggregate([
       {
         $match: {
           order_status: "completed",
           deleted_at: null,
-          createdAt: { $gte: sinceDate }
+          createdAt: { $gte: sinceDate, $lte: untilDate }
         }
       },
       {
@@ -72,14 +72,14 @@ class ReportRepository {
     return orderModel.countDocuments({ deleted_at: null });
   }
 
-  async getRevenueByDay(shopId, sinceDate) {
+  async getRevenueByDay(shopId, sinceDate, untilDate) {
     return orderModel.aggregate([
       {
         $match: {
           shop_id: new mongoose.Types.ObjectId(shopId),
           order_status: "completed",
           deleted_at: null,
-          createdAt: { $gte: sinceDate }
+          createdAt: { $gte: sinceDate, $lte: untilDate }
         }
       },
       {
@@ -93,14 +93,14 @@ class ReportRepository {
     ]);
   }
 
-  async getTopProducts(shopId, sinceDate, limit = 10) {
+  async getTopProducts(shopId, sinceDate, untilDate, limit = 10) {
     return orderModel.aggregate([
       {
         $match: {
           shop_id: new mongoose.Types.ObjectId(shopId),
           order_status: "completed",
           deleted_at: null,
-          createdAt: { $gte: sinceDate }
+          createdAt: { $gte: sinceDate, $lte: untilDate }
         }
       },
       {

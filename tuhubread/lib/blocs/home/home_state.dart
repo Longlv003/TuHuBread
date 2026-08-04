@@ -1,6 +1,5 @@
 import '../../models/category.model.dart';
 import '../../models/product.model.dart';
-import '../../models/product_sale.model.dart';
 import '../../models/shop.model.dart';
 import '../../models/voucher.model.dart';
 
@@ -25,8 +24,6 @@ class HomeLoaded extends HomeState {
   final List<CategoryModel> categories;
   final List<ProductModel> products;
   final List<ProductModel> bestSellers;
-  final List<ProductModel> saleProducts;
-  final List<ProductSaleModel> productSales;
   final List<VoucherModel> vouchers;
 
   /// Map<sectionKey, errorMessage> — section nào fail thì có entry ở đây.
@@ -38,8 +35,6 @@ class HomeLoaded extends HomeState {
     required this.categories,
     required this.products,
     required this.bestSellers,
-    required this.saleProducts,
-    required this.productSales,
     required this.vouchers,
     this.sectionErrors = const {},
   });
@@ -53,8 +48,6 @@ class HomeLoaded extends HomeState {
     List<CategoryModel>? categories,
     List<ProductModel>? products,
     List<ProductModel>? bestSellers,
-    List<ProductModel>? saleProducts,
-    List<ProductSaleModel>? productSales,
     List<VoucherModel>? vouchers,
     Map<String, String>? sectionErrors,
   }) {
@@ -63,8 +56,6 @@ class HomeLoaded extends HomeState {
       categories: categories ?? this.categories,
       products: products ?? this.products,
       bestSellers: bestSellers ?? this.bestSellers,
-      saleProducts: saleProducts ?? this.saleProducts,
-      productSales: productSales ?? this.productSales,
       vouchers: vouchers ?? this.vouchers,
       sectionErrors: sectionErrors ?? this.sectionErrors,
     );

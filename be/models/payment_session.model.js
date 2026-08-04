@@ -69,7 +69,9 @@ const paymentSessionSchema = new db.mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ["PENDING", "PAID", "FAILED", "EXPIRED"],
+      // PROCESSING = đang được 1 request confirmPayment xử lý — dùng làm khoá
+      // nguyên tử để tránh 2 callback VNPAY (return URL + IPN) xử lý trùng nhau.
+      enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "EXPIRED"],
       default: "PENDING",
     },
     // Thông tin giao dịch sau khi VNPAY callback

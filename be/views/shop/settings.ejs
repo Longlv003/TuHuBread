@@ -1,5 +1,7 @@
 <%- include('partials/header') %>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <!-- Sidebar Navigation -->
 <%- include('partials/sidebar') %>
 
@@ -22,6 +24,12 @@
         <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
           <div class="form-group"><label>Giờ mở cửa</label><input type="time" name="openTime" value="<%= shop.open_time || '' %>"></div>
           <div class="form-group"><label>Giờ đóng cửa</label><input type="time" name="closeTime" value="<%= shop.close_time || '' %>"></div>
+        </div>
+        <div class="form-group">
+          <label>Vị trí cửa hàng trên bản đồ (bấm vào bản đồ để ghim lại vị trí mới)</label>
+          <div id="settingsMap" style="height: 250px; border-radius: 14px; border: 1px solid var(--glass-border); z-index: 5;"></div>
+          <input type="hidden" name="latitude" id="shopLatitude">
+          <input type="hidden" name="longitude" id="shopLongitude">
         </div>
         <button type="submit" class="btn-submit" style="width:auto; padding: 12px 24px;">Lưu thay đổi</button>
       </form>
@@ -60,11 +68,75 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+  // Bản đồ chọn vị trí cửa hàng — khởi tạo tại vị trí đã lưu, chủ shop bấm vào
+  // bản đồ để ghim lại vị trí mới trước khi bấm "Lưu thay đổi".
+  (function initShopMap() {
+    const hasSavedLocation = <%= shop.location && shop.location.coordinates ? 'true' : 'false' %>;
+    const savedCoords = <%- JSON.stringify(shop.location && shop.location.coordinates ? shop.location.coordinates : [108.2201, 16.0612]) %>;
+    let lat = savedCoords[1];
+    let lng = savedCoords[0];
+    let hasPinnedNewLocation = false;
+    document.getElementById("shopLatitude").value = lat;
+    document.getElementById("shopLongitude").value = lng;
+
+    const map = L.map('settingsMap').setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    const marker = L.marker([lat, lng]).addTo(map);
+
+    // Bản đồ nằm trong layout sidebar dùng web font tải bất đồng bộ — nếu
+    // Leaflet khởi tạo trước khi layout ổn định, nó lưu sai kích thước
+    // khung bản đồ, khiến toạ độ tính từ vị trí bấm bị lệch. Tính lại kích
+    // thước sau khi trang và font đã tải xong để bấm chọn luôn đúng vị trí.
+    function refreshMapSize() {
+      map.invalidateSize();
+    }
+    window.addEventListener('load', refreshMapSize);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(refreshMapSize);
+    }
+
+    map.on('click', async function (e) {
+      lat = e.latlng.lat;
+      lng = e.latlng.lng;
+      hasPinnedNewLocation = true;
+      marker.setLatLng(e.latlng);
+      document.getElementById("shopLatitude").value = lat;
+      document.getElementById("shopLongitude").value = lng;
+
+      // Dịch ngược toạ độ ra địa chỉ và điền thẳng vào ô "Địa chỉ" — nếu
+      // không làm bước này, ô địa chỉ vẫn giữ nguyên giá trị cũ dù đã ghim vị
+      // trí mới, khiến lưu xong tải lại vẫn thấy địa chỉ cũ.
+      const addressField = document.querySelector('textarea[name="address"]');
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=vi`);
+        const data = await response.json();
+        if (data && data.display_name && addressField) {
+          addressField.value = data.display_name;
+        }
+      } catch (err) {
+        console.error("Reverse geocoding failed:", err);
+      }
+    });
+
+    // Chỉ coi là "đã có vị trí hợp lệ để gửi lên" nếu shop từng lưu vị trí
+    // trước đó, hoặc chủ shop vừa bấm ghim mới — tránh việc chỉ sửa số điện
+    // thoại/giờ mở cửa mà vô tình ghi đè vị trí thành toạ độ mặc định.
+    window.__shopMapHasPinned = () => hasSavedLocation || hasPinnedNewLocation;
+  })();
+
   document.getElementById("settingsForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const body = Object.fromEntries(formData.entries());
+    if (!window.__shopMapHasPinned()) {
+      delete body.latitude;
+      delete body.longitude;
+    }
     try {
       const response = await fetch("/shop/settings/update", {
         method: "POST",

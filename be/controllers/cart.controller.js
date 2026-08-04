@@ -388,7 +388,9 @@ exports.getSwitchShopOptions = async (req, res) => {
       delete shopObj.avatar;
       delete shopObj.owner_user_id;
       if (shopObj.total_reviews === 0) {
-        shopObj.rating_average = 99;
+        // Chưa có đánh giá nào — trả về null thay vì số giả (99), để client tự
+        // hiển thị "Chưa có đánh giá" thay vì hiểu nhầm thành rating thật.
+        shopObj.rating_average = null;
       }
       return {
         ...shopObj,

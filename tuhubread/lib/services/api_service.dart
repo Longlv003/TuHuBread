@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuhubread/configs/system.dart';
@@ -36,9 +37,18 @@ class ApiService {
       ),
     );
 
-    _dio.interceptors.add(
-      LogInterceptor(request: true, requestBody: true, responseBody: true),
-    );
+    // Chỉ log request/response ở debug build — LogInterceptor mặc định in cả
+    // request header (bao gồm Bearer token) nên tuyệt đối không được bật ở release.
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        LogInterceptor(
+          request: true,
+          requestHeader: false,
+          requestBody: true,
+          responseBody: true,
+        ),
+      );
+    }
   }
 
   Future<Map<String, dynamic>> request(
@@ -52,19 +62,30 @@ class ApiService {
         path,
         data: data,
         queryParameters: queryParameters,
-        options: Options(method: method),
+        // BaseOptions ép cứng Content-Type: application/json qua header, nên với
+        // FormData (multipart upload) phải xoá header đó để Dio tự suy luận
+        // `multipart/form-data; boundary=...` — nếu không, request rời đi với
+        // Content-Type sai và backend (multer) sẽ không parse được file.
+        options: data is FormData
+            ? Options(method: method, headers: {'Content-Type': null})
+            : Options(method: method),
       );
 
       final responseData = response.data;
+      // "success" phản ánh đúng việc request có 2xx hay không — không nên suy
+      // luận thành công/thất bại từ "msg"/"data" vì nhiều endpoint (vd. huỷ đăng
+      // ký device token) luôn trả data: null kể cả khi thành công.
       if (responseData is Map<String, dynamic>) {
         return {
           "msg": responseData['msg'] ?? "Success",
           "data": responseData['data'],
+          "success": true,
         };
       }
       return {
         "msg": "Success",
         "data": responseData,
+        "success": true,
       };
     } on DioException catch (e) {
       final errData = e.response?.data;
@@ -81,6 +102,7 @@ class ApiService {
       return {
         "msg": errorMsg,
         "data": null,
+        "success": false,
       };
     }
   }

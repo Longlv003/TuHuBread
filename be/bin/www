@@ -8,6 +8,17 @@ var app = require("../app");
 var debug = require("debug")("be:server");
 var http = require("http");
 
+// Lưới an toàn cấp process: Express 4 không tự bắt promise rejection từ route
+// handler async. Nếu 1 controller nào đó quên try/catch, lỗi sẽ rơi ra đây thay
+// vì làm crash toàn bộ server (mặc định Node >= 15 sẽ thoát process khi có
+// unhandledRejection không được xử lý).
+process.on("unhandledRejection", (reason) => {
+  console.error("[unhandledRejection]", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("[uncaughtException]", err);
+});
+
 /**
  * Get port from environment and store in Express.
  */

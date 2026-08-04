@@ -31,8 +31,14 @@ class ReviewRepository {
     return reviewModel.findByIdAndUpdate(id, { status }, { new: true });
   }
 
-  async findByOrderId(orderId) {
-    return reviewModel.findOne({ order_id: orderId, deleted_at: null });
+  /** Toàn bộ đánh giá của 1 đơn hàng (mỗi sản phẩm trong đơn có thể có 1 đánh giá riêng). */
+  async findAllByOrderId(orderId) {
+    return reviewModel.find({ order_id: orderId, deleted_at: null });
+  }
+
+  /** Dùng để kiểm tra unique — 1 sản phẩm trong 1 đơn chỉ được đánh giá 1 lần. */
+  async findByOrderAndProduct(orderId, productId) {
+    return reviewModel.findOne({ order_id: orderId, product_id: productId, deleted_at: null });
   }
 
   async findByOrderIds(orderIds) {

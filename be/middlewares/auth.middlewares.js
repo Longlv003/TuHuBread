@@ -27,15 +27,11 @@ const firebaseAuth = async (req, res, next) => {
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("[optionalAuth] Header:", authHeader);
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       const decoded = await auth.verifyIdToken(token);
       req.user = decoded; // uid, email, name, picture
-      console.log("[optionalAuth] Token verified. UID:", decoded.uid);
-    } else {
-      console.log("[optionalAuth] No Bearer token found.");
     }
   } catch (error) {
     console.warn("[optionalAuth] Verify token failed:", error.message);

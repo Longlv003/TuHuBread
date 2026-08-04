@@ -9,6 +9,7 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final VoidCallback onRemove;
+  final bool isPending;
 
   const CartItemCard({
     super.key,
@@ -16,6 +17,7 @@ class CartItemCard extends StatelessWidget {
     required this.onIncrement,
     required this.onDecrement,
     required this.onRemove,
+    this.isPending = false,
   });
 
   @override
@@ -141,7 +143,7 @@ class CartItemCard extends StatelessWidget {
               color: Color(0xFFE74C3C),
               size: 20,
             ),
-            onPressed: onRemove,
+            onPressed: isPending ? null : onRemove,
             tooltip: l10n.cartRemove,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -157,45 +159,48 @@ class CartItemCard extends StatelessWidget {
         color: const Color(0xFFF1EAE1),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap: onDecrement,
-            borderRadius: BorderRadius.circular(16),
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(
-                Icons.remove_rounded,
-                color: Color(0xFFE67E22),
-                size: 18,
+      child: Opacity(
+        opacity: isPending ? 0.5 : 1,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: isPending ? null : onDecrement,
+              borderRadius: BorderRadius.circular(16),
+              child: const Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(
+                  Icons.remove_rounded,
+                  color: Color(0xFFE67E22),
+                  size: 18,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              '${item.quantity}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                '${item.quantity}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50),
+                ),
               ),
             ),
-          ),
-          InkWell(
-            onTap: onIncrement,
-            borderRadius: BorderRadius.circular(16),
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(
-                Icons.add_rounded,
-                color: Color(0xFFE67E22),
-                size: 18,
+            InkWell(
+              onTap: isPending ? null : onIncrement,
+              borderRadius: BorderRadius.circular(16),
+              child: const Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(
+                  Icons.add_rounded,
+                  color: Color(0xFFE67E22),
+                  size: 18,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

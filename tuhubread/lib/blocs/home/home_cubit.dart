@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import '../../core/result.dart';
 import '../../models/voucher.model.dart';
 import '../../repositories/home_repository.dart';
+import '../../services/location_service.dart';
 import 'home_state.dart';
 
 final _log = Logger(
@@ -12,8 +13,10 @@ final _log = Logger(
 
 class HomeCubit extends Cubit<HomeState> {
   final HomeRepository repository;
+  final LocationService locationService;
 
-  HomeCubit({required this.repository}) : super(const HomeInitial());
+  HomeCubit({required this.repository, required this.locationService})
+      : super(const HomeInitial());
 
   // ─────────── LOAD ALL HOME DATA ───────────
 
@@ -23,20 +26,27 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadHomeData() async {
     emit(const HomeLoading());
 
+    // Best-effort lấy GPS trước để tìm shop gần — không chặn màn hình nếu bị
+    // từ chối quyền hoặc tắt định vị (trả về null, backend fallback về danh
+    // sách shop không sắp xếp theo khoảng cách). Có thêm timeout ở đây làm
+    // lớp bảo vệ thứ 2 (ngoài timeout trong LocationService) — nếu vì lý do
+    // gì đó việc xin quyền/định vị bị treo, trang chủ vẫn phải tải được.
+    final coords = await locationService
+        .getCurrentCoordinates()
+        .timeout(const Duration(seconds: 8), onTimeout: () => null);
+
     // Gọi song song — mỗi Future là Result<T>, không bao giờ throw
     final (
       shopsRes,
       categoriesRes,
       productsRes,
       bestSellersRes,
-      saleRes,
       vouchersRes,
     ) = await (
-      repository.fetchShops(),
+      repository.fetchShops(lat: coords?.latitude, lng: coords?.longitude),
       repository.fetchCategories(),
       repository.fetchProducts(),
       repository.fetchBestSellers(),
-      repository.fetchSaleProducts(),
       repository.fetchActiveVouchers(),
     ).wait;
 
@@ -46,7 +56,6 @@ class HomeCubit extends Cubit<HomeState> {
     _collectError(errors, 'categories', categoriesRes);
     _collectError(errors, 'products', productsRes);
     _collectError(errors, 'bestSellers', bestSellersRes);
-    _collectError(errors, 'saleProducts', saleRes);
     _collectError(errors, 'vouchers', vouchersRes);
 
     if (errors.isNotEmpty) {
@@ -57,8 +66,6 @@ class HomeCubit extends Cubit<HomeState> {
       _log.i('[HomeCubit] All sections loaded OK');
     }
 
-    final saleData = saleRes.dataOrNull;
-
     // Luôn emit HomeLoaded — UI không bao giờ crash
     emit(
       HomeLoaded(
@@ -66,8 +73,6 @@ class HomeCubit extends Cubit<HomeState> {
         categories: categoriesRes.getOrElse([]),
         products: productsRes.getOrElse([]),
         bestSellers: bestSellersRes.getOrElse([]),
-        saleProducts: saleData?.products ?? [],
-        productSales: saleData?.sales ?? [],
         vouchers: vouchersRes.getOrElse([]),
         sectionErrors: errors,
       ),

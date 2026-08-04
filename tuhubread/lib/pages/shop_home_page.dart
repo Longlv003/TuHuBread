@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as getx;
@@ -11,7 +10,6 @@ import '../blocs/cart/cart_state.dart';
 import '../gen/assets.gen.dart';
 import '../models/category.model.dart';
 import '../models/product.model.dart';
-import '../models/product_sale.model.dart';
 import '../models/shop.model.dart';
 import '../helpers/cart_action_helper.dart';
 import '../routes/routes.dart';
@@ -29,45 +27,16 @@ class _ShopHomePageState extends State<ShopHomePage> {
   late ShopModel _shop;
   String _selectedCategoryId = 'all';
   String _searchQuery = '';
-  DateTime _now = DateTime.now();
-  Timer? _countdownTimer;
 
   @override
   void initState() {
     super.initState();
     final args = getx.Get.arguments as Map<String, dynamic>;
     _shop = args['shop'] as ShopModel;
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() => _now = DateTime.now());
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
-    super.dispose();
-  }
-
-  ProductSaleModel? _getActiveSale(HomeLoaded state, String productId) {
-    try {
-      return state.productSales.firstWhere(
-        (s) => s.productId == productId && s.isActiveNow,
-      );
-    } catch (_) {
-      return null;
-    }
   }
 
   List<ProductModel> _getBestSellers(HomeLoaded state) {
     return state.bestSellers.where((p) => p.shopId == _shop.id).take(4).toList();
-  }
-
-  List<ProductModel> _getDiscountedProducts(HomeLoaded state) {
-    return state.saleProducts
-        .where((p) => p.shopId == _shop.id && _getActiveSale(state, p.id) != null)
-        .toList();
   }
 
   List<CategoryModel> _getFilteredCategories(HomeLoaded state) {
@@ -123,7 +92,6 @@ class _ShopHomePageState extends State<ShopHomePage> {
 
             if (state is HomeLoaded) {
               final bestSellers = _getBestSellers(state);
-              final discountedProducts = _getDiscountedProducts(state);
               final filteredProducts = _getFilteredProducts(state);
 
               return RefreshIndicator(
@@ -203,7 +171,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                                       const Icon(Icons.star_rounded, color: Color(0xFFF1C40F), size: 16),
                                       const SizedBox(width: 4),
                                       Text(
-                                        _shop.rating == 99 ? "Chưa có đánh giá" : "${_shop.rating}",
+                                        _shop.rating == null ? "Chưa có đánh giá" : "${_shop.rating}",
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
@@ -254,13 +222,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
 
                       // Best sellers
                       if (bestSellers.isNotEmpty) ...[
-                        _buildBestSellersSection(bestSellers, state, l10n),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Sales
-                      if (discountedProducts.isNotEmpty) ...[
-                        _buildDiscountedSection(discountedProducts, state, l10n),
+                        _buildBestSellersSection(bestSellers, l10n),
                         const SizedBox(height: 20),
                       ],
 
@@ -269,7 +231,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                       const SizedBox(height: 20),
 
                       // Product Grid
-                      _buildProductsSection(l10n, filteredProducts, state),
+                      _buildProductsSection(l10n, filteredProducts),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -362,27 +324,13 @@ class _ShopHomePageState extends State<ShopHomePage> {
     );
   }
 
-  Widget _buildBestSellersSection(List<ProductModel> bestSellers, HomeLoaded state, AppLocalizations l10n) {
+  Widget _buildBestSellersSection(List<ProductModel> bestSellers, AppLocalizations l10n) {
     return _buildHorizontalProductsSection(
       label: "Bán chạy nhất",
       iconPath: Assets.icons.hot.path,
       badgeColor: const Color(0xFFE67E22),
       products: bestSellers,
-      state: state,
       l10n: l10n,
-      showDiscountBadge: true,
-    );
-  }
-
-  Widget _buildDiscountedSection(List<ProductModel> discountedProducts, HomeLoaded state, AppLocalizations l10n) {
-    return _buildHorizontalProductsSection(
-      label: "Đang giảm giá",
-      iconPath: Assets.icons.discount.path,
-      badgeColor: const Color(0xFFE74C3C),
-      products: discountedProducts,
-      state: state,
-      l10n: l10n,
-      showDiscountBadge: true,
     );
   }
 
@@ -391,9 +339,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
     required String iconPath,
     required Color badgeColor,
     required List<ProductModel> products,
-    required HomeLoaded state,
     required AppLocalizations l10n,
-    bool showDiscountBadge = false,
   }) {
     if (products.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -424,24 +370,17 @@ class _ShopHomePageState extends State<ShopHomePage> {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             itemCount: products.length,
-            itemBuilder: (context, idx) => _buildHorizontalProductCard(
-              products[idx],
-              state,
-              showDiscountBadge: showDiscountBadge,
-            ),
+            itemBuilder: (context, idx) => _buildHorizontalProductCard(products[idx]),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildHorizontalProductCard(ProductModel product, HomeLoaded state, {bool showDiscountBadge = false}) {
+  Widget _buildHorizontalProductCard(ProductModel product) {
     final l10n = AppLocalizations.of(context)!;
     return HorizontalProductCard(
       product: product,
-      activeSale: _getActiveSale(state, product.id),
-      now: _now,
-      showDiscountBadge: showDiscountBadge,
       onTap: () => getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
       onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
         context,
@@ -553,7 +492,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
     );
   }
 
-  Widget _buildProductsSection(AppLocalizations l10n, List<ProductModel> products, HomeLoaded state) {
+  Widget _buildProductsSection(AppLocalizations l10n, List<ProductModel> products) {
     if (products.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32.0),
@@ -585,8 +524,6 @@ class _ShopHomePageState extends State<ShopHomePage> {
           final product = products[idx];
           return ProductGridCard(
             product: product,
-            activeSale: _getActiveSale(state, product.id),
-            now: _now,
             onTap: () => getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
             onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
               context,

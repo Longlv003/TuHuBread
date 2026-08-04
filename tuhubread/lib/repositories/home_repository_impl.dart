@@ -4,7 +4,6 @@ import '../core/result.dart';
 import '../models/category.model.dart';
 import '../models/product.model.dart';
 import '../models/product_detail.model.dart';
-import '../models/product_sale.model.dart';
 import '../models/shop.model.dart';
 import '../models/voucher.model.dart';
 import '../services/api_service.dart';
@@ -41,9 +40,12 @@ class HomeRepositoryImpl implements HomeRepository {
   // ─── Shops ────────────────────────────────────────────────────────────────
 
   @override
-  Future<Result<List<ShopModel>>> fetchShops() async {
+  Future<Result<List<ShopModel>>> fetchShops({double? lat, double? lng}) async {
     try {
-      final res = await apiService.get('/api/shops');
+      final res = await apiService.get(
+        '/api/shops',
+        query: lat != null && lng != null ? {'lat': lat, 'lng': lng} : null,
+      );
       final shops = _parseList(res['data'], ShopModel.fromJson, 'fetchShops');
       return Success(shops);
     } catch (e, s) {
@@ -103,45 +105,6 @@ class HomeRepositoryImpl implements HomeRepository {
     } catch (e, s) {
       _log.e('[fetchBestSellers] Failed', error: e, stackTrace: s);
       return Failure('Không thể tải sản phẩm bán chạy');
-    }
-  }
-
-  // ─── Sale Products ────────────────────────────────────────────────────────
-
-  @override
-  Future<Result<SaleDataResult>> fetchSaleProducts() async {
-    try {
-      final res = await apiService.get('/api/products/sales');
-      final rawList = res['data'];
-
-      if (rawList == null) {
-        return const Success(SaleDataResult(products: [], sales: []));
-      }
-
-      final products = <ProductModel>[];
-      final sales = <ProductSaleModel>[];
-
-      for (final item in rawList as List) {
-        final map = item as Map<String, dynamic>;
-        try {
-          products.add(ProductModel.fromJson(map));
-          if (map['active_sale'] != null) {
-            sales.add(
-              ProductSaleModel.fromJson(
-                map['active_sale'] as Map<String, dynamic>,
-              ),
-            );
-          }
-        } catch (e) {
-          // Bỏ qua item lỗi, không crash toàn bộ list
-          _log.w('[fetchSaleProducts] Skip 1 item parse error: $e');
-        }
-      }
-
-      return Success(SaleDataResult(products: products, sales: sales));
-    } catch (e, s) {
-      _log.e('[fetchSaleProducts] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải sản phẩm khuyến mãi');
     }
   }
 

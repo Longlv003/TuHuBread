@@ -67,7 +67,7 @@
               <td><span class="status-badge <%= u.status === 'blocked' ? 'status-inactive' : 'status-active' %>"><%= u.status %></span></td>
               <td class="col-actions">
                 <div class="actions-wrap">
-                  <button type="button" class="btn-action" onclick='onEditUser(<%- JSON.stringify({ _id: u._id, full_name: u.full_name, phone: u.phone }) %>)'>Sửa</button>
+                  <button type="button" class="btn-action" onclick='onEditUser(<%= JSON.stringify({ _id: u._id, full_name: u.full_name, phone: u.phone }) %>)'>Sửa</button>
                   <% if (u.role !== 'admin') { %>
                     <button type="button" class="btn-action <%= u.status === 'blocked' ? '' : 'btn-delete' %>" onclick="onToggleLock('<%= u._id %>')"><%= u.status === 'blocked' ? 'Mở khóa' : 'Khóa' %></button>
                   <% } %>

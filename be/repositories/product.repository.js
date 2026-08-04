@@ -6,7 +6,8 @@ class ProductRepository {
   }
 
   async findByIdScoped(id, shopId) {
-    return productModel.findOne({ _id: id, shop_id: shopId, deleted_at: null });
+    return productModel.findOne({ _id: id, shop_id: shopId, deleted_at: null })
+      .populate("global_category_id");
   }
 
   async findByShopId(shopId) {

@@ -37,7 +37,7 @@
                 <td><span class="status-badge <%= b.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= b.status %></span></td>
                 <td class="col-actions">
                   <div class="actions-wrap">
-                    <button type="button" class="btn-action" onclick='onEditBanner(<%- JSON.stringify({ _id: b._id, title: b.title, link_url: b.link_url, sort_order: b.sort_order, status: b.status, image: b.image }) %>)'>Sửa</button>
+                    <button type="button" class="btn-action" onclick='onEditBanner(<%= JSON.stringify({ _id: b._id, title: b.title, link_url: b.link_url, sort_order: b.sort_order, status: b.status, image: b.image }) %>)'>Sửa</button>
                     <button type="button" class="btn-action btn-delete" onclick="onDeleteBanner('<%= b._id %>')">Xóa</button>
                   </div>
                 </td>

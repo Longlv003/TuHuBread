@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
+import '../flavors.dart';
+
 /// Kết quả trả về khi WebView đóng.
 class VnPayResult {
   /// `true` nếu VNPAY redirect về với `vnp_ResponseCode=00`.
@@ -80,21 +82,29 @@ class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
                 ),
                 initialSettings: InAppWebViewSettings(
                   javaScriptEnabled: true,
-                  // Cho phép load mixed content (HTTP trong HTTPS)
-                  mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-                  // Không kiểm tra SSL trong dev/sandbox
-                  allowFileAccessFromFileURLs: true,
-                  allowUniversalAccessFromFileURLs: true,
+                  // Chỉ cho phép mixed content (HTTP trong HTTPS) ở môi trường dev/sandbox —
+                  // production phải toàn HTTPS, không được nới lỏng.
+                  mixedContentMode: F.appFlavor == Flavor.development
+                      ? MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW
+                      : MixedContentMode.MIXED_CONTENT_NEVER_ALLOW,
                   clearCache: true,
                 ),
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                 },
-                // ★ KEY FIX: bypass SSL certificate validation cho VNPAY sandbox
+                // Chỉ bypass SSL certificate validation ở môi trường dev (VNPAY sandbox
+                // dùng chứng chỉ test). Production luôn phải xác thực chứng chỉ thật để
+                // tránh MITM trên màn hình thanh toán.
                 onReceivedServerTrustAuthRequest: (controller, challenge) async {
-                  debugPrint('[VnPay] SSL challenge from: ${challenge.protectionSpace.host} — proceeding');
+                  if (F.appFlavor == Flavor.development) {
+                    debugPrint('[VnPay] SSL challenge from: ${challenge.protectionSpace.host} — proceeding (dev only)');
+                    return ServerTrustAuthResponse(
+                      action: ServerTrustAuthResponseAction.PROCEED,
+                    );
+                  }
+                  debugPrint('[VnPay] SSL challenge from: ${challenge.protectionSpace.host} — rejecting (production)');
                   return ServerTrustAuthResponse(
-                    action: ServerTrustAuthResponseAction.PROCEED,
+                    action: ServerTrustAuthResponseAction.CANCEL,
                   );
                 },
                 onLoadStart: (controller, url) {

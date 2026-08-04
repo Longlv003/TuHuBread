@@ -38,11 +38,11 @@
     <div class="table-container">
       <table>
         <thead>
-          <tr><th>Khách hàng</th><th>Sản phẩm</th><th>Đơn hàng</th><th>Đánh giá</th><th>Nội dung</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
+          <tr><th>Khách hàng</th><th>Sản phẩm</th><th>Đơn hàng</th><th>Đánh giá</th><th>Nội dung</th><th>Ảnh</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr>
         </thead>
         <tbody id="reviewsTableBody">
           <% if (reviews.length === 0) { %>
-            <tr><td colspan="7">
+            <tr><td colspan="8">
               <div class="empty-state">
                 <div class="empty-state-icon"><i class="fa-solid fa-star-half-stroke"></i></div>
                 <div class="empty-state-title">Chưa có đánh giá nào</div>
@@ -66,6 +66,19 @@
                 <% } %>
               </td>
               <td style="max-width: 260px;"><%= r.comment || '(Không có nội dung)' %></td>
+              <td>
+                <% if (r.images && r.images.length > 0) { %>
+                  <div style="display:flex; gap:4px; flex-wrap:wrap; max-width:140px;">
+                    <% r.images.forEach(img => { %>
+                      <a href="<%= img %>" target="_blank" rel="noopener">
+                        <img src="<%= img %>" onerror="this.style.display='none'" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #F1EAE1;">
+                      </a>
+                    <% }) %>
+                  </div>
+                <% } else { %>
+                  <span style="color:#BDC3C7; font-size:12px;">-</span>
+                <% } %>
+              </td>
               <td>
                 <span class="status-badge <%= r.status === 'visible' ? 'status-active' : 'status-inactive' %>"><%= r.status === 'visible' ? 'Hiển thị' : 'Đã ẩn' %></span>
               </td>

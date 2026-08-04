@@ -128,13 +128,8 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
     // 1. Xác định giá gốc của variant
     double basePrice = variant.price;
 
-    // 2. Kiểm tra khuyến mãi sale đang diễn ra
-    final activeSale = detail.activeSale;
-    if (activeSale != null && activeSale.isActiveNow) {
-      if (activeSale.variantId == null || activeSale.variantId == variant.id) {
-        basePrice = activeSale.salePrice;
-      }
-    } else if (variant.salePrice != null) {
+    // 2. Áp dụng giá khuyến mãi của variant (nếu có)
+    if (variant.salePrice != null) {
       basePrice = variant.salePrice!;
     }
 

@@ -10,13 +10,17 @@
       <h1>Dashboard tổng quan hệ thống</h1>
       <p>Tổng hợp số liệu toàn bộ chi nhánh</p>
     </div>
-    <div class="filter-box">
-      <select id="daysFilter" onchange="window.location.href = '/admin/dashboard?days=' + this.value">
-        <option value="7" <%= days === 7 ? 'selected' : '' %>>7 ngày qua</option>
-        <option value="30" <%= days === 30 ? 'selected' : '' %>>30 ngày qua</option>
-        <option value="90" <%= days === 90 ? 'selected' : '' %>>90 ngày qua</option>
+    <form method="GET" action="/admin/dashboard" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <select name="days" onchange="this.form.from.value=''; this.form.to.value=''; this.form.submit()">
+        <option value="7" <%= (days === 7 && !from) ? 'selected' : '' %>>7 ngày qua</option>
+        <option value="30" <%= (days === 30 && !from) ? 'selected' : '' %>>30 ngày qua</option>
+        <option value="90" <%= (days === 90 && !from) ? 'selected' : '' %>>90 ngày qua</option>
       </select>
-    </div>
+      <input type="date" name="from" value="<%= from %>">
+      <span>-</span>
+      <input type="date" name="to" value="<%= to %>">
+      <button type="submit" class="btn-action">Lọc theo ngày</button>
+    </form>
   </div>
 
   <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 30px;">

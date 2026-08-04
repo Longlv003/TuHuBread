@@ -116,8 +116,9 @@ class ProductService {
 
     const finalVariantName = variantName && variantName.trim() ? variantName.trim() : "Mặc định";
 
+    let variant = null;
     try {
-      const variant = await productVariantRepository.create({
+      variant = await productVariantRepository.create({
         product_id: product._id,
         variant_name: finalVariantName,
         variant_slug: toSlug(finalVariantName) || "mac-dinh",
@@ -143,7 +144,13 @@ class ProductService {
 
       return { product, variant };
     } catch (err) {
-      await productRepository.hardDelete(product._id);
+      // Dọn dẹp đầy đủ những gì đã tạo được trước khi lỗi xảy ra — nếu chỉ xoá
+      // product mà bỏ sót variant, sẽ để lại 1 product_variants mồ côi trỏ tới
+      // product_id không còn tồn tại.
+      if (variant) {
+        await productVariantRepository.hardDelete(variant._id).catch(() => {});
+      }
+      await productRepository.hardDelete(product._id).catch(() => {});
       throw err;
     }
   }

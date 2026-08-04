@@ -47,7 +47,7 @@
                 <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
                 <td class="col-actions">
                   <div class="actions-wrap">
-                    <button type="button" class="btn-action" onclick='onEditVoucher(<%- JSON.stringify(v) %>)'>Sửa</button>
+                    <button type="button" class="btn-action" onclick='onEditVoucher(<%= JSON.stringify(v) %>)'>Sửa</button>
                     <button type="button" class="btn-action btn-delete" onclick="onDeleteVoucher('<%= v._id %>')">Xóa</button>
                   </div>
                 </td>

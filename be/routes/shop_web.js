@@ -3,13 +3,13 @@ const router = express.Router();
 const shopAuthController = require("../controllers/shop_web/shop_auth.controller");
 const shopDashboardController = require("../controllers/shop_web/shop_dashboard.controller");
 const { authMiddleware, guestMiddleware } = require("../middlewares/shop_auth.middlewares");
+const { authRateLimiter } = require("../middlewares/rateLimit.middleware");
 
 const upload = require("../middlewares/upload.middleware");
 const shopOrderController = require("../controllers/shop_web/shop_order.controller");
 const shopProductController = require("../controllers/shop_web/shop_product.controller");
 const shopProductVariantController = require("../controllers/shop_web/shop_product_variant.controller");
 const shopProductOptionController = require("../controllers/shop_web/shop_product_option.controller");
-const shopSaleController = require("../controllers/shop_web/shop_sale.controller");
 const shopVoucherController = require("../controllers/shop_web/shop_voucher.controller");
 const shopReviewController = require("../controllers/shop_web/shop_review.controller");
 const shopSettingsController = require("../controllers/shop_web/shop_settings.controller");
@@ -21,8 +21,8 @@ const uploadShopBanner = require("../middlewares/upload_shop_banner.middleware")
 // Guest pages (Login & Register)
 router.get("/login", guestMiddleware, shopAuthController.showLogin);
 router.get("/register", guestMiddleware, shopAuthController.showRegister);
-router.post("/login", guestMiddleware, shopAuthController.login);
-router.post("/register", guestMiddleware, shopAuthController.register);
+router.post("/login", authRateLimiter, guestMiddleware, shopAuthController.login);
+router.post("/register", authRateLimiter, guestMiddleware, shopAuthController.register);
 
 // Authenticated pages (Dashboard, Logo & Logout)
 router.get("/dashboard", authMiddleware, shopDashboardController.showDashboard);
@@ -48,12 +48,6 @@ router.post("/products/:productId/variants/delete/:id", authMiddleware, shopProd
 router.post("/products/:productId/options/add", authMiddleware, shopProductOptionController.addOption);
 router.post("/products/:productId/options/edit/:id", authMiddleware, shopProductOptionController.editOption);
 router.post("/products/:productId/options/delete/:id", authMiddleware, shopProductOptionController.deleteOption);
-
-// Promotions / Sales routes
-router.get("/sales", authMiddleware, shopSaleController.showSales);
-router.post("/sales/add", authMiddleware, shopSaleController.addSale);
-router.post("/sales/edit/:id", authMiddleware, shopSaleController.editSale);
-router.post("/sales/delete/:id", authMiddleware, shopSaleController.deleteSale);
 
 // Voucher routes
 router.get("/vouchers", authMiddleware, shopVoucherController.showVouchers);

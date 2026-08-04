@@ -15,11 +15,15 @@ class ShopReportController {
   async showReport(req, res) {
     try {
       const days = [7, 30, 90].includes(parseInt(req.query.days)) ? parseInt(req.query.days) : 30;
-      const report = await reportService.getRevenueReport(req.shop._id, days);
+      const from = req.query.from || "";
+      const to = req.query.to || "";
+      const report = await reportService.getRevenueReport(req.shop._id, { days, from, to });
 
       res.render("shop/reports", {
         report,
         days,
+        from,
+        to,
         firebaseConfig: buildFirebaseConfig(),
         shop: req.shop,
         user: req.user,

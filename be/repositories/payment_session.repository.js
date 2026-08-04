@@ -36,6 +36,21 @@ class PaymentSessionRepository {
   }
 
   /**
+   * Claim nguyên tử 1 session đang PENDING để xử lý (chuyển sang PROCESSING).
+   * Trả về null nếu session không còn ở trạng thái PENDING (đã/đang được xử lý
+   * bởi 1 request khác) — dùng để chặn race condition giữa VNPAY return URL và IPN.
+   * @param {string} id
+   * @returns {Promise<Document|null>}
+   */
+  async claimPending(id) {
+    return await paymentSessionModel.findOneAndUpdate(
+      { _id: id, status: "PENDING" },
+      { status: "PROCESSING" },
+      { new: true },
+    );
+  }
+
+  /**
    * Lấy các session đang PENDING của user.
    * @param {string} userId
    * @returns {Promise<Document[]>}

@@ -4,13 +4,9 @@ import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../blocs/address/address_cubit.dart';
-import '../di.dart';
 import '../models/address.model.dart';
-import '../models/province.model.dart';
-import '../models/ward.model.dart';
-import '../services/location_service.dart';
-import '../services/vietnam_address_service.dart';
 import '../utils/address_label.dart';
+import 'address_map_picker_page.dart';
 
 const _addressLabels = ['home', 'company', 'other'];
 
@@ -24,179 +20,68 @@ class AddressFormPage extends StatefulWidget {
 }
 
 class _AddressFormPageState extends State<AddressFormPage> {
-  final _addressService = getIt<VietnamAddressService>();
-  final _locationService = getIt<LocationService>();
-
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
-  late final TextEditingController _streetController;
+  late final TextEditingController _buildingController;
+  late final TextEditingController _gateController;
   late bool _isDefault;
   late String _selectedLabel;
   bool _isSaving = false;
-  bool _isDetectingLocation = false;
+
+  /// Địa chỉ đầy đủ đã chọn từ màn bản đồ (xem [AddressMapPickerPage]).
+  String? _pickedAddress;
   double? _detectedLatitude;
   double? _detectedLongitude;
-
-  List<ProvinceModel> _provinces = [];
-  List<WardModel> _wards = [];
-  ProvinceModel? _selectedProvince;
-  WardModel? _selectedWard;
-  bool _isLoadingProvinces = true;
-  bool _isLoadingWards = false;
 
   bool get _isEditing => widget.address != null;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-      text: widget.address?.receiverName ?? '',
-    );
-    _phoneController = TextEditingController(
-      text: widget.address?.receiverPhone ?? '',
-    );
-    _streetController = TextEditingController(
-      text: widget.address?.addressDetail ?? '',
-    );
+    _nameController = TextEditingController(text: widget.address?.receiverName ?? '');
+    _phoneController = TextEditingController(text: widget.address?.receiverPhone ?? '');
+    _buildingController = TextEditingController();
+    _gateController = TextEditingController();
     _isDefault = widget.address?.isDefault ?? false;
     _selectedLabel = widget.address?.label ?? 'other';
-    _loadProvinces();
+    _pickedAddress = widget.address?.addressDetail;
+    _detectedLatitude = widget.address?.latitude;
+    _detectedLongitude = widget.address?.longitude;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _streetController.dispose();
+    _buildingController.dispose();
+    _gateController.dispose();
     super.dispose();
   }
 
-  /// Ứng dụng hiện chỉ giao hàng trong phạm vi Thành phố Hà Nội — chỉ giữ lại
-  /// Hà Nội trong danh sách tỉnh/thành và tự động chọn sẵn, khách chỉ cần
-  /// chọn Phường/Xã và nhập số nhà.
-  Future<void> _loadProvinces() async {
-    final provinces = await _addressService.fetchProvinces();
-    if (!mounted) return;
-
-    final hanoi = provinces
-        .where((p) => _normalize(p.name) == _normalize('Hà Nội'))
-        .toList();
-
+  /// Mở màn "Chọn địa chỉ" kiểu ShopeeFood (bản đồ + tìm kiếm) — không phụ
+  /// thuộc GPS/Geocoder của máy nên vẫn dùng được trên máy ảo/PC.
+  Future<void> _pickOnMap() async {
+    final result = await getx.Get.to<AddressMapPickerResult>(
+      () => AddressMapPickerPage(
+        initialLatitude: _detectedLatitude,
+        initialLongitude: _detectedLongitude,
+      ),
+    );
+    if (result == null || !mounted) return;
     setState(() {
-      _provinces = hanoi;
-      _isLoadingProvinces = false;
-    });
-
-    if (hanoi.isNotEmpty && _selectedProvince == null) {
-      await _onProvinceChanged(hanoi.first);
-    }
-  }
-
-  Future<void> _onProvinceChanged(ProvinceModel? province) async {
-    setState(() {
-      _selectedProvince = province;
-      _selectedWard = null;
-      _wards = [];
-      _isLoadingWards = province != null;
-    });
-
-    if (province == null) return;
-
-    final wards = await _addressService.fetchWardsByProvince(province.code);
-    if (!mounted) return;
-    setState(() {
-      _wards = wards;
-      _isLoadingWards = false;
-    });
-  }
-
-  String _normalize(String s) => s
-      .toLowerCase()
-      .replaceAll(
-        RegExp(r'^(thành phố|tỉnh|phường|xã|thị trấn|quận|huyện)\s+'),
-        '',
-      )
-      .trim();
-
-  T? _bestMatch<T>(String? target, List<T> options, String Function(T) name) {
-    if (target == null || target.isEmpty) return null;
-    final normalizedTarget = _normalize(target);
-    for (final option in options) {
-      final normalizedName = _normalize(name(option));
-      if (normalizedName == normalizedTarget ||
-          normalizedName.contains(normalizedTarget) ||
-          normalizedTarget.contains(normalizedName)) {
-        return option;
-      }
-    }
-    return null;
-  }
-
-  Future<void> _useCurrentLocation(AppLocalizations l10n) async {
-    setState(() => _isDetectingLocation = true);
-    try {
-      final result = await _locationService.getCurrentAddress();
-      if (!mounted) return;
-
       _detectedLatitude = result.latitude;
       _detectedLongitude = result.longitude;
-      _streetController.text = result.street ?? result.fullAddress;
-
-      final matchedProvince = _bestMatch(
-        result.provinceName,
-        _provinces,
-        (p) => p.name,
-      );
-      if (matchedProvince != null) {
-        await _onProvinceChanged(matchedProvince);
-        if (!mounted) return;
-        final matchedWard = _bestMatch(result.wardName, _wards, (w) => w.name);
-        if (matchedWard != null) {
-          setState(() => _selectedWard = matchedWard);
-        }
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.addressLocationDetected),
-          backgroundColor: const Color(0xFF27AE60),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } on LocationException catch (e) {
-      if (!mounted) return;
-      final message = switch (e.reason) {
-        LocationFailureReason.serviceDisabled =>
-          l10n.addressLocationServiceDisabled,
-        LocationFailureReason.permissionDenied =>
-          l10n.addressLocationPermissionDenied,
-        LocationFailureReason.permissionDeniedForever =>
-          l10n.addressLocationPermissionDeniedForever,
-        LocationFailureReason.geocodeFailed => l10n.addressLocationFailed,
-      };
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: const Color(0xFFE74C3C),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isDetectingLocation = false);
-    }
+      _pickedAddress = result.displayName ?? result.streetGuess;
+    });
   }
 
   Future<void> _save(AppLocalizations l10n) async {
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
-    final street = _streetController.text.trim();
+    final building = _buildingController.text.trim();
+    final gate = _gateController.text.trim();
 
-    if (name.isEmpty ||
-        phone.isEmpty ||
-        street.isEmpty ||
-        _selectedProvince == null ||
-        _selectedWard == null) {
+    if (name.isEmpty || phone.isEmpty || _pickedAddress == null || _pickedAddress!.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.emptyFieldsError),
@@ -206,22 +91,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
       return;
     }
 
-    final fullDetail =
-        '$street, ${_selectedWard!.name}, ${_selectedProvince!.name}';
+    final extraParts = [building, gate].where((s) => s.isNotEmpty).join(', ');
+    final fullDetail = extraParts.isEmpty ? _pickedAddress! : '$extraParts, ${_pickedAddress!}';
 
     setState(() => _isSaving = true);
-
-    // Nếu chưa có toạ độ (khách tự chọn tỉnh/phường + gõ tay, không bấm "Vị
-    // trí hiện tại"), thử dịch xuôi địa chỉ chữ ra toạ độ thật — để backend
-    // tính phí ship theo đúng khoảng cách thay vì rơi vào giá trị mặc định.
-    if (_detectedLatitude == null || _detectedLongitude == null) {
-      final geocoded = await _locationService.geocodeAddress(fullDetail);
-      if (geocoded != null) {
-        _detectedLatitude = geocoded.latitude;
-        _detectedLongitude = geocoded.longitude;
-      }
-    }
-    if (!mounted) return;
 
     final cubit = context.read<AddressCubit>();
     final success = _isEditing
@@ -273,6 +146,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final canSave = !_isSaving &&
+        _nameController.text.trim().isNotEmpty &&
+        _phoneController.text.trim().isNotEmpty &&
+        _pickedAddress != null &&
+        _pickedAddress!.trim().isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF7),
@@ -281,16 +159,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
         elevation: 0,
         title: Text(
           _isEditing ? l10n.addressFormEditTitle : l10n.addressFormAddTitle,
-          style: const TextStyle(
-            color: Color(0xFF2C3E50),
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(color: Color(0xFF2C3E50), fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF2C3E50),
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2C3E50)),
           onPressed: () => getx.Get.back(),
         ),
       ),
@@ -301,95 +173,60 @@ class _AddressFormPageState extends State<AddressFormPage> {
           children: [
             TextField(
               controller: _nameController,
+              onChanged: (_) => setState(() {}),
               decoration: _decoration(l10n.addressReceiverNameHint),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
+              onChanged: (_) => setState(() {}),
               decoration: _decoration(l10n.addressReceiverPhoneHint),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _isDetectingLocation
-                    ? null
-                    : () => _useCurrentLocation(l10n),
-                icon: _isDetectingLocation
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFFE67E22),
-                        ),
-                      )
-                    : const Icon(
-                        Icons.my_location_rounded,
-                        size: 18,
-                        color: Color(0xFFE67E22),
-                      ),
-                label: Text(
-                  _isDetectingLocation
-                      ? l10n.addressLocationDetecting
-                      : l10n.addressUseCurrentLocation,
-                  style: const TextStyle(color: Color(0xFFE67E22)),
+            // Dòng "Chọn địa chỉ" — bấm để mở màn bản đồ + tìm kiếm, giống
+            // ShopeeFood, thay cho 2 dropdown tỉnh/phường + ô đường trước đây.
+            InkWell(
+              onTap: _pickOnMap,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFF1EAE1)),
                 ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFE67E22)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined, color: Color(0xFFE67E22), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _pickedAddress ?? 'Chọn địa chỉ',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: _pickedAddress == null ? const Color(0xFFBDC3C7) : const Color(0xFF2C3E50),
+                          fontWeight: _pickedAddress == null ? FontWeight.normal : FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: Color(0xFFBDC3C7)),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            _isLoadingProvinces
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFE67E22),
-                      ),
-                    ),
-                  )
-                : DropdownButtonFormField<ProvinceModel>(
-                    initialValue: _selectedProvince,
-                    decoration: _decoration(l10n.addressProvinceHint),
-                    items: _provinces
-                        .map(
-                          (p) =>
-                              DropdownMenuItem(value: p, child: Text(p.name)),
-                        )
-                        .toList(),
-                    onChanged: _onProvinceChanged,
-                  ),
-            const SizedBox(height: 16),
-            if (_isLoadingWards)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: CircularProgressIndicator(color: Color(0xFFE67E22)),
-                ),
-              )
-            else
-              DropdownButtonFormField<WardModel>(
-                initialValue: _selectedWard,
-                decoration: _decoration(l10n.addressWardHint),
-                items: _wards
-                    .map((w) => DropdownMenuItem(value: w, child: Text(w.name)))
-                    .toList(),
-                onChanged: _selectedProvince == null
-                    ? null
-                    : (w) => setState(() => _selectedWard = w),
-              ),
+            TextField(
+              controller: _buildingController,
+              decoration: _decoration('Toà nhà, Số tầng (không bắt buộc)'),
+            ),
             const SizedBox(height: 16),
             TextField(
-              controller: _streetController,
-              maxLines: 2,
-              decoration: _decoration(l10n.addressStreetHint),
+              controller: _gateController,
+              decoration: _decoration('Cổng (không bắt buộc)'),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -401,24 +238,18 @@ class _AddressFormPageState extends State<AddressFormPage> {
                       avatar: Icon(
                         addressLabelIcon(label),
                         size: 16,
-                        color: label == _selectedLabel
-                            ? Colors.white
-                            : const Color(0xFF7F8C8D),
+                        color: label == _selectedLabel ? Colors.white : const Color(0xFF7F8C8D),
                       ),
                       selected: label == _selectedLabel,
                       onSelected: (_) => setState(() => _selectedLabel = label),
                       selectedColor: const Color(0xFFE67E22),
                       labelStyle: TextStyle(
-                        color: label == _selectedLabel
-                            ? Colors.white
-                            : const Color(0xFF2C3E50),
+                        color: label == _selectedLabel ? Colors.white : const Color(0xFF2C3E50),
                         fontWeight: FontWeight.bold,
                       ),
                       backgroundColor: Colors.white,
                       side: BorderSide(
-                        color: label == _selectedLabel
-                            ? const Color(0xFFE67E22)
-                            : const Color(0xFFF1EAE1),
+                        color: label == _selectedLabel ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1),
                       ),
                     ),
                   )
@@ -440,29 +271,23 @@ class _AddressFormPageState extends State<AddressFormPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isSaving ? null : () => _save(l10n),
+                onPressed: canSave ? () => _save(l10n) : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE67E22),
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: const Color(0xFFF1EAE1),
+                  disabledForegroundColor: const Color(0xFFBDC3C7),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: _isSaving
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
-                    : Text(
-                        l10n.addressSaveButton,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                    : Text(l10n.addressSaveButton, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],

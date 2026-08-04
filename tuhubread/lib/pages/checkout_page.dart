@@ -153,9 +153,16 @@ class _CheckoutContentState extends State<_CheckoutContent> {
   ) async {
     final l10n = AppLocalizations.of(context)!;
 
+    final currentShopId = widget.items.isNotEmpty ? widget.items.first.shopId : null;
     final eligibleVouchers = savedVouchers.where((v) {
       if (!v.isAvailable || v.voucher == null) return false;
-      return widget.subtotal >= v.voucher!.minOrderAmount;
+      if (widget.subtotal < v.voucher!.minOrderAmount) return false;
+      // Voucher riêng của 1 shop (voucherType "shop") chỉ áp dụng cho đơn hàng
+      // của đúng shop đã phát hành voucher đó.
+      if (v.voucher!.voucherType == 'shop' && v.voucher!.shopId != currentShopId) {
+        return false;
+      }
+      return true;
     }).toList();
 
     final result = await showModalBottomSheet<VoucherSaveModel?>(

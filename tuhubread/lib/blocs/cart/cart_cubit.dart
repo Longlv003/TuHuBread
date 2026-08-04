@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/product_detail/product_detail_state.dart';
 import '../../models/cart_item.model.dart';
-import '../../models/shop.model.dart';
 import '../../repositories/cart_repository.dart';
 import '../../core/result.dart';
 import 'cart_state.dart';
@@ -10,32 +9,6 @@ class CartCubit extends Cubit<CartState> {
   final CartRepository cartRepository;
 
   CartCubit({required this.cartRepository}) : super(const CartState());
-
-  Future<Result<List<ShopModel>>> getSwitchShopOptions({
-    required String productId,
-  }) async {
-    return cartRepository.getSwitchShopOptions(productId: productId);
-  }
-
-  Future<Result<List<CartItemModel>>> switchShop({
-    required String shopId,
-    required String productId,
-    required String variantId,
-    required List<String> optionIds,
-    required int quantity,
-  }) async {
-    final result = await cartRepository.switchShop(
-      shopId: shopId,
-      productId: productId,
-      variantId: variantId,
-      optionIds: optionIds,
-      quantity: quantity,
-    );
-    if (result is Success<List<CartItemModel>>) {
-      emit(state.copyWith(items: result.data));
-    }
-    return result;
-  }
 
   /// Tải giỏ hàng từ máy chủ khi mở app hoặc login.
   Future<void> loadCart() async {
@@ -81,22 +54,41 @@ class CartCubit extends Cubit<CartState> {
     return false;
   }
 
+  void _setPending(String itemId, bool pending) {
+    final next = Set<String>.from(state.pendingItemIds);
+    if (pending) {
+      next.add(itemId);
+    } else {
+      next.remove(itemId);
+    }
+    emit(state.copyWith(pendingItemIds: next));
+  }
+
   Future<void> incrementQuantity(String itemId) async {
+    // Chặn double-tap: nếu item đang có request bay đi, bỏ qua tap tiếp theo
+    // thay vì đọc lại quantity cũ (đang stale) và gửi nhầm request trùng.
+    if (state.isPending(itemId)) return;
     final index = state.items.indexWhere((item) => item.id == itemId);
     if (index < 0) return;
 
     final item = state.items[index];
-    final result = await cartRepository.updateCartItem(
-      itemId: itemId,
-      quantity: item.quantity + 1,
-    );
+    _setPending(itemId, true);
+    try {
+      final result = await cartRepository.updateCartItem(
+        itemId: itemId,
+        quantity: item.quantity + 1,
+      );
 
-    if (result is Success<List<CartItemModel>>) {
-      emit(state.copyWith(items: result.data));
+      if (result is Success<List<CartItemModel>>) {
+        emit(state.copyWith(items: result.data));
+      }
+    } finally {
+      _setPending(itemId, false);
     }
   }
 
   Future<void> decrementQuantity(String itemId, {Future<bool> Function()? confirmShow}) async {
+    if (state.isPending(itemId)) return;
     final index = state.items.indexWhere((item) => item.id == itemId);
     if (index < 0) return;
 
@@ -110,24 +102,35 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    final result = await cartRepository.updateCartItem(
-      itemId: itemId,
-      quantity: item.quantity - 1,
-    );
+    _setPending(itemId, true);
+    try {
+      final result = await cartRepository.updateCartItem(
+        itemId: itemId,
+        quantity: item.quantity - 1,
+      );
 
-    if (result is Success<List<CartItemModel>>) {
-      emit(state.copyWith(items: result.data));
+      if (result is Success<List<CartItemModel>>) {
+        emit(state.copyWith(items: result.data));
+      }
+    } finally {
+      _setPending(itemId, false);
     }
   }
 
   Future<void> removeItem(String itemId, {Future<bool> Function()? confirmShow}) async {
+    if (state.isPending(itemId)) return;
     if (confirmShow != null) {
       final ok = await confirmShow();
       if (!ok) return;
     }
-    final result = await cartRepository.deleteCartItem(itemId);
-    if (result is Success<List<CartItemModel>>) {
-      emit(state.copyWith(items: result.data));
+    _setPending(itemId, true);
+    try {
+      final result = await cartRepository.deleteCartItem(itemId);
+      if (result is Success<List<CartItemModel>>) {
+        emit(state.copyWith(items: result.data));
+      }
+    } finally {
+      _setPending(itemId, false);
     }
   }
 

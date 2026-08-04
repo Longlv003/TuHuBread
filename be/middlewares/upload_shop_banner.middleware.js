@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { imageFileFilter, safeImageExtension } = require("../utils/imageUpload.util");
 
 const uploadDir = path.join(__dirname, "../public/images/shops");
 if (!fs.existsSync(uploadDir)) {
@@ -14,22 +15,14 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const shopId = req.shop ? req.shop._id : "unknown";
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
+    const ext = safeImageExtension(file.originalname);
     cb(null, `banner_${shopId}_${uniqueSuffix}${ext}`);
   }
 });
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Invalid file type. Only images are allowed!"), false);
-  }
-};
-
 const uploadShopBanner = multer({
   storage: storage,
-  fileFilter: fileFilter,
+  fileFilter: imageFileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5 MB max
   }

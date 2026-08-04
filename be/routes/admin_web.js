@@ -9,12 +9,13 @@ const adminVoucherController = require("../controllers/admin/admin_voucher.contr
 const adminDashboardController = require("../controllers/admin/admin_dashboard.controller");
 const adminShopController = require("../controllers/admin/admin_shop.controller");
 const { adminAuthMiddleware, adminGuestMiddleware } = require("../middlewares/admin_auth.middlewares");
+const { authRateLimiter } = require("../middlewares/rateLimit.middleware");
 const uploadBanner = require("../middlewares/upload_banner.middleware");
 const uploadCategory = require("../middlewares/upload_category.middleware");
 
 // Guest pages (Login)
 router.get("/login", adminGuestMiddleware, adminAuthController.showLogin);
-router.post("/login", adminGuestMiddleware, adminAuthController.login);
+router.post("/login", authRateLimiter, adminGuestMiddleware, adminAuthController.login);
 router.get("/logout", adminAuthMiddleware, adminAuthController.logout);
 
 // User management routes

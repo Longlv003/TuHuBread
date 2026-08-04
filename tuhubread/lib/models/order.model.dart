@@ -18,10 +18,14 @@ class OrderModel {
   final String? receiverName;
   final String? receiverPhone;
   final String? addressDetail;
-  final int? reviewRating;
-  final String? reviewComment;
+  final int itemsCount;
+  final int reviewedCount;
 
-  bool get hasReview => reviewRating != null;
+  /// true nếu đơn đã hoàn thành nhưng còn sản phẩm nào đó chưa được đánh giá.
+  bool get needsReview =>
+      orderStatus.toLowerCase() == 'completed' && reviewedCount < itemsCount;
+
+  bool get allReviewed => itemsCount > 0 && reviewedCount >= itemsCount;
 
   OrderModel({
     required this.id,
@@ -41,15 +45,14 @@ class OrderModel {
     this.receiverName,
     this.receiverPhone,
     this.addressDetail,
-    this.reviewRating,
-    this.reviewComment,
+    this.itemsCount = 0,
+    this.reviewedCount = 0,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final shop = (json['shop_id'] ?? json['shop']) as Map<String, dynamic>?;
     final addressObj = json['address_id'];
     final address = addressObj is Map<String, dynamic> ? addressObj : null;
-    final review = json['review'] as Map<String, dynamic>?;
 
     String? logoUrl = shop?['logo'] as String?;
     if (logoUrl != null && !logoUrl.startsWith('http')) {
@@ -74,8 +77,32 @@ class OrderModel {
       receiverName: address?['receiver_name'] as String?,
       receiverPhone: address?['receiver_phone'] as String?,
       addressDetail: address?['address_detail'] as String?,
-      reviewRating: (review?['rating'] as num?)?.toInt(),
-      reviewComment: review?['comment'] as String?,
+      itemsCount: (json['items_count'] as num?)?.toInt() ?? 0,
+      reviewedCount: (json['reviewed_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  OrderModel copyWith({int? reviewedCount}) {
+    return OrderModel(
+      id: id,
+      orderCode: orderCode,
+      paymentMethod: paymentMethod,
+      paymentStatus: paymentStatus,
+      orderStatus: orderStatus,
+      itemsTotal: itemsTotal,
+      discountAmount: discountAmount,
+      deliveryFee: deliveryFee,
+      totalAmount: totalAmount,
+      note: note,
+      createdAt: createdAt,
+      shopName: shopName,
+      shopLogo: shopLogo,
+      shopPhone: shopPhone,
+      receiverName: receiverName,
+      receiverPhone: receiverPhone,
+      addressDetail: addressDetail,
+      itemsCount: itemsCount,
+      reviewedCount: reviewedCount ?? this.reviewedCount,
     );
   }
 }

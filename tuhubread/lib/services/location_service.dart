@@ -1,115 +1,36 @@
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
-enum LocationFailureReason {
-  serviceDisabled,
-  permissionDenied,
-  permissionDeniedForever,
-  geocodeFailed,
-}
-
-class LocationException implements Exception {
-  final LocationFailureReason reason;
-  const LocationException(this.reason);
-}
-
-/// Kết quả dò vị trí GPS + dịch ngược (reverse geocoding) ra địa chỉ text.
-/// [provinceName]/[wardName] là tên thô từ hệ điều hành, dùng để dò khớp
-/// (best-effort) với danh sách tỉnh/phường lấy từ [VietnamAddressService].
-class LocationResult {
-  final double latitude;
-  final double longitude;
-  final String? street;
-  final String? wardName;
-  final String? provinceName;
-  final String fullAddress;
-
-  const LocationResult({
-    required this.latitude,
-    required this.longitude,
-    this.street,
-    this.wardName,
-    this.provinceName,
-    required this.fullAddress,
-  });
-}
-
-/// Lấy vị trí GPS hiện tại và dịch ngược ra địa chỉ text — dùng
-/// `geocoding`, dựa trên bộ dịch địa chỉ sẵn có của hệ điều hành nên
-/// không cần API key.
+/// Lấy vị trí GPS thô của thiết bị. Dịch ngược toạ độ ra địa chỉ text (khi
+/// cần) được thực hiện qua Nominatim trong [AddressMapPickerPage] thay vì
+/// Geocoder gốc của hệ điều hành — Geocoder gốc thường không hoạt động trên
+/// máy ảo/emulator, còn Nominatim chỉ cần có mạng.
 class LocationService {
-  Future<LocationResult> getCurrentAddress() async {
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      throw const LocationException(LocationFailureReason.serviceDisabled);
-    }
-
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied) {
-      throw const LocationException(LocationFailureReason.permissionDenied);
-    }
-    if (permission == LocationPermission.deniedForever) {
-      throw const LocationException(
-        LocationFailureReason.permissionDeniedForever,
-      );
-    }
-
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
-    );
-
+  /// Trả về null nếu không có quyền/không bật GPS thay vì throw, vì đây là
+  /// tính năng "có thì tốt" (tìm cửa hàng gần trên trang chủ), không nên
+  /// chặn màn hình khi bị từ chối quyền hoặc thiết bị bắt GPS chậm.
+  Future<({double latitude, double longitude})?> getCurrentCoordinates() async {
     try {
-      final placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-      if (placemarks.isEmpty) {
-        throw const LocationException(LocationFailureReason.geocodeFailed);
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
       }
 
-      final p = placemarks.first;
-      final street = [
-        p.street,
-        p.subLocality,
-      ].where((s) => s != null && s.isNotEmpty).join(', ');
-      final fullAddress = [
-        street,
-        p.subAdministrativeArea,
-        p.administrativeArea,
-      ].where((s) => s != null && s.isNotEmpty).join(', ');
-
-      return LocationResult(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        street: street.isEmpty ? null : street,
-        wardName: p.subLocality,
-        provinceName: p.administrativeArea,
-        fullAddress: fullAddress.isEmpty
-            ? '${position.latitude}, ${position.longitude}'
-            : fullAddress,
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 6),
+        ),
       );
-    } on LocationException {
-      rethrow;
+      return (latitude: position.latitude, longitude: position.longitude);
     } catch (_) {
-      throw const LocationException(LocationFailureReason.geocodeFailed);
-    }
-  }
-
-  /// Dịch xuôi (forward geocoding): chuyển địa chỉ dạng chữ (khách tự nhập
-  /// tỉnh/phường/đường, không dùng nút "Vị trí hiện tại") thành toạ độ
-  /// lat/lng thật — cần để backend tính phí ship theo khoảng cách thực tế
-  /// thay vì rơi vào giá trị mặc định khi thiếu toạ độ.
-  Future<({double latitude, double longitude})?> geocodeAddress(
-    String fullAddress,
-  ) async {
-    try {
-      final locations = await locationFromAddress(fullAddress);
-      if (locations.isEmpty) return null;
-      final loc = locations.first;
-      return (latitude: loc.latitude, longitude: loc.longitude);
-    } catch (_) {
+      // Bao gồm cả TimeoutException khi máy bắt GPS chậm/không có tín hiệu —
+      // trả về null để màn hình gọi vẫn hoạt động bình thường.
       return null;
     }
   }

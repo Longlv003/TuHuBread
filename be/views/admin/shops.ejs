@@ -52,7 +52,7 @@
                 </td>
                 <td class="col-actions">
                   <div class="actions-wrap">
-                    <button type="button" class="btn-action" onclick='onEditShop(<%- JSON.stringify({ _id: s._id, shop_name: s.shop_name, phone_number: s.phone_number, address: s.address, open_time: s.open_time, close_time: s.close_time, longitude: s.location ? s.location.coordinates[0] : null, latitude: s.location ? s.location.coordinates[1] : null }) %>)'>Sửa</button>
+                    <button type="button" class="btn-action" onclick='onEditShop(<%= JSON.stringify({ _id: s._id, shop_name: s.shop_name, phone_number: s.phone_number, address: s.address, open_time: s.open_time, close_time: s.close_time, longitude: s.location ? s.location.coordinates[0] : null, latitude: s.location ? s.location.coordinates[1] : null }) %>)'>Sửa</button>
                   </div>
                 </td>
               </tr>

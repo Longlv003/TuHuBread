@@ -1,4 +1,5 @@
 const { userModel } = require("../models/user.model");
+const { escapeRegex } = require("../utils/regex.util");
 
 class AccountRepository {
   async findById(id) {
@@ -28,9 +29,10 @@ class AccountRepository {
   buildFilters({ search, role, status }) {
     const filters = { deleted_at: null };
     if (search) {
+      const escaped = escapeRegex(search);
       filters.$or = [
-        { full_name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
+        { full_name: { $regex: escaped, $options: "i" } },
+        { email: { $regex: escaped, $options: "i" } }
       ];
     }
     if (role && role !== "all") filters.role = role;

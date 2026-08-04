@@ -51,7 +51,6 @@ class _SizeSelectSheetState extends State<_SizeSelectSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final detail = widget.detail;
-    final hasSaleProduct = detail.activeSale != null;
 
     return SafeArea(
       child: Container(
@@ -105,12 +104,6 @@ class _SizeSelectSheetState extends State<_SizeSelectSheet> {
                   double displayPrice = variant.price;
                   if (variant.salePrice != null) {
                     displayPrice = variant.salePrice!;
-                  } else if (hasSaleProduct) {
-                    final activeSale = detail.activeSale!;
-                    if (activeSale.variantId == null ||
-                        activeSale.variantId == variant.id) {
-                      displayPrice = activeSale.salePrice;
-                    }
                   }
 
                   return GestureDetector(

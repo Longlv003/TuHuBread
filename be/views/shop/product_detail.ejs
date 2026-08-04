@@ -32,9 +32,21 @@
         </div>
         <div class="form-group">
           <label for="editGlobalCategoryId">Danh mục toàn hệ thống</label>
+          <%
+            const currentCategory = product.global_category_id;
+            const currentCategoryId = currentCategory ? String(currentCategory._id || currentCategory) : null;
+            const isCurrentCategoryActive = currentCategoryId && globalCategories.some(c => String(c._id) === currentCategoryId);
+          %>
           <select id="editGlobalCategoryId" name="globalCategoryId">
+            <% if (currentCategoryId && !isCurrentCategoryActive) { %>
+              <!-- Danh mục hiện tại của sản phẩm đã bị ngừng hoạt động — giữ nguyên lựa chọn
+                   này để tránh tự động gán nhầm sang danh mục khác khi lưu các trường khác. -->
+              <option value="<%= currentCategoryId %>" selected>
+                <%= currentCategory && currentCategory.category_name ? currentCategory.category_name : 'Danh mục hiện tại' %> (Ngừng hoạt động)
+              </option>
+            <% } %>
             <% globalCategories.forEach(c => { %>
-              <option value="<%= c._id %>" <%= String(product.global_category_id && product.global_category_id._id ? product.global_category_id._id : product.global_category_id) === String(c._id) ? 'selected' : '' %>><%= c.category_name %></option>
+              <option value="<%= c._id %>" <%= currentCategoryId === String(c._id) ? 'selected' : '' %>><%= c.category_name %></option>
             <% }) %>
           </select>
         </div>
@@ -80,7 +92,7 @@
                   <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
                   <td class="col-actions">
                     <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditVariant(<%- JSON.stringify(v) %>)'>Sửa</button>
+                      <button type="button" class="btn-action" onclick='onEditVariant(<%= JSON.stringify(v) %>)'>Sửa</button>
                       <button type="button" class="btn-action btn-delete" onclick="onDeleteVariant('<%= v._id %>')">Xóa</button>
                     </div>
                   </td>
@@ -140,7 +152,7 @@
                   <td><span class="status-badge <%= o.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= o.status %></span></td>
                   <td class="col-actions">
                     <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditOption(<%- JSON.stringify(o) %>)'>Sửa</button>
+                      <button type="button" class="btn-action" onclick='onEditOption(<%= JSON.stringify(o) %>)'>Sửa</button>
                       <button type="button" class="btn-action btn-delete" onclick="onDeleteOption('<%= o._id %>')">Xóa</button>
                     </div>
                   </td>

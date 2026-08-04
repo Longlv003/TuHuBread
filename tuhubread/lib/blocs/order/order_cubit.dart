@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 import '../../models/order.model.dart';
 import '../../models/order_item.model.dart';
@@ -47,45 +49,64 @@ class OrderCubit extends Cubit<OrderState> {
     }
   }
 
-  /// Gửi đánh giá cho 1 đơn hàng đã hoàn thành — cập nhật lại đúng đơn đó
-  /// trong danh sách (không cần tải lại toàn bộ lịch sử).
+  /// Lấy danh sách sản phẩm của 1 đơn hàng — dùng khi mở sheet chọn sản phẩm
+  /// để đánh giá. Gọi API trực tiếp, KHÔNG emit state, để không làm mất màn
+  /// hình danh sách đơn hàng đang hiển thị (OrderLoaded) trong lúc chờ.
+  Future<List<OrderItemModel>> fetchOrderItems(String orderId) async {
+    try {
+      final res = await apiService.get('/api/orders/$orderId');
+      if (res['data'] == null) return [];
+      final data = res['data'] as Map<String, dynamic>;
+      final itemsList = data['items'] as List<dynamic>? ?? [];
+      return itemsList
+          .map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Gửi đánh giá cho 1 SẢN PHẨM cụ thể trong đơn hàng đã hoàn thành — cập
+  /// nhật lại đúng đơn/item đó (không cần tải lại toàn bộ lịch sử).
   Future<bool> submitReview(
     String orderId, {
+    required String productId,
     required int rating,
     String? comment,
+    List<XFile> images = const [],
   }) async {
     try {
-      final res = await apiService.post('/api/orders/$orderId/review', {
+      final formData = FormData.fromMap({
+        'product_id': productId,
         'rating': rating,
         if (comment != null && comment.trim().isNotEmpty)
           'comment': comment.trim(),
+        'images': [
+          for (final img in images)
+            await MultipartFile.fromFile(img.path, filename: img.name),
+        ],
       });
+      final res = await apiService.post('/api/orders/$orderId/review', formData);
       if (res['data'] == null) return false;
 
-      final reviewData = res['data'] as Map<String, dynamic>;
       final currentState = state;
       if (currentState is OrderLoaded) {
         final updatedOrders = currentState.orders.map((o) {
           if (o.id != orderId) return o;
-          return OrderModel.fromJson({
-            ...o.toJsonMock(),
-            'review': {
-              'rating': reviewData['rating'],
-              'comment': reviewData['comment'],
-            },
-          });
+          return o.copyWith(reviewedCount: (o.reviewedCount + 1).clamp(0, o.itemsCount));
         }).toList();
         emit(OrderLoaded(updatedOrders));
       } else if (currentState is OrderDetailLoaded &&
           currentState.order.id == orderId) {
-        final updatedOrder = OrderModel.fromJson({
-          ...currentState.order.toJsonMock(),
-          'review': {
-            'rating': reviewData['rating'],
-            'comment': reviewData['comment'],
-          },
-        });
-        emit(currentState.copyWith(order: updatedOrder));
+        final updatedOrder = currentState.order.copyWith(
+          reviewedCount: (currentState.order.reviewedCount + 1)
+              .clamp(0, currentState.order.itemsCount),
+        );
+        final updatedItems = currentState.items.map((it) {
+          if (it.productId != productId) return it;
+          return it.copyWith(isReviewed: true);
+        }).toList();
+        emit(currentState.copyWith(order: updatedOrder, items: updatedItems));
       }
       return true;
     } catch (e) {
@@ -147,9 +168,8 @@ extension OrderModelExtension on OrderModel {
         'receiver_phone': receiverPhone,
         'address_detail': addressDetail,
       },
-      'review': hasReview
-          ? {'rating': reviewRating, 'comment': reviewComment}
-          : null,
+      'items_count': itemsCount,
+      'reviewed_count': reviewedCount,
     };
   }
 }

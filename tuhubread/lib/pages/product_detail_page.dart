@@ -107,8 +107,6 @@ class _ProductDetailContent extends StatelessWidget {
 
         if (state is ProductDetailLoaded) {
           final detail = state.productDetail;
-          final hasSale =
-              detail.activeSale != null && detail.activeSale!.isActiveNow;
 
           return Scaffold(
             backgroundColor: const Color(0xFFFDFBF7),
@@ -338,7 +336,6 @@ class _ProductDetailContent extends StatelessWidget {
                             context,
                             detail.variants,
                             state.selectedVariant,
-                            hasSale,
                             l10n,
                           ),
                           const Divider(height: 32, color: Color(0xFFF1EAE1)),
@@ -696,7 +693,6 @@ class _ProductDetailContent extends StatelessWidget {
     BuildContext context,
     List<ProductVariantModel> variants,
     ProductVariantModel selected,
-    bool hasSaleProduct,
     AppLocalizations l10n,
   ) {
     return Column(
@@ -715,22 +711,12 @@ class _ProductDetailContent extends StatelessWidget {
           spacing: 12,
           children: variants.map((variant) {
             final isSelected = variant.id == selected.id;
-            final hasSale = variant.salePrice != null || hasSaleProduct;
+            final hasSale = variant.salePrice != null;
 
             double originalPrice = variant.price;
             double displayPrice = originalPrice;
             if (variant.salePrice != null) {
               displayPrice = variant.salePrice!;
-            } else if (hasSaleProduct) {
-              final loadedState =
-                  context.read<ProductDetailCubit>().state
-                      as ProductDetailLoaded;
-              final activeSale = loadedState.productDetail.activeSale;
-              if (activeSale != null &&
-                  (activeSale.variantId == null ||
-                      activeSale.variantId == variant.id)) {
-                displayPrice = activeSale.salePrice;
-              }
             }
 
             return GestureDetector(

@@ -23,7 +23,6 @@ router.get("/categories", catCtrl.getGlobalCategories);
 
 // Product Routes
 router.get("/products/best-sellers", prodCtrl.getBestSellers);
-router.get("/products/sales", prodCtrl.getSaleProducts);
 router.get("/products/featured", prodCtrl.getFeaturedProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
 router.get("/products", prodCtrl.getProducts);
@@ -31,6 +30,7 @@ router.get("/products/:id", prodCtrl.getProductDetail);
 
 const { firebaseAuth, optionalAuth } = require("../middlewares/auth.middlewares");
 const { uploadAvatar } = require("../middlewares/upload.middlewares");
+const uploadReview = require("../middlewares/upload_review.middleware");
 
 // Voucher Routes
 router.get("/vouchers", optionalAuth, voucherCtrl.getVouchers);
@@ -58,7 +58,7 @@ router.post("/orders", firebaseAuth, orderCtrl.createOrder);
 router.get("/orders", firebaseAuth, orderCtrl.getOrders);
 router.get("/orders/:id", firebaseAuth, orderCtrl.getOrderById);
 router.put("/orders/:id/cancel", firebaseAuth, orderCtrl.cancelOrder);
-router.post("/orders/:id/review", firebaseAuth, orderCtrl.createReview);
+router.post("/orders/:id/review", firebaseAuth, uploadReview.array("images", 5), orderCtrl.createReview);
 router.get("/delivery-fee/preview", firebaseAuth, orderCtrl.previewDeliveryFee);
 
 // Notification Routes

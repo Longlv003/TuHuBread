@@ -12,12 +12,7 @@ class CartPriceCalculator {
   ) {
     double basePrice = variant.price;
 
-    final activeSale = detail.activeSale;
-    if (activeSale != null && activeSale.isActiveNow) {
-      if (activeSale.variantId == null || activeSale.variantId == variant.id) {
-        basePrice = activeSale.salePrice;
-      }
-    } else if (variant.salePrice != null) {
+    if (variant.salePrice != null) {
       basePrice = variant.salePrice!;
     }
 

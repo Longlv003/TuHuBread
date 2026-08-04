@@ -3,6 +3,8 @@ const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
 const { addressModel } = require("../models/address.model");
+const { orderModel } = require("../models/order.model");
+const { orderDetailModel } = require("../models/orderDetail.model");
 const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 const { cartModel } = require("../models/cart.model");
@@ -49,12 +51,12 @@ class OrderService {
     return getAllowedNextStatuses(currentStatus);
   }
 
-  async getOrdersForShop(shopId, page = 1) {
+  async getOrdersForShop(shopId, page = 1, { search, status } = {}) {
     const parsedPage = Math.max(parseInt(page) || 1, 1);
     const limit = 10;
     const [orders, total] = await Promise.all([
-      orderRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit }),
-      orderRepository.countByShopId(shopId),
+      orderRepository.findByShopIdPaginated(shopId, { page: parsedPage, limit, search, status }),
+      orderRepository.countByShopId(shopId, { search, status }),
     ]);
     return {
       orders,
@@ -258,12 +260,23 @@ class OrderService {
       }
 
       appliedVoucher = savedVoucherDoc.voucher_id;
-      if (itemsTotal < appliedVoucher.minOrderAmount) {
-        throw new Error(`Đơn hàng tối thiểu phải từ ${appliedVoucher.minOrderAmount}đ để sử dụng voucher này`);
+      if (itemsTotal < appliedVoucher.min_order_amount) {
+        throw new Error(`Đơn hàng tối thiểu phải từ ${appliedVoucher.min_order_amount}đ để sử dụng voucher này`);
       }
 
-      if (appliedVoucher.usageLimit && appliedVoucher.used_count >= appliedVoucher.usageLimit) {
+      if (appliedVoucher.usage_limit && appliedVoucher.used_count >= appliedVoucher.usage_limit) {
         throw new Error("Voucher đã hết lượt sử dụng");
+      }
+
+      // Voucher riêng của 1 shop (voucher_type "shop") chỉ được áp dụng cho đơn
+      // hàng của đúng shop đó — trước đây không kiểm tra, cho phép dùng voucher
+      // của shop A cho đơn hàng của shop B.
+      if (appliedVoucher.voucher_type === "shop") {
+        const voucherShopId = String(appliedVoucher.shop_id);
+        const belongsToVoucherShop = validatedItems.every((it) => String(it.shop_id) === voucherShopId);
+        if (!belongsToVoucherShop) {
+          throw new Error("Voucher này chỉ áp dụng cho đơn hàng của cửa hàng đã phát hành voucher");
+        }
       }
     }
 
@@ -279,16 +292,16 @@ class OrderService {
 
     // Tính toán discount tổng
     if (appliedVoucher) {
-      if (appliedVoucher.discountType === "free_shipping") {
+      if (appliedVoucher.discount_type === "free_shipping") {
         discountAmount = deliveryFee;
-      } else if (appliedVoucher.discountType === "percent") {
-        let discount = itemsTotal * (appliedVoucher.discountValue / 100);
-        if (appliedVoucher.maxDiscountAmount && discount > appliedVoucher.maxDiscountAmount) {
-          discount = appliedVoucher.maxDiscountAmount;
+      } else if (appliedVoucher.discount_type === "percent") {
+        let discount = itemsTotal * (appliedVoucher.discount_value / 100);
+        if (appliedVoucher.max_discount_amount && discount > appliedVoucher.max_discount_amount) {
+          discount = appliedVoucher.max_discount_amount;
         }
         discountAmount = discount;
-      } else if (appliedVoucher.discountType === "amount") {
-        discountAmount = appliedVoucher.discountValue;
+      } else if (appliedVoucher.discount_type === "amount") {
+        discountAmount = appliedVoucher.discount_value;
       }
     }
 
@@ -307,101 +320,175 @@ class OrderService {
     };
   }
 
+  /**
+   * Claim 1 saved voucher + tăng used_count một cách nguyên tử (atomic), tránh
+   * race condition khi 2 request checkout đồng thời dùng chung 1 voucher đã lưu.
+   */
+  async _claimVoucherAtomically(savedVoucherDoc, appliedVoucher) {
+    const claimedSave = await voucherSaveModel.findOneAndUpdate(
+      { _id: savedVoucherDoc._id, status: "saved" },
+      { status: "used", used_at: new Date() },
+    );
+    if (!claimedSave) {
+      throw new Error("Voucher vừa được sử dụng, vui lòng thử lại");
+    }
+
+    const claimedVoucher = await voucherModel.findOneAndUpdate(
+      {
+        _id: appliedVoucher._id,
+        $or: [{ usage_limit: null }, { $expr: { $lt: ["$used_count", "$usage_limit"] } }],
+      },
+      { $inc: { used_count: 1 } },
+    );
+    if (!claimedVoucher) {
+      // Voucher-level limit đã hết ngay trước khi ta claim xong save-doc -> hoàn tác lại save-doc
+      await voucherSaveModel.findByIdAndUpdate(savedVoucherDoc._id, { status: "saved", used_at: null }).catch(() => {});
+      throw new Error("Voucher đã hết lượt sử dụng");
+    }
+  }
+
+  async _releaseVoucherClaim(savedVoucherDoc, appliedVoucher) {
+    await voucherSaveModel.findByIdAndUpdate(savedVoucherDoc._id, { status: "saved", used_at: null }).catch(() => {});
+    await voucherModel.findByIdAndUpdate(appliedVoucher._id, { $inc: { used_count: -1 } }).catch(() => {});
+  }
+
+  /**
+   * Trừ tồn kho một cách nguyên tử — chỉ thành công nếu còn đủ hàng, tránh oversell
+   * khi nhiều khách đặt cùng lúc.
+   */
+  async _claimStock(variantId, quantity) {
+    const updated = await productVariantModel.findOneAndUpdate(
+      { _id: variantId, stock_quantity: { $gte: quantity } },
+      { $inc: { stock_quantity: -quantity, sold_quantity: quantity } },
+    );
+    if (!updated) {
+      throw new Error("Một sản phẩm trong đơn hàng đã hết hàng hoặc không đủ số lượng");
+    }
+  }
+
+  async _releaseStock(variantId, quantity) {
+    await productVariantModel
+      .findByIdAndUpdate(variantId, { $inc: { stock_quantity: quantity, sold_quantity: -quantity } })
+      .catch(() => {});
+  }
+
   async createOrderFromCart(user, { addressId, deliveryOption, paymentMethod, voucherCode, note }) {
     // 1. Validate & tính lại toàn bộ giá trên server
     const calc = await this.validateCartAndCalculate(user._id, { addressId, deliveryOption, voucherCode });
 
-    // 2. Nhóm items theo shop để chia đơn hàng nếu cần (mỗi shop 1 đơn)
-    const itemsByShop = new Map();
-    for (const item of calc.validatedItems) {
-      const key = String(item.shop_id);
-      if (!itemsByShop.has(key)) itemsByShop.set(key, []);
-      itemsByShop.get(key).push(item);
-    }
+    const stockClaims = [];
+    let voucherClaimed = false;
+    const createdOrderIds = [];
 
-    const createdOrders = [];
-    let remainingDiscount = calc.discountAmount;
-    let shopIndex = 0;
-
-    for (const [shopId, shopItems] of itemsByShop) {
-      const shopItemsTotal = shopItems.reduce((sum, it) => sum + it.subtotal, 0);
-      const shopDeliveryFee = shopIndex === 0 ? calc.deliveryFee : 0;
-
-      let orderDiscount = 0;
-      if (remainingDiscount > 0) {
-        orderDiscount = Math.min(remainingDiscount, shopItemsTotal + shopDeliveryFee);
-        remainingDiscount -= orderDiscount;
+    try {
+      // 2. Claim voucher + tồn kho trước khi tạo bất kỳ order nào (nguyên tử, có rollback nếu lỗi sau đó)
+      if (calc.savedVoucherDoc && calc.appliedVoucher) {
+        await this._claimVoucherAtomically(calc.savedVoucherDoc, calc.appliedVoucher);
+        voucherClaimed = true;
       }
 
-      const shopTotalAmount = Math.max(0, shopItemsTotal + shopDeliveryFee - orderDiscount);
-      const orderCode = generateOrderCode();
+      for (const item of calc.validatedItems) {
+        await this._claimStock(item.variant_id, item.quantity);
+        stockClaims.push({ variantId: item.variant_id, quantity: item.quantity });
+      }
 
-      // Sử dụng repository để tạo order
-      const order = await orderRepository.createOrder({
-        order_code: orderCode,
-        user_id: user._id,
-        shop_id: shopId,
-        voucher_id: calc.appliedVoucher ? calc.appliedVoucher._id : null,
-        address_id: calc.address._id,
-        payment_method: paymentMethod,
-        delivery_option: deliveryOption,
-        payment_status: "unpaid",
-        order_status: "pending",
-        items_total: shopItemsTotal,
-        discount_amount: orderDiscount,
-        delivery_fee: shopDeliveryFee,
-        total_amount: shopTotalAmount,
-        note: note || null,
-      });
+      // 3. Nhóm items theo shop để chia đơn hàng nếu cần (mỗi shop 1 đơn)
+      const itemsByShop = new Map();
+      for (const item of calc.validatedItems) {
+        const key = String(item.shop_id);
+        if (!itemsByShop.has(key)) itemsByShop.set(key, []);
+        itemsByShop.get(key).push(item);
+      }
 
-      // Tạo order details
-      for (const item of shopItems) {
-        await orderRepository.createOrderDetail({
-          order_id: order._id,
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-          product_name: item.product_name,
-          variant_name: item.variant_name,
-          product_image: item.product_image,
-          base_price: item.base_price,
-          selected_options: item.selected_options,
-          option_total_price: item.option_total_price,
-          unit_price: item.unit_price,
-          subtotal: item.subtotal,
-          note: item.note,
+      const createdOrders = [];
+      let remainingDiscount = calc.discountAmount;
+      let shopIndex = 0;
+
+      for (const [shopId, shopItems] of itemsByShop) {
+        const shopItemsTotal = shopItems.reduce((sum, it) => sum + it.subtotal, 0);
+        const shopDeliveryFee = shopIndex === 0 ? calc.deliveryFee : 0;
+
+        let orderDiscount = 0;
+        if (remainingDiscount > 0) {
+          orderDiscount = Math.min(remainingDiscount, shopItemsTotal + shopDeliveryFee);
+          remainingDiscount -= orderDiscount;
+        }
+
+        const shopTotalAmount = Math.max(0, shopItemsTotal + shopDeliveryFee - orderDiscount);
+        const orderCode = generateOrderCode();
+
+        // Sử dụng repository để tạo order
+        const order = await orderRepository.createOrder({
+          order_code: orderCode,
+          user_id: user._id,
+          shop_id: shopId,
+          voucher_id: calc.appliedVoucher ? calc.appliedVoucher._id : null,
+          address_id: calc.address._id,
+          payment_method: paymentMethod,
+          delivery_option: deliveryOption,
+          payment_status: "unpaid",
+          order_status: "pending",
+          items_total: shopItemsTotal,
+          discount_amount: orderDiscount,
+          delivery_fee: shopDeliveryFee,
+          total_amount: shopTotalAmount,
+          note: note || null,
         });
+        createdOrderIds.push(order._id);
+
+        // Tạo order details
+        for (const item of shopItems) {
+          await orderRepository.createOrderDetail({
+            order_id: order._id,
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+            product_name: item.product_name,
+            variant_name: item.variant_name,
+            product_image: item.product_image,
+            base_price: item.base_price,
+            selected_options: item.selected_options,
+            option_total_price: item.option_total_price,
+            unit_price: item.unit_price,
+            subtotal: item.subtotal,
+            note: item.note,
+          });
+        }
+
+        createdOrders.push(order);
+        socketService.emitNewOrder(String(shopId), order);
+        shopIndex += 1;
       }
 
-      createdOrders.push(order);
-      socketService.emitNewOrder(String(shopId), order);
-      shopIndex += 1;
-    }
+      // 4. Xóa hẳn các cart items trong giỏ hàng (vì đã chuyển thành order)
+      await cartItemModel.deleteMany({ cart_id: calc.cart._id });
 
-    // 3. Đánh dấu voucher đã dùng (nếu có)
-    if (calc.savedVoucherDoc) {
-      calc.savedVoucherDoc.status = "used";
-      calc.savedVoucherDoc.used_at = new Date();
-      await calc.savedVoucherDoc.save();
+      // Recalculate cart total (set to 0)
+      calc.cart.cart_total = 0;
+      await calc.cart.save();
 
-      if (calc.appliedVoucher) {
-        await voucherModel.findByIdAndUpdate(calc.appliedVoucher._id, {
-          $inc: { used_count: 1 }
-        });
+      return {
+        orders: createdOrders,
+        totalAmount: calc.totalAmount,
+      };
+    } catch (err) {
+      // Best-effort rollback mọi side-effect đã xảy ra trước khi lỗi xuất hiện
+      try {
+        if (createdOrderIds.length > 0) {
+          await orderDetailModel.deleteMany({ order_id: { $in: createdOrderIds } });
+          await orderModel.deleteMany({ _id: { $in: createdOrderIds } });
+        }
+        for (const claim of stockClaims) {
+          await this._releaseStock(claim.variantId, claim.quantity);
+        }
+        if (voucherClaimed) {
+          await this._releaseVoucherClaim(calc.savedVoucherDoc, calc.appliedVoucher);
+        }
+      } catch (rollbackErr) {
+        console.error("[OrderService] Rollback after failed order creation also failed:", rollbackErr.message);
       }
+      throw err;
     }
-
-    // 4. Xóa hẳn các cart items trong giỏ hàng (vì đã chuyển thành order)
-    await cartItemModel.deleteMany({ cart_id: calc.cart._id });
-
-    // Recalculate cart total (set to 0)
-    calc.cart.cart_total = 0;
-    await calc.cart.save();
-
-    return {
-      orders: createdOrders,
-      totalAmount: calc.totalAmount,
-    };
   }
 
   /**

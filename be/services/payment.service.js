@@ -213,13 +213,28 @@ class PaymentService {
       return { RspCode: "04", Message: "Invalid amount" };
     }
 
-    // 4. Kiểm tra trạng thái giao dịch
+    // 4. Claim nguyên tử session (PENDING -> PROCESSING) để đảm bảo chỉ 1 trong 2
+    // callback VNPAY (return URL + IPN) — có thể tới gần như đồng thời — được xử lý.
+    const claimedSession = await paymentSessionRepository.claimPending(txnRef);
+    if (!claimedSession) {
+      // Request khác đã claim/xử lý xong trước đó — trả lời idempotent, không xử lý lại.
+      const latest = await paymentSessionRepository.findById(txnRef);
+      if (latest?.status === "PAID") {
+        return { RspCode: "02", Message: "Order already confirmed" };
+      }
+      if (latest?.status === "FAILED") {
+        return { RspCode: "02", Message: "Order already failed" };
+      }
+      return { RspCode: "02", Message: "Payment is already being processed" };
+    }
+
+    // 5. Kiểm tra trạng thái giao dịch
     const isSuccess = responseCode === "00" && (transactionStatus || responseCode) === "00";
 
     if (isSuccess) {
-      return await this._handleSuccessPayment(session, { transactionNo, bankCode, responseCode });
+      return await this._handleSuccessPayment(claimedSession, { transactionNo, bankCode, responseCode });
     } else {
-      return await this._handleFailedPayment(session, { transactionNo, responseCode });
+      return await this._handleFailedPayment(claimedSession, { transactionNo, responseCode });
     }
   }
 
@@ -234,6 +249,25 @@ class PaymentService {
       const key = item.shop_id.toString();
       if (!itemsByShop.has(key)) itemsByShop.set(key, []);
       itemsByShop.get(key).push(item);
+    }
+
+    // 1b. Trừ tồn kho nguyên tử cho toàn bộ item trước khi tạo order — tiền đã
+    // thu qua VNPAY nên nếu hết hàng vẫn phải tạo đơn (không thể huỷ giao dịch),
+    // nhưng ta vẫn cần cập nhật đúng tồn kho / rollback nếu có lỗi khác xảy ra.
+    const stockClaims = [];
+    try {
+      for (const item of session.items) {
+        try {
+          await orderService._claimStock(item.variant_id, item.quantity);
+          stockClaims.push({ variantId: item.variant_id, quantity: item.quantity });
+        } catch (stockErr) {
+          // Hết hàng sau khi đã thanh toán — vẫn ghi log nhưng không chặn tạo đơn,
+          // vì tiền khách đã bị trừ qua VNPAY và không thể tự động hoàn tiền ở đây.
+          console.error(`[PaymentService] Insufficient stock for variant ${item.variant_id} on paid session ${session._id}:`, stockErr.message);
+        }
+      }
+    } catch (err) {
+      console.error("[PaymentService] Unexpected error while claiming stock:", err.message);
     }
 
     const createdOrders = [];

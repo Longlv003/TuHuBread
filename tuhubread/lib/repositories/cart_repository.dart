@@ -1,6 +1,5 @@
 import '../core/result.dart';
 import '../models/cart_item.model.dart';
-import '../models/shop.model.dart';
 
 abstract class CartRepository {
   Future<Result<List<CartItemModel>>> getCart();
@@ -25,16 +24,4 @@ abstract class CartRepository {
     String? note,
   });
   Future<Result<List<CartItemModel>>> deleteCartItem(String itemId);
-
-  Future<Result<List<ShopModel>>> getSwitchShopOptions({
-    required String productId,
-  });
-
-  Future<Result<List<CartItemModel>>> switchShop({
-    required String shopId,
-    required String productId,
-    required String variantId,
-    required List<String> optionIds,
-    required int quantity,
-  });
 }

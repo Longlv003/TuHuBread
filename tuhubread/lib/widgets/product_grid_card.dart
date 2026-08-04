@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.model.dart';
-import '../models/product_sale.model.dart';
 import '../utils/currency_formatter.dart';
 
 class ProductGridCard extends StatelessWidget {
   final ProductModel product;
-  final ProductSaleModel? activeSale;
-  final DateTime now;
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
 
@@ -19,27 +16,13 @@ class ProductGridCard extends StatelessWidget {
   const ProductGridCard({
     super.key,
     required this.product,
-    required this.activeSale,
-    required this.now,
     this.onTap,
     this.onAddToCart,
     this.shopName,
   });
 
-  String _formatCountdown(Duration d) {
-    if (d.isNegative) return 'Hết hạn';
-    if (d.inDays >= 1) return '${d.inDays}n ${d.inHours % 24}g';
-    if (d.inHours >= 1) {
-      return '${d.inHours.toString().padLeft(2, '0')}:${(d.inMinutes % 60).toString().padLeft(2, '0')}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
-    }
-    return '${d.inMinutes.toString().padLeft(2, '0')}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final hasSale = activeSale != null;
-    final displayPrice = hasSale ? activeSale!.salePrice : product.price;
-
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
       child: GestureDetector(
@@ -82,66 +65,6 @@ class ProductGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (hasSale)
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE74C3C),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'SALE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (hasSale)
-                    Positioned(
-                      bottom: 4,
-                      left: 6,
-                      right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.65),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.timer_outlined,
-                                color: Colors.white,
-                                size: 9,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                _formatCountdown(
-                                  activeSale!.endDate.difference(now),
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
               Expanded(
@@ -214,17 +137,8 @@ class ProductGridCard extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (hasSale)
-                                Text(
-                                  CurrencyFormatter.formatVND(product.price),
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    color: Color(0xFFBDC3C7),
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                ),
                               Text(
-                                CurrencyFormatter.formatVND(displayPrice),
+                                CurrencyFormatter.formatVND(product.price),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,

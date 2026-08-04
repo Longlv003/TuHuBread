@@ -1,5 +1,7 @@
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
+const { userModel } = require("../models/user.model");
+const { escapeRegex } = require("../utils/regex.util");
 
 class OrderRepository {
   async findById(id) {
@@ -17,16 +19,47 @@ class OrderRepository {
       .populate("user_id");
   }
 
-  async findByShopIdPaginated(shopId, { page = 1, limit = 50 }) {
-    return orderModel.find({ shop_id: shopId, deleted_at: null })
+  /**
+   * Xây filter cho danh sách đơn hàng của shop, hỗ trợ tìm theo mã đơn hoặc
+   * tên/SĐT khách hàng + lọc theo trạng thái — áp dụng ở tầng DB (không phải
+   * chỉ lọc trên 10 dòng của trang hiện tại như UI cũ).
+   */
+  async _buildShopOrderFilter(shopId, { search, status } = {}) {
+    const filter = { shop_id: shopId, deleted_at: null };
+    if (status && status !== "all") {
+      filter.order_status = status;
+    }
+    const trimmedSearch = search && search.trim();
+    if (trimmedSearch) {
+      const escaped = escapeRegex(trimmedSearch);
+      const matchingUsers = await userModel
+        .find({
+          $or: [
+            { full_name: { $regex: escaped, $options: "i" } },
+            { phone: { $regex: escaped, $options: "i" } },
+          ],
+        })
+        .select("_id");
+      filter.$or = [
+        { order_code: { $regex: escaped, $options: "i" } },
+        { user_id: { $in: matchingUsers.map((u) => u._id) } },
+      ];
+    }
+    return filter;
+  }
+
+  async findByShopIdPaginated(shopId, { page = 1, limit = 50, search, status } = {}) {
+    const filter = await this._buildShopOrderFilter(shopId, { search, status });
+    return orderModel.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("user_id");
   }
 
-  async countByShopId(shopId) {
-    return orderModel.countDocuments({ shop_id: shopId, deleted_at: null });
+  async countByShopId(shopId, { search, status } = {}) {
+    const filter = await this._buildShopOrderFilter(shopId, { search, status });
+    return orderModel.countDocuments(filter);
   }
 
   async findByIdScoped(id, shopId) {

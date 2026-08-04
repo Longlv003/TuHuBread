@@ -17,23 +17,26 @@
     </div>
   </div>
 
-  <div class="search-filter-bar">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" id="orderSearchInput" placeholder="Tìm theo mã đơn hoặc tên khách hàng...">
+  <form id="filterForm" method="GET" action="/shop/orders">
+    <div class="search-filter-bar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="search" value="<%= search %>" placeholder="Tìm theo mã đơn hoặc tên/SĐT khách hàng...">
+      </div>
+      <div class="filter-box">
+        <select name="status" onchange="document.getElementById('filterForm').submit()">
+          <option value="all" <%= status === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+          <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Chờ xác nhận</option>
+          <option value="confirmed" <%= status === 'confirmed' ? 'selected' : '' %>>Đã xác nhận</option>
+          <option value="preparing" <%= status === 'preparing' ? 'selected' : '' %>>Đang chuẩn bị</option>
+          <option value="delivering" <%= status === 'delivering' ? 'selected' : '' %>>Đang giao</option>
+          <option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
+          <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Đã hủy</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-action">Lọc</button>
     </div>
-    <div class="filter-box">
-      <select id="orderFilterStatus">
-        <option value="all">Tất cả trạng thái</option>
-        <option value="pending">Chờ xác nhận</option>
-        <option value="confirmed">Đã xác nhận</option>
-        <option value="preparing">Đang chuẩn bị</option>
-        <option value="delivering">Đang giao</option>
-        <option value="completed">Hoàn thành</option>
-        <option value="cancelled">Đã hủy</option>
-      </select>
-    </div>
-  </div>
+  </form>
 
   <div class="section-card">
     <div class="section-header">
@@ -64,7 +67,7 @@
             </td></tr>
           <% } %>
           <% orders.forEach(order => { %>
-            <tr data-code="<%= order.order_code.toLowerCase() %>" data-customer="<%= order.user_id ? order.user_id.full_name.toLowerCase() : '' %>" data-status="<%= order.order_status %>">
+            <tr>
               <td><strong>#<%= order.order_code %></strong></td>
               <td><%= order.user_id ? order.user_id.full_name : 'N/A' %></td>
               <td><%= order.payment_method.toUpperCase() %></td>
@@ -90,7 +93,10 @@
         </tbody>
       </table>
     </div>
-    <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/orders' }) %>
+    <%- include('partials/pagination', {
+      page, totalPages, baseUrl: '/shop/orders',
+      extraQuery: 'search=' + encodeURIComponent(search) + '&status=' + status
+    }) %>
   </div>
 </div>
 
@@ -122,30 +128,6 @@
     banner.style.display = "flex";
     setTimeout(() => { banner.style.display = "none"; }, 12000);
   }
-
-  // Client-side search and filter
-  const orderSearchInput = document.getElementById("orderSearchInput");
-  const orderFilterStatus = document.getElementById("orderFilterStatus");
-
-  function filterOrders() {
-    const query = orderSearchInput.value.toLowerCase().trim();
-    const statusFilter = orderFilterStatus.value;
-    const rows = document.querySelectorAll("#ordersTableBody tr");
-
-    rows.forEach(row => {
-      const code = row.getAttribute("data-code");
-      const customer = row.getAttribute("data-customer");
-      const status = row.getAttribute("data-status");
-
-      const matchesSearch = code.includes(query) || customer.includes(query);
-      const matchesStatus = (statusFilter === "all") || (status === statusFilter);
-
-      row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
-    });
-  }
-
-  orderSearchInput.addEventListener("input", filterOrders);
-  orderFilterStatus.addEventListener("change", filterOrders);
 </script>
 
 <%- include('partials/footer') %>

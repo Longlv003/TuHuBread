@@ -19,7 +19,7 @@ class ShopService {
    * @param {object} data
    */
   async updateProfile(shopId, data) {
-    const { shopName, phoneNumber, address, openTime, closeTime } = data;
+    const { shopName, phoneNumber, address, openTime, closeTime, latitude, longitude } = data;
 
     if (!shopName || !phoneNumber || !address) {
       throw new Error("Tên cửa hàng, số điện thoại và địa chỉ là bắt buộc");
@@ -33,13 +33,28 @@ class ShopService {
       throw new Error("Giờ đóng cửa không hợp lệ (định dạng HH:mm)");
     }
 
-    return shopRepository.update(shopId, {
+    const updateData = {
       shop_name: shopName.trim(),
       phone_number: phoneNumber.trim(),
       address: address.trim(),
       open_time: openTime || null,
       close_time: closeTime || null
-    });
+    };
+
+    // Vị trí trên bản đồ — tuỳ chọn, chỉ cập nhật nếu chủ shop có ghim lại vị trí mới.
+    if (latitude !== undefined && longitude !== undefined && latitude !== "" && longitude !== "") {
+      const parsedLat = parseFloat(latitude);
+      const parsedLng = parseFloat(longitude);
+      if (isNaN(parsedLat) || isNaN(parsedLng) || parsedLat < -90 || parsedLat > 90 || parsedLng < -180 || parsedLng > 180) {
+        throw new Error("Toạ độ vị trí không hợp lệ");
+      }
+      updateData.location = {
+        type: "Point",
+        coordinates: [parsedLng, parsedLat]
+      };
+    }
+
+    return shopRepository.update(shopId, updateData);
   }
 
   /**

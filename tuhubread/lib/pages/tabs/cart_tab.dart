@@ -82,6 +82,7 @@ class CartTab extends StatelessWidget {
                       CartItemCard(
                         key: ValueKey(item.id),
                         item: item,
+                        isPending: cartState.isPending(item.id),
                         onIncrement: () => cubit.incrementQuantity(item.id),
                         onDecrement: () => cubit.decrementQuantity(
                           item.id,

@@ -18,6 +18,15 @@ async function authMiddleware(req, res, next) {
       return res.redirect("/shop/login?error=Access denied");
     }
 
+    // Tài khoản admin không sở hữu shop nào -> shop sẽ là null. Các controller
+    // của shop portal đều giả định req.shop tồn tại (vd. req.shop._id), nên nếu
+    // để lọt qua đây sẽ crash (500) thay vì báo lỗi rõ ràng.
+    if (!shop) {
+      return res.status(403).render("error", {
+        message: "Tài khoản này không quản lý cửa hàng nào.",
+      });
+    }
+
     req.user = account;
     req.shop = shop;
 

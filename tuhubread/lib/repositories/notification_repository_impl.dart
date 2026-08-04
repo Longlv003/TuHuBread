@@ -121,7 +121,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         'token': fcmToken,
         'platform': platform,
       });
-      if (res['data'] != null || res['msg'] == 'OK') {
+      if (res['success'] == true) {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể đăng ký nhận thông báo');
@@ -139,7 +139,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         method: 'DELETE',
         data: {'token': fcmToken},
       );
-      if (res['msg'] == 'OK' || res['data'] != null) {
+      if (res['success'] == true) {
         return const Success(true);
       }
       return Failure(res['msg'] ?? 'Không thể huỷ đăng ký thông báo');

@@ -1,10 +1,10 @@
 const { productModel } = require("../models/product.model");
 const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
-const { productSaleModel } = require("../models/productSale.model");
 const { shopModel } = require("../models/shop.model");
 const { reviewModel } = require("../models/review.model");
 const mongoose = require("mongoose");
+const { escapeRegex } = require("../utils/regex.util");
 
 // GET /api/products
 exports.getProducts = async (req, res) => {
@@ -22,13 +22,11 @@ exports.getProducts = async (req, res) => {
       matchStage.global_category_id = new mongoose.Types.ObjectId(global_category_id);
     }
     if (search) {
-      matchStage.product_name = { $regex: search, $options: "i" };
+      matchStage.product_name = { $regex: escapeRegex(search), $options: "i" };
     }
     if (featured === "true") {
       matchStage.is_featured = true;
     }
-
-    const now = new Date();
 
     const products = await productModel.aggregate([
       { $match: matchStage },
@@ -38,27 +36,6 @@ exports.getProducts = async (req, res) => {
           localField: "_id",
           foreignField: "product_id",
           as: "variants",
-        }
-      },
-      {
-        $lookup: {
-          from: "product_sales",
-          let: { prodId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$prodId"] },
-                    { $eq: ["$status", "active"] },
-                    { $lt: ["$start_date", now] },
-                    { $gt: ["$end_date", now] }
-                  ]
-                }
-              }
-            }
-          ],
-          as: "active_sales"
         }
       },
       {
@@ -113,13 +90,6 @@ exports.getProducts = async (req, res) => {
               { $arrayElemAt: ["$variants.image", 0] },
               "/images/products/prod_special.jpg"
             ]
-          },
-          active_sale: {
-            $cond: {
-              if: { $gt: [{ $size: "$active_sales" }, 0] },
-              then: { $arrayElemAt: ["$active_sales", 0] },
-              else: null
-            }
           }
         }
       }
@@ -154,8 +124,6 @@ exports.getBestSellers = async (req, res) => {
       matchStage.shop_id = new mongoose.Types.ObjectId(shop_id);
     }
 
-    const now = new Date();
-
     const products = await productModel.aggregate([
       { $match: matchStage },
       {
@@ -164,27 +132,6 @@ exports.getBestSellers = async (req, res) => {
           localField: "_id",
           foreignField: "product_id",
           as: "variants",
-        }
-      },
-      {
-        $lookup: {
-          from: "product_sales",
-          let: { prodId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$prodId"] },
-                    { $eq: ["$status", "active"] },
-                    { $lt: ["$start_date", now] },
-                    { $gt: ["$end_date", now] }
-                  ]
-                }
-              }
-            }
-          ],
-          as: "active_sales"
         }
       },
       {
@@ -240,13 +187,6 @@ exports.getBestSellers = async (req, res) => {
               { $arrayElemAt: ["$variants.image", 0] },
               "/images/products/prod_special.jpg"
             ]
-          },
-          active_sale: {
-            $cond: {
-              if: { $gt: [{ $size: "$active_sales" }, 0] },
-              then: { $arrayElemAt: ["$active_sales", 0] },
-              else: null
-            }
           }
         }
       },
@@ -272,133 +212,6 @@ exports.getBestSellers = async (req, res) => {
   return res.json(dataRes);
 };
 
-// GET /api/products/sales
-exports.getSaleProducts = async (req, res) => {
-  let dataRes = { msg: "OK", data: null };
-
-  try {
-    const { shop_id } = req.query;
-    const matchStage = { status: "active" };
-    if (shop_id) {
-      matchStage.shop_id = new mongoose.Types.ObjectId(shop_id);
-    }
-
-    const now = new Date();
-
-    const products = await productModel.aggregate([
-      { $match: matchStage },
-      {
-        $lookup: {
-          from: "product_variants",
-          localField: "_id",
-          foreignField: "product_id",
-          as: "variants",
-        }
-      },
-      {
-        $lookup: {
-          from: "product_sales",
-          let: { prodId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$prodId"] },
-                    { $eq: ["$status", "active"] },
-                    { $lt: ["$start_date", now] },
-                    { $gt: ["$end_date", now] }
-                  ]
-                }
-              }
-            }
-          ],
-          as: "active_sales"
-        }
-      },
-      {
-        $lookup: {
-          from: "reviews",
-          localField: "_id",
-          foreignField: "product_id",
-          as: "db_reviews",
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          shop_id: 1,
-          global_category_id: 1,
-          product_name: 1,
-          product_slug: 1,
-          description: 1,
-          preparation_time_minutes: 1,
-          status: 1,
-          is_featured: 1,
-          is_new: 1,
-          rating: {
-            $cond: {
-              if: { $gt: [{ $size: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } } }, 0] },
-              then: {
-                $round: [
-                  {
-                    $avg: {
-                      $map: {
-                        input: { $filter: { input: "$db_reviews", as: "r", cond: { $eq: ["$$r.status", "visible"] } } },
-                        as: "rev",
-                        in: "$$rev.rating"
-                      }
-                    }
-                  },
-                  1
-                ]
-              },
-              else: 0.0
-            }
-          },
-          sales_count: { $sum: "$variants.sold_quantity" },
-          price: {
-            $ifNull: [
-              { $arrayElemAt: ["$variants.price", 0] },
-              0
-            ]
-          },
-          image: {
-            $ifNull: [
-              { $arrayElemAt: ["$variants.image", 0] },
-              "/images/products/prod_special.jpg"
-            ]
-          },
-          active_sale: {
-            $cond: {
-              if: { $gt: [{ $size: "$active_sales" }, 0] },
-              then: { $arrayElemAt: ["$active_sales", 0] },
-              else: null
-            }
-          }
-        }
-      },
-      // CHỈ lọc các sản phẩm có chương trình sale đang active thực tế
-      { $match: { active_sale: { $ne: null } } }
-    ]);
-
-    dataRes.data = products.map((product) => {
-      const fileName = product.image ? product.image.split("/").pop() : "prod_special.jpg";
-      return {
-        ...product,
-        image: `${req.protocol}://${req.get("host")}/images/products/${fileName}`,
-      };
-    });
-
-  } catch (err) {
-    console.error("Get sale products error:", err.message);
-    dataRes.msg = "Server error: " + err.message;
-    return res.status(500).json(dataRes);
-  }
-
-  return res.json(dataRes);
-};
-
 // GET /api/products/featured
 exports.getFeaturedProducts = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
@@ -410,8 +223,6 @@ exports.getFeaturedProducts = async (req, res) => {
       matchStage.shop_id = new mongoose.Types.ObjectId(shop_id);
     }
 
-    const now = new Date();
-
     const products = await productModel.aggregate([
       { $match: matchStage },
       {
@@ -420,27 +231,6 @@ exports.getFeaturedProducts = async (req, res) => {
           localField: "_id",
           foreignField: "product_id",
           as: "variants",
-        }
-      },
-      {
-        $lookup: {
-          from: "product_sales",
-          let: { prodId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$prodId"] },
-                    { $eq: ["$status", "active"] },
-                    { $lt: ["$start_date", now] },
-                    { $gt: ["$end_date", now] }
-                  ]
-                }
-              }
-            }
-          ],
-          as: "active_sales"
         }
       },
       {
@@ -495,13 +285,6 @@ exports.getFeaturedProducts = async (req, res) => {
               { $arrayElemAt: ["$variants.image", 0] },
               "/images/products/prod_special.jpg"
             ]
-          },
-          active_sale: {
-            $cond: {
-              if: { $gt: [{ $size: "$active_sales" }, 0] },
-              then: { $arrayElemAt: ["$active_sales", 0] },
-              else: null
-            }
           }
         }
       }
@@ -541,18 +324,10 @@ exports.getProductDetail = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const now = new Date();
-
     // Query các dữ liệu liên quan song song
-    const [variants, options, activeSales, shop, dbReviews] = await Promise.all([
+    const [variants, options, shop, dbReviews] = await Promise.all([
       productVariantModel.find({ product_id: product._id, status: "active" }),
       productOptionModel.find({ product_id: product._id, status: "active" }),
-      productSaleModel.findOne({
-        product_id: product._id,
-        status: "active",
-        start_date: { $lte: now },
-        end_date: { $gte: now }
-      }),
       shopModel.findOne({ _id: product.shop_id }),
       reviewModel.find({ product_id: product._id, status: "visible" })
         .populate("user_id", "full_name avatar")
@@ -617,15 +392,9 @@ exports.getProductDetail = async (req, res) => {
 
     const otherShopsData = await Promise.all(
       otherProducts.map(async (op) => {
-        const [opShop, opVariants, opSale] = await Promise.all([
+        const [opShop, opVariants] = await Promise.all([
           shopModel.findOne({ _id: op.shop_id }),
           productVariantModel.find({ product_id: op._id, status: "active" }),
-          productSaleModel.findOne({
-            product_id: op._id,
-            status: "active",
-            start_date: { $lte: now },
-            end_date: { $gte: now }
-          })
         ]);
 
         if (!opShop) return null;
@@ -637,7 +406,7 @@ exports.getProductDetail = async (req, res) => {
           shop_name: opShop.shop_name,
           logo: opShop.logo ? (opShop.logo.startsWith("http") ? opShop.logo : `${req.protocol}://${req.get("host")}/images/shops/${opShop.logo.split("/").pop()}`) : null,
           price: basePrice,
-          sale_price: opSale ? opSale.sale_price : (opVariants.length > 0 && opVariants[0].sale_price ? opVariants[0].sale_price : null)
+          sale_price: opVariants.length > 0 ? opVariants[0].sale_price : null
         };
       })
     );
@@ -671,7 +440,6 @@ exports.getProductDetail = async (req, res) => {
       reviews: formattedReviews,
       variants: formattedVariants,
       options: options,
-      active_sale: activeSales,
       other_shops: otherShops
     };
 

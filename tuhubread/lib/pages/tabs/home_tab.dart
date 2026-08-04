@@ -380,7 +380,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                                           ),
                                           const SizedBox(width: 3),
                                           Text(
-                                            shop.rating == 99
+                                            shop.rating == null
                                                 ? "Mới"
                                                 : "${shop.rating}",
                                             style: const TextStyle(
@@ -392,6 +392,23 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                                         ],
                                       ),
                                     ),
+                                    if (shop.distanceKm != null) ...[
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.near_me_rounded,
+                                        color: Color(0xFF95A5A6),
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '${shop.distanceKm} km',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF7F8C8D),
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(width: 8),
                                     const Icon(
                                       Icons.phone_in_talk_rounded,

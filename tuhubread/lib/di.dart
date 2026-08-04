@@ -10,7 +10,6 @@ import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/blocs/order/order_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/voucher/voucher_cubit.dart';
-import 'package:tuhubread/blocs/notification/notification_cubit.dart';
 import 'package:tuhubread/repositories/address_repository.dart';
 import 'package:tuhubread/repositories/address_repository_impl.dart';
 import 'package:tuhubread/repositories/home_repository.dart';
@@ -27,11 +26,7 @@ import 'package:tuhubread/repositories/payment_repository.dart';
 import 'package:tuhubread/repositories/payment_repository_impl.dart';
 import 'package:tuhubread/services/api_service.dart';
 import 'package:tuhubread/services/location_service.dart';
-import 'package:tuhubread/services/push_notification_service.dart';
-import 'package:tuhubread/services/vietnam_address_service.dart';
 import 'package:tuhubread/services/notification_service.dart';
-import 'package:tuhubread/repositories/notification_repository.dart';
-import 'package:tuhubread/repositories/notification_repository_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -57,7 +52,10 @@ Future<void> init() async {
     () => HomeRepositoryImpl(apiService: getIt<ApiService>()),
   );
   getIt.registerFactory<HomeCubit>(
-    () => HomeCubit(repository: getIt<HomeRepository>()),
+    () => HomeCubit(
+      repository: getIt<HomeRepository>(),
+      locationService: getIt<LocationService>(),
+    ),
   );
 
   // ─── Product Detail ───────────────────────────────────────────────────────
@@ -88,9 +86,6 @@ Future<void> init() async {
   getIt.registerFactory<AddressCubit>(
     () => AddressCubit(repository: getIt<AddressRepository>()),
   );
-  getIt.registerLazySingleton<VietnamAddressService>(
-    () => VietnamAddressService(),
-  );
   getIt.registerLazySingleton<LocationService>(() => LocationService());
 
   // ─── Order ────────────────────────────────────────────────────────────────
@@ -112,8 +107,5 @@ Future<void> init() async {
   // ─── Notification ─────────────────────────────────────────────────────────
   getIt.registerLazySingleton<NotificationCubit>(
     () => NotificationCubit(repository: getIt<NotificationRepository>()),
-  );
-  getIt.registerLazySingleton<PushNotificationService>(
-    () => PushNotificationService(repository: getIt<NotificationRepository>()),
   );
 }

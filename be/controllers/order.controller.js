@@ -9,7 +9,6 @@ const { productVariantModel } = require("../models/productVariant.model");
 const { productOptionModel } = require("../models/productOption.model");
 const { cartModel } = require("../models/cart.model");
 const { cartItemModel } = require("../models/cartItem.model");
-const { voucherModel } = require("../models/voucher.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 const socketService = require("../services/socket.service");
 const notificationService = require("../services/notification.service");
@@ -47,8 +46,22 @@ exports.getOrders = async (req, res) => {
       .populate("shop_id")
       .sort({ createdAt: -1 });
 
-    const reviews = await reviewRepository.findByOrderIds(orders.map(o => o._id));
-    const reviewByOrderId = new Map(reviews.map(r => [String(r.order_id), r]));
+    const orderIds = orders.map(o => o._id);
+    const [reviews, itemCounts] = await Promise.all([
+      reviewRepository.findByOrderIds(orderIds),
+      orderDetailModel.aggregate([
+        { $match: { order_id: { $in: orderIds } } },
+        { $group: { _id: "$order_id", count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const itemCountByOrderId = new Map(itemCounts.map(i => [String(i._id), i.count]));
+    const reviewedProductIdsByOrderId = new Map();
+    for (const r of reviews) {
+      const key = String(r.order_id);
+      if (!reviewedProductIdsByOrderId.has(key)) reviewedProductIdsByOrderId.set(key, new Set());
+      reviewedProductIdsByOrderId.get(key).add(String(r.product_id));
+    }
 
     dataRes.data = orders.map(order => {
       const shopLogo = order.shop_id?.logo
@@ -56,7 +69,7 @@ exports.getOrders = async (req, res) => {
           ? order.shop_id.logo
           : `${req.protocol}://${req.get("host")}/images/shops/${order.shop_id.logo.split("/").pop()}`)
         : null;
-      const review = reviewByOrderId.get(String(order._id)) || null;
+      const orderIdKey = String(order._id);
 
       return {
         ...order.toObject(),
@@ -64,7 +77,10 @@ exports.getOrders = async (req, res) => {
           shop_name: order.shop_id.shop_name,
           logo: shopLogo
         } : null,
-        review: review ? { rating: review.rating, comment: review.comment } : null
+        // Đơn có thể có nhiều sản phẩm, mỗi sản phẩm đánh giá riêng — dùng 2 số
+        // này để hiển thị "Đã đánh giá X/Y sản phẩm" thay vì 1 review dùng chung.
+        items_count: itemCountByOrderId.get(orderIdKey) || 0,
+        reviewed_count: reviewedProductIdsByOrderId.get(orderIdKey)?.size || 0,
       };
     });
 
@@ -99,7 +115,14 @@ exports.getOrderById = async (req, res) => {
     }
 
     const items = await orderDetailModel.find({ order_id: order._id });
-    const review = await reviewRepository.findByOrderId(order._id);
+    const reviews = await reviewRepository.findAllByOrderId(order._id);
+    const reviewByProductId = new Map(reviews.map(r => [String(r.product_id), r]));
+
+    const toFullImageUrl = (relPath) => {
+      if (!relPath) return null;
+      if (relPath.startsWith("http")) return relPath;
+      return `${req.protocol}://${req.get("host")}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
+    };
 
     const shopLogo = order.shop_id?.logo
       ? (order.shop_id.logo.startsWith("http")
@@ -115,17 +138,27 @@ exports.getOrderById = async (req, res) => {
           logo: shopLogo,
           phone: order.shop_id.phone_number
         } : null,
-        review: review ? { rating: review.rating, comment: review.comment } : null
       },
+      // Mỗi sản phẩm trong đơn đánh giá riêng — trả về danh sách đánh giá đầy đủ
+      // (kèm product_id) để client tự đối chiếu với từng item.
+      reviews: reviews.map(r => ({
+        _id: r._id,
+        product_id: r.product_id,
+        rating: r.rating,
+        comment: r.comment,
+        images: (r.images || []).map(toFullImageUrl),
+      })),
       items: items.map(item => {
         const itemImage = item.product_image
           ? (item.product_image.startsWith("http")
             ? item.product_image
             : `${req.protocol}://${req.get("host")}/images/products/${item.product_image.split("/").pop()}`)
           : null;
+        const review = reviewByProductId.get(String(item.product_id)) || null;
         return {
           ...item.toObject(),
-          product_image: itemImage
+          product_image: itemImage,
+          is_reviewed: !!review,
         };
       })
     };
@@ -200,7 +233,13 @@ exports.createReview = async (req, res) => {
       return res.status(404).json(dataRes);
     }
 
-    const review = await reviewService.createReviewForOrder(user._id, id, req.body);
+    const images = (req.files || []).map((f) => `/images/reviews/${f.filename}`);
+    const review = await reviewService.createReviewForOrder(user._id, id, {
+      productId: req.body.product_id,
+      rating: req.body.rating,
+      comment: req.body.comment,
+      images,
+    });
     dataRes.msg = "Đánh giá thành công, cảm ơn bạn!";
     dataRes.data = review;
   } catch (err) {
@@ -313,8 +352,6 @@ exports.createOrder = async (req, res) => {
         !mongoose.Types.ObjectId.isValid(item.product_id) ||
         !item.variant_id ||
         !mongoose.Types.ObjectId.isValid(item.variant_id) ||
-        !item.shop_id ||
-        !mongoose.Types.ObjectId.isValid(item.shop_id) ||
         !item.quantity ||
         item.quantity <= 0
       ) {
@@ -331,6 +368,9 @@ exports.createOrder = async (req, res) => {
         dataRes.msg = `Sản phẩm "${item.product_name || "không tên"}" không tồn tại hoặc đã ngừng bán`;
         return res.status(400).json(dataRes);
       }
+      // Không tin shop_id do client gửi lên — luôn lấy từ product thật trong DB
+      // để tránh 1 item bị gán nhầm/cố ý sang shop khác.
+      item.shop_id = product.shop_id;
 
       const variant = await productVariantModel.findOne({
         _id: item.variant_id,
@@ -400,8 +440,12 @@ exports.createOrder = async (req, res) => {
 
       appliedVoucher = savedVoucherDoc.voucher_id;
       const overallItemsTotal = items.reduce((sum, it) => sum + it.unit_price * it.quantity, 0);
-      if (overallItemsTotal < appliedVoucher.minOrderAmount) {
-        dataRes.msg = `Đơn hàng tối thiểu phải từ ${appliedVoucher.minOrderAmount}đ để sử dụng voucher này`;
+      if (overallItemsTotal < appliedVoucher.min_order_amount) {
+        dataRes.msg = `Đơn hàng tối thiểu phải từ ${appliedVoucher.min_order_amount}đ để sử dụng voucher này`;
+        return res.status(400).json(dataRes);
+      }
+      if (appliedVoucher.usage_limit && appliedVoucher.used_count >= appliedVoucher.usage_limit) {
+        dataRes.msg = "Voucher đã hết lượt sử dụng";
         return res.status(400).json(dataRes);
       }
     }
@@ -413,6 +457,14 @@ exports.createOrder = async (req, res) => {
         dataRes.msg = "Tất cả sản phẩm trong đơn hàng phải thuộc cùng một cửa hàng";
         return res.status(400).json(dataRes);
       }
+    }
+
+    // Voucher riêng của 1 shop (voucher_type "shop") chỉ được áp dụng cho đơn
+    // hàng của đúng shop đó — trước đây không kiểm tra, cho phép dùng voucher
+    // của shop A cho đơn hàng của shop B.
+    if (appliedVoucher && appliedVoucher.voucher_type === "shop" && String(appliedVoucher.shop_id) !== String(shopId)) {
+      dataRes.msg = "Voucher này chỉ áp dụng cho đơn hàng của cửa hàng đã phát hành voucher";
+      return res.status(400).json(dataRes);
     }
 
     const shop = await shopModel.findOne({ _id: shopId, deleted_at: null });
@@ -434,53 +486,87 @@ exports.createOrder = async (req, res) => {
     // Tính toán lượng giảm giá tổng của voucher
     let totalDiscount = 0;
     if (appliedVoucher) {
-      if (appliedVoucher.discountType === "free_shipping") {
+      if (appliedVoucher.discount_type === "free_shipping") {
         totalDiscount = deliveryFee;
-      } else if (appliedVoucher.discountType === "percent") {
-        let discount = itemsTotal * (appliedVoucher.discountValue / 100);
-        if (appliedVoucher.maxDiscountAmount && discount > appliedVoucher.maxDiscountAmount) {
-          discount = appliedVoucher.maxDiscountAmount;
+      } else if (appliedVoucher.discount_type === "percent") {
+        let discount = itemsTotal * (appliedVoucher.discount_value / 100);
+        if (appliedVoucher.max_discount_amount && discount > appliedVoucher.max_discount_amount) {
+          discount = appliedVoucher.max_discount_amount;
         }
         totalDiscount = discount;
-      } else if (appliedVoucher.discountType === "amount") {
-        totalDiscount = appliedVoucher.discountValue;
+      } else if (appliedVoucher.discount_type === "amount") {
+        totalDiscount = appliedVoucher.discount_value;
       }
     }
 
     const orderDiscount = Math.min(totalDiscount, itemsTotal + deliveryFee);
     const totalAmount = Math.max(0, itemsTotal + deliveryFee - orderDiscount);
 
-    const order = await orderModel.create({
-      order_code: generateOrderCode(),
-      user_id: user._id,
-      shop_id: shopId,
-      voucher_id: appliedVoucher ? appliedVoucher._id : null,
-      address_id: address._id,
-      payment_method,
-      delivery_option,
-      items_total: itemsTotal,
-      discount_amount: orderDiscount,
-      delivery_fee: deliveryFee,
-      total_amount: totalAmount,
-      note: note || null,
-    });
+    // Trừ tồn kho + claim voucher một cách nguyên tử TRƯỚC khi tạo order, để
+    // tránh oversell và tránh 1 voucher bị dùng 2 lần khi có request đồng thời.
+    // Nếu có lỗi bất kỳ sau đó, rollback toàn bộ side-effect đã xảy ra.
+    let order;
+    const stockClaims = [];
+    let voucherClaimed = false;
+    try {
+      for (const item of items) {
+        await orderService._claimStock(item.variant_id, item.quantity);
+        stockClaims.push({ variantId: item.variant_id, quantity: item.quantity });
+      }
 
-    await orderDetailModel.insertMany(
-      items.map((it) => ({
-        order_id: order._id,
-        product_id: it.product_id,
-        variant_id: it.variant_id,
-        quantity: it.quantity,
-        product_name: it.product_name,
-        variant_name: it.variant_name,
-        product_image: it.product_image || null,
-        base_price: it.base_price,
-        selected_options: it.selected_options || [],
-        option_total_price: it.option_total_price || 0,
-        unit_price: it.unit_price,
-        subtotal: it.unit_price * it.quantity,
-      })),
-    );
+      if (savedVoucherDoc && appliedVoucher) {
+        await orderService._claimVoucherAtomically(savedVoucherDoc, appliedVoucher);
+        voucherClaimed = true;
+      }
+
+      order = await orderModel.create({
+        order_code: generateOrderCode(),
+        user_id: user._id,
+        shop_id: shopId,
+        voucher_id: appliedVoucher ? appliedVoucher._id : null,
+        address_id: address._id,
+        payment_method,
+        delivery_option,
+        items_total: itemsTotal,
+        discount_amount: orderDiscount,
+        delivery_fee: deliveryFee,
+        total_amount: totalAmount,
+        note: note || null,
+      });
+
+      await orderDetailModel.insertMany(
+        items.map((it) => ({
+          order_id: order._id,
+          product_id: it.product_id,
+          variant_id: it.variant_id,
+          quantity: it.quantity,
+          product_name: it.product_name,
+          variant_name: it.variant_name,
+          product_image: it.product_image || null,
+          base_price: it.base_price,
+          selected_options: it.selected_options || [],
+          option_total_price: it.option_total_price || 0,
+          unit_price: it.unit_price,
+          subtotal: it.unit_price * it.quantity,
+        })),
+      );
+    } catch (err) {
+      try {
+        if (order) {
+          await orderDetailModel.deleteMany({ order_id: order._id });
+          await orderModel.deleteOne({ _id: order._id });
+        }
+        for (const claim of stockClaims) {
+          await orderService._releaseStock(claim.variantId, claim.quantity);
+        }
+        if (voucherClaimed) {
+          await orderService._releaseVoucherClaim(savedVoucherDoc, appliedVoucher);
+        }
+      } catch (rollbackErr) {
+        console.error("[createOrder] Rollback failed:", rollbackErr.message);
+      }
+      throw err;
+    }
 
     socketService.emitNewOrder(shopId, order);
     notificationService.notifyUser(user._id, {
@@ -500,19 +586,6 @@ exports.createOrder = async (req, res) => {
         total_amount: totalAmount,
       }
     ];
-
-    // Đánh dấu voucher đã sử dụng
-    if (savedVoucherDoc) {
-      savedVoucherDoc.status = "used";
-      savedVoucherDoc.used_at = new Date();
-      await savedVoucherDoc.save();
-
-      if (appliedVoucher) {
-        await voucherModel.findByIdAndUpdate(appliedVoucher._id, {
-          $inc: { used_count: 1 }
-        });
-      }
-    }
 
     dataRes.data = {
       orders: createdOrders,

@@ -4,6 +4,22 @@ const productBatchRepository = require("../repositories/productBatch.repository"
 const { toSlug } = require("../utils/slug.util");
 
 class ProductVariantService {
+  /**
+   * Sinh variant_slug duy nhất TRONG PHẠM VI 1 sản phẩm — 2 biến thể tên
+   * giống nhau (vd. cùng "Size L" ở 2 sản phẩm khác nhau, hoặc lỡ đặt trùng
+   * tên trong cùng sản phẩm) trước đây sinh ra cùng 1 slug không phân biệt.
+   * Thêm hậu tố -2, -3... khi phát hiện trùng trong cùng sản phẩm.
+   */
+  async _generateUniqueVariantSlug(productId, baseSlug, excludeVariantId = null) {
+    let slug = baseSlug;
+    let suffix = 2;
+    while (await productVariantRepository.existsByProductIdAndSlug(productId, slug, excludeVariantId)) {
+      slug = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+    return slug;
+  }
+
   async addVariant(shopId, productId, data) {
     const product = await productRepository.findByIdScoped(productId, shopId);
     if (!product) {
@@ -28,10 +44,13 @@ class ProductVariantService {
       }
     }
 
+    const baseSlug = toSlug(variantName) || `variant-${Date.now()}`;
+    const uniqueSlug = await this._generateUniqueVariantSlug(productId, baseSlug);
+
     const variant = await productVariantRepository.create({
       product_id: productId,
       variant_name: variantName.trim(),
-      variant_slug: toSlug(variantName) || `variant-${Date.now()}`,
+      variant_slug: uniqueSlug,
       image: image || null,
       price: parsedPrice,
       sale_price: salePrice ? parseFloat(salePrice) : null,
@@ -71,7 +90,8 @@ class ProductVariantService {
 
     if (variantName) {
       updateData.variant_name = variantName.trim();
-      updateData.variant_slug = toSlug(variantName) || variant.variant_slug;
+      const baseSlug = toSlug(variantName) || variant.variant_slug;
+      updateData.variant_slug = await this._generateUniqueVariantSlug(productId, baseSlug, variantId);
     }
     if (price !== undefined && price !== "") {
       const parsedPrice = parseFloat(price);
