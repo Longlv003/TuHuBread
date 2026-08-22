@@ -32,7 +32,6 @@ class VnPayPaymentPage extends StatefulWidget {
 }
 
 class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
-  InAppWebViewController? _webViewController;
   bool _isLoading = true;
   bool _hasHandled = false; // Tránh xử lý redirect 2 lần
 
@@ -89,9 +88,6 @@ class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
                       : MixedContentMode.MIXED_CONTENT_NEVER_ALLOW,
                   clearCache: true,
                 ),
-                onWebViewCreated: (controller) {
-                  _webViewController = controller;
-                },
                 // Chỉ bypass SSL certificate validation ở môi trường dev (VNPAY sandbox
                 // dùng chứng chỉ test). Production luôn phải xác thực chứng chỉ thật để
                 // tránh MITM trên màn hình thanh toán.

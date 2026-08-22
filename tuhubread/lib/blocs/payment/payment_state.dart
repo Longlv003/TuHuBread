@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../models/order_result.model.dart';
 import '../../models/payment_verify_result.model.dart';
 
 abstract class PaymentState extends Equatable {

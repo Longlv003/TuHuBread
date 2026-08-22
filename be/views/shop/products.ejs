@@ -10,6 +10,12 @@
       <h1>Quản lý sản phẩm</h1>
       <p>Thêm mới sản phẩm, quản lý biến thể, topping, thuộc tính và lô hàng</p>
     </div>
+    <div class="header-bar-actions">
+      <button type="button" class="btn-primary-action" onclick="openAddProductModal()">
+        <i class="fa-solid fa-plus"></i>
+        Thêm sản phẩm
+      </button>
+    </div>
   </div>
 
   <div class="search-filter-bar">
@@ -27,110 +33,126 @@
     </div>
   </div>
 
-  <div class="content-grid">
-    <div class="section-card">
-      <div class="section-header">
-        <h3>Danh sách sản phẩm (<%= total %>)</h3>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-icon">Ảnh</th>
-              <th class="col-name">Tên sản phẩm</th>
-              <th>Danh mục</th>
-              <th>Giá</th>
-              <th>Tồn kho</th>
-              <th class="col-status">Trạng thái</th>
-              <th class="col-actions">Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="productsTableBody">
-            <% if (products.length === 0) { %>
-              <tr><td colspan="7">
-                <div class="empty-state">
-                  <div class="empty-state-icon"><i class="fa-solid fa-bread-slice"></i></div>
-                  <div class="empty-state-title">Chưa có sản phẩm nào</div>
-                  <div class="empty-state-desc">Thêm sản phẩm đầu tiên để khách hàng có thể đặt mua.</div>
-                </div>
-              </td></tr>
-            <% } %>
-            <% products.forEach(p => { %>
-              <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>" style="cursor:pointer;" onclick="window.location='/shop/products/<%= p._id %>'">
-                <td class="col-icon">
-                  <img src="<%= p.display_variant && p.display_variant.image ? p.display_variant.image : 'https://placehold.co/50' %>" onerror="this.src='https://placehold.co/50'">
-                </td>
-                <td class="col-name"><strong><%= p.product_name %></strong></td>
-                <td><%= p.global_category_id ? p.global_category_id.category_name : 'N/A' %></td>
-                <td><%= p.display_variant ? p.display_variant.price.toLocaleString('vi-VN') + 'đ' : 'Chưa có giá' %></td>
-                <td><%= p.display_variant ? p.display_variant.stock_quantity : 0 %></td>
-                <td class="col-status">
-                  <span class="status-badge <%= p.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= p.status %></span>
-                </td>
-                <td class="col-actions" style="text-align:center;">
-                  <div class="actions-wrap" style="justify-content:center;">
-                    <button type="button" class="btn-action btn-delete" onclick="event.stopPropagation(); onDeleteProduct('<%= p._id %>')">Xóa</button>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-      <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/products' }) %>
+  <div class="section-card">
+    <div class="section-header">
+      <h3>Danh sách sản phẩm (<%= total %>)</h3>
     </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-icon">Ảnh</th>
+            <th class="col-name">Tên sản phẩm</th>
+            <th>Danh mục</th>
+            <th>Giá</th>
+            <th>Tồn kho</th>
+            <th class="col-status">Trạng thái</th>
+            <th class="col-actions">Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody">
+          <% if (products.length === 0) { %>
+            <tr><td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-bread-slice"></i></div>
+                <div class="empty-state-title">Chưa có sản phẩm nào</div>
+                <div class="empty-state-desc">Thêm sản phẩm đầu tiên để khách hàng có thể đặt mua.</div>
+              </div>
+            </td></tr>
+          <% } %>
+          <% products.forEach(p => { %>
+            <tr data-name="<%= p.product_name.toLowerCase() %>" data-status="<%= p.status %>" style="cursor:pointer;" onclick="window.location='/shop/products/<%= p._id %>'">
+              <td class="col-icon">
+                <img src="<%= p.display_variant && p.display_variant.image ? p.display_variant.image : 'https://placehold.co/50' %>" onerror="this.src='https://placehold.co/50'">
+              </td>
+              <td class="col-name"><strong><%= p.product_name %></strong></td>
+              <td><%= p.global_category_id ? p.global_category_id.category_name : 'N/A' %></td>
+              <td><%= p.display_variant ? p.display_variant.price.toLocaleString('vi-VN') + 'đ' : 'Chưa có giá' %></td>
+              <td><%= p.display_variant ? p.display_variant.stock_quantity : 0 %></td>
+              <td class="col-status">
+                <span class="status-badge <%= p.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= p.status %></span>
+              </td>
+              <td class="col-actions" style="text-align:center;">
+                <div class="actions-wrap" style="justify-content:center;">
+                  <button type="button" class="btn-action btn-delete" onclick="event.stopPropagation(); onDeleteProduct('<%= p._id %>')">Xóa</button>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('partials/pagination', { page, totalPages, baseUrl: '/shop/products' }) %>
+  </div>
+</div>
 
-    <div class="section-card">
-      <div class="section-header">
-        <h3>Thêm sản phẩm mới</h3>
-      </div>
-      <form id="addProductForm" enctype="multipart/form-data">
+<!-- Dialog thêm sản phẩm mới -->
+<div class="product-modal-overlay" id="addProductModalOverlay">
+  <div class="product-modal-card">
+    <div class="product-modal-header">
+      <h3>Thêm sản phẩm mới</h3>
+      <button type="button" class="product-modal-close" onclick="closeAddProductModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form id="addProductForm" enctype="multipart/form-data">
+      <div class="product-modal-body">
         <div class="form-group">
           <label for="productName">Tên sản phẩm *</label>
           <input type="text" id="productName" name="productName" required placeholder="Ví dụ: Bánh mì thịt nướng">
         </div>
-        <div class="form-group">
-          <label for="globalCategoryId">Danh mục toàn hệ thống *</label>
-          <select id="globalCategoryId" name="globalCategoryId" required>
-            <% globalCategories.forEach(c => { %>
-              <option value="<%= c._id %>"><%= c.category_name %></option>
-            <% }) %>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="globalCategoryId">Danh mục toàn hệ thống *</label>
+            <select id="globalCategoryId" name="globalCategoryId" required>
+              <% globalCategories.forEach(c => { %>
+                <option value="<%= c._id %>"><%= c.category_name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="prepTimeMinutes">Thời gian chuẩn bị (phút)</label>
+            <input type="number" id="prepTimeMinutes" name="prepTimeMinutes" min="0" value="0">
+          </div>
         </div>
         <div class="form-group">
           <label for="description">Mô tả</label>
           <textarea id="description" name="description" rows="2"></textarea>
         </div>
         <div class="form-group">
-          <label for="prepTimeMinutes">Thời gian chuẩn bị (phút)</label>
-          <input type="number" id="prepTimeMinutes" name="prepTimeMinutes" min="0" value="0">
-        </div>
-        <div class="form-group">
           <label for="storageNote">Ghi chú bảo quản (hiển thị cho khách)</label>
           <textarea id="storageNote" name="storageNote" rows="2" placeholder="Ví dụ: Làm khi có đơn, dùng ngay trong 2h"></textarea>
         </div>
-        <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 20px 0;">
 
-        <div class="form-group">
-          <label for="price">Giá bán *</label>
-          <input type="number" id="price" name="price" required min="0" placeholder="20000">
+        <div class="product-modal-divider"></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Giá bán *</label>
+            <input type="number" id="price" name="price" required min="0" placeholder="20000">
+          </div>
+          <div class="form-group">
+            <label for="stockQuantity">Tồn kho</label>
+            <input type="number" id="stockQuantity" name="stockQuantity" min="0" value="0">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="stockQuantity">Tồn kho</label>
-          <input type="number" id="stockQuantity" name="stockQuantity" min="0" value="0">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiredAt">Hạn sử dụng</label>
+            <input type="date" id="expiredAt" name="expiredAt">
+          </div>
+          <div class="form-group">
+            <label for="variantImage">Ảnh sản phẩm</label>
+            <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewImage(this, 'addPreview')">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="expiredAt">Hạn sử dụng</label>
-          <input type="date" id="expiredAt" name="expiredAt">
-        </div>
-        <div class="form-group">
-          <label for="variantImage">Ảnh sản phẩm</label>
-          <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewImage(this, 'addPreview')">
-          <img id="addPreview" class="preview-box">
-        </div>
+        <img id="addPreview" class="preview-box">
+      </div>
+      <div class="product-modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeAddProductModal()">Hủy</button>
         <button type="submit" class="btn-submit">Lưu sản phẩm</button>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -148,7 +170,32 @@
     }
   }
 
+  const addProductModalOverlay = document.getElementById("addProductModalOverlay");
   const addForm = document.getElementById("addProductForm");
+  const addPreview = document.getElementById("addPreview");
+
+  function openAddProductModal() {
+    addProductModalOverlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeAddProductModal() {
+    addProductModalOverlay.classList.remove("show");
+    document.body.style.overflow = "";
+    addForm.reset();
+    addPreview.style.display = "none";
+  }
+
+  // Đóng dialog khi bấm ra ngoài card hoặc nhấn Esc — hành vi dialog chuẩn.
+  addProductModalOverlay.addEventListener("click", (e) => {
+    if (e.target === addProductModalOverlay) closeAddProductModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && addProductModalOverlay.classList.contains("show")) {
+      closeAddProductModal();
+    }
+  });
+
   addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(addForm);
@@ -161,6 +208,7 @@
       const result = await response.json();
       if (result.status === "success") {
         showToast("Thêm sản phẩm thành công!", "success");
+        closeAddProductModal();
         setTimeout(() => window.location.reload(), 900);
       } else {
         showToast(result.msg || "Thêm sản phẩm thất bại", "error");

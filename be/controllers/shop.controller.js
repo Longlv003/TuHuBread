@@ -3,8 +3,13 @@ const { productModel } = require("../models/product.model");
 const { userModel } = require("../models/user.model");
 const { calculateDistanceKm } = require("../utils/distance.util");
 
-// GET /api/shops?lat=&lng= — lat/lng tuỳ chọn: nếu có, trả kèm distance_km và
-// sắp xếp shop gần nhất lên đầu (dùng để tìm cửa hàng gần vị trí khách hàng).
+// Bán kính mặc định cho danh sách "Cửa hàng gần bạn" ở màn hình chủ. Khác với
+// giới hạn giao hàng tối đa (xem MAX_DELIVERY_DISTANCE_KM trong
+// deliveryFee.util.js) — đây chỉ là phạm vi gợi ý hiển thị.
+const DEFAULT_NEARBY_RADIUS_KM = 10;
+
+// GET /api/shops?lat=&lng=&radius_km= — lat/lng tuỳ chọn: nếu có, trả kèm
+// distance_km, lọc theo bán kính và sắp xếp shop gần nhất lên đầu.
 exports.getShops = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
 
@@ -52,7 +57,15 @@ exports.getShops = async (req, res) => {
     });
 
     if (hasUserLocation) {
-      result = result.sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity));
+      // Lọc theo bán kính rồi mới sắp xếp — shop chưa có toạ độ (distance_km
+      // undefined) vẫn được giữ lại và xếp cuối, để không "biến mất" khỏi app
+      // chỉ vì chủ shop chưa ghim vị trí trên bản đồ.
+      const parsedRadius = parseFloat(req.query.radius_km);
+      const radiusKm = !isNaN(parsedRadius) && parsedRadius > 0 ? parsedRadius : DEFAULT_NEARBY_RADIUS_KM;
+
+      result = result
+        .filter((shop) => shop.distance_km === undefined || shop.distance_km <= radiusKm)
+        .sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity));
     }
 
     dataRes.data = result;

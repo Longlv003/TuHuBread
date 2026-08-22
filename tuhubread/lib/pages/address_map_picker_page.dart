@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../di.dart';
 import '../services/location_service.dart';
@@ -91,6 +92,10 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
 
   List<_PlaceSuggestion> _searchResults = [];
   String? _searchErrorMessage;
+
+  /// Đang ở chế độ tìm kiếm (có chữ trong ô tìm) — khi đó danh sách gợi ý
+  /// che kín bản đồ để khách dễ chọn địa chỉ.
+  bool get _isSearchMode => _searchController.text.trim().isNotEmpty;
 
   // Mặc định trung tâm Hà Nội — app hiện chỉ giao hàng trong phạm vi này
   // (xem address_form_page.dart).
@@ -195,10 +200,13 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
 
   void _onSearchChanged(String query) {
     _searchDebounce?.cancel();
-    if (query.trim().length < 3) {
-      setState(() => _searchResults = []);
-      return;
-    }
+    // Luôn setState để lớp phủ danh sách gợi ý hiện/ẩn ngay khi gõ, không
+    // phải chờ tới lúc gọi API xong.
+    setState(() {
+      _searchErrorMessage = null;
+      if (query.trim().length < 3) _searchResults = [];
+    });
+    if (query.trim().length < 3) return;
     _searchDebounce = Timer(const Duration(milliseconds: 450), () => _search(query.trim()));
   }
 
@@ -250,21 +258,46 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
 
   Future<void> _useCurrentLocation() async {
     setState(() => _isLocating = true);
-    final coords = await _locationService.getCurrentCoordinates();
-    if (!mounted) return;
-    setState(() => _isLocating = false);
-    if (coords == null) {
+    try {
+      final coords = await _locationService.requestCurrentLocation();
+      if (!mounted) return;
+      _mapController?.evaluateJavascript(
+        source: 'window.setMapCenter(${coords.latitude}, ${coords.longitude}, 17);',
+      );
+    } on LocationException catch (e) {
+      if (!mounted) return;
+      final String message;
+      SnackBarAction? action;
+      switch (e.reason) {
+        case LocationFailureReason.serviceDisabled:
+          message = 'Định vị (GPS) của máy đang tắt';
+          action = SnackBarAction(
+            label: 'Bật GPS',
+            textColor: Colors.white,
+            onPressed: () => Geolocator.openLocationSettings(),
+          );
+        case LocationFailureReason.permissionDenied:
+          message = 'Bạn cần cho phép quyền vị trí để dùng tính năng này';
+        case LocationFailureReason.permissionDeniedForever:
+          message = 'Quyền vị trí đã bị từ chối trước đó';
+          action = SnackBarAction(
+            label: 'Cài đặt',
+            textColor: Colors.white,
+            onPressed: () => Geolocator.openAppSettings(),
+          );
+        case LocationFailureReason.timeout:
+          message = 'Không bắt được tín hiệu định vị, vui lòng thử lại';
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể lấy vị trí hiện tại của máy'),
-          backgroundColor: Color(0xFFE74C3C),
+        SnackBar(
+          content: Text(message),
+          backgroundColor: const Color(0xFFE74C3C),
+          action: action,
         ),
       );
-      return;
+    } finally {
+      if (mounted) setState(() => _isLocating = false);
     }
-    _mapController?.evaluateJavascript(
-      source: 'window.setMapCenter(${coords.latitude}, ${coords.longitude}, 17);',
-    );
   }
 
   void _confirm() {
@@ -329,12 +362,17 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
               ),
             ),
           ),
-          SizedBox(
-            height: 300,
+          Expanded(
             child: Stack(
-              alignment: Alignment.center,
               children: [
-                InAppWebView(
+                Column(
+                  children: [
+                    SizedBox(
+                      height: 300,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          InAppWebView(
                   initialData: InAppWebViewInitialData(data: _html),
                   initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
                   onWebViewCreated: (controller) {
@@ -366,29 +404,42 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
                     ),
                   ),
                 ),
-                Positioned(
-                  right: 12,
-                  bottom: 12,
-                  child: FloatingActionButton.small(
-                    heroTag: 'currentLocationBtn',
-                    backgroundColor: Colors.white,
-                    onPressed: _isLocating ? null : _useCurrentLocation,
-                    child: _isLocating
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE67E22)),
-                          )
-                        : const Icon(Icons.my_location_rounded, color: Color(0xFFE67E22), size: 20),
-                  ),
+                          Positioned(
+                            right: 12,
+                            bottom: 12,
+                            child: FloatingActionButton.small(
+                              heroTag: 'currentLocationBtn',
+                              backgroundColor: Colors.white,
+                              onPressed: _isLocating ? null : _useCurrentLocation,
+                              child: _isLocating
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Color(0xFFE67E22)),
+                                    )
+                                  : const Icon(Icons.my_location_rounded,
+                                      color: Color(0xFFE67E22), size: 20),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(child: _buildCurrentPinPanel()),
+                  ],
                 ),
+                // Đang gõ tìm kiếm -> phủ kín danh sách gợi ý lên trên, che
+                // bản đồ đi cho dễ chọn. Dùng lớp phủ thay vì gỡ WebView khỏi
+                // cây widget để bản đồ không bị tạo lại (mất vị trí đã ghim).
+                if (_isSearchMode)
+                  Positioned.fill(
+                    child: Container(
+                      color: const Color(0xFFFDFBF7),
+                      child: _buildSearchResultsList(),
+                    ),
+                  ),
               ],
             ),
-          ),
-          Expanded(
-            child: _searchController.text.trim().length >= 3
-                ? _buildSearchResultsList()
-                : _buildCurrentPinPanel(),
           ),
         ],
       ),
@@ -407,6 +458,17 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
             _searchErrorMessage!,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Color(0xFFE74C3C), fontSize: 13),
+          ),
+        ),
+      );
+    }
+    if (_searchController.text.trim().length < 3) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text(
+            'Nhập ít nhất 3 ký tự để tìm địa điểm',
+            style: TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
           ),
         ),
       );

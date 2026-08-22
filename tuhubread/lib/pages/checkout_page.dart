@@ -113,6 +113,10 @@ class _CheckoutContentState extends State<_CheckoutContent> {
   double get _currentDeliveryFee =>
       _deliveryFees?.feeFor(_selectedDelivery.id) ?? _selectedDelivery.fee;
 
+  /// Địa chỉ đang chọn có bị chặn giao hàng không (quá xa, hoặc chưa ghim vị
+  /// trí trên bản đồ nên không kiểm tra được) — backend quyết định.
+  bool get _isDeliveryBlocked => _deliveryFees?.isBlocked ?? false;
+
   /// Gọi backend tính lại phí ship thật theo khoảng cách từ chi nhánh tới
   /// địa chỉ vừa chọn — dùng widget.items.first vì giỏ hàng/luồng thanh
   /// toán chỉ bao giờ thuộc đúng 1 chi nhánh tại 1 thời điểm.
@@ -976,16 +980,52 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                     value: total < 0 ? 0.0 : total,
                     emphasize: true,
                   ),
+                  // Không giao được tới địa chỉ này — báo đỏ + khoá nút đặt
+                  // hàng (phí ship giữ nguyên giá trị cuối vì đơn không thể
+                  // đặt được trong trường hợp này).
+                  if (_isDeliveryBlocked) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDECEA),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE74C3C)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: Color(0xFFE74C3C), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _deliveryFees?.blockMessage ??
+                                  'Không thể giao hàng tới địa chỉ này. '
+                                      'Vui lòng chọn địa chỉ khác.',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFE74C3C),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isPlacingOrder
+                      onPressed: (_isPlacingOrder || _isDeliveryBlocked)
                           ? null
                           : () => _placeOrder(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE67E22),
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFFF1EAE1),
+                        disabledForegroundColor: const Color(0xFFBDC3C7),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -1001,9 +1041,9 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                 color: Colors.white,
                               ),
                             )
-                          : Text(
-                              l10n.cartCheckout,
-                              style: const TextStyle(
+                          : const Text(
+                              'Xác nhận đơn hàng',
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),

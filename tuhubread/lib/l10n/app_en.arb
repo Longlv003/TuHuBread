@@ -7,6 +7,10 @@
   "loginSubheading": "Please enter your email and password",
   "emailHint": "Email",
   "passwordHint": "Password",
+  "authEmailPlaceholder": "example@gmail.com",
+  "authPasswordPlaceholder": "••••••••",
+  "authNamePlaceholder": "John Doe",
+  "authConfirmPasswordPlaceholder": "Re-type password",
   "confirmPasswordHint": "Confirm Password",
   "loginButton": "Login",
   "noAccountText": "Don't have an account? ",
@@ -435,5 +439,14 @@
   "paymentVnpayFailedOrCancelled": "VNPay payment failed or was cancelled",
   "paymentVnpayInitFailed": "Could not initialize VNPay payment link",
   "checkoutVnpayInitFailed": "Could not create payment link",
-  "checkoutVnpayFailed": "Payment via VNPAY was not successful."
+  "checkoutVnpayFailed": "Payment via VNPAY was not successful.",
+  "onboardingTitle1": "All your favorites",
+  "onboardingDesc1": "Get all your loved breads in one place. Just place the order, we do the rest.",
+  "onboardingTitle2": "Order from the shop you want",
+  "onboardingDesc2": "Browse shops near you, compare ratings and pick the one you like best.",
+  "onboardingTitle3": "Fast delivery to your door",
+  "onboardingDesc3": "Track your order in real time and get your bread hot and fresh at home.",
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get started"
 }

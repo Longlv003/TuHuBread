@@ -12,6 +12,47 @@
     </div>
   </div>
 
+  <!-- Thống kê số lượng thông báo theo từng loại (tính trên toàn bộ dữ liệu,
+       không phải chỉ trang đang xem) -->
+  <div class="notif-stat-grid">
+    <div class="notif-stat-card">
+      <div class="notif-stat-icon" style="background: var(--primary-tint); color: var(--primary);">
+        <i class="fa-solid fa-bell"></i>
+      </div>
+      <div>
+        <div class="notif-stat-value"><%= total %></div>
+        <div class="notif-stat-label">Tổng thông báo</div>
+      </div>
+    </div>
+    <div class="notif-stat-card">
+      <div class="notif-stat-icon" style="background: #FDECEA; color: #E74C3C;">
+        <i class="fa-solid fa-tag"></i>
+      </div>
+      <div>
+        <div class="notif-stat-value"><%= countsByType.voucher || 0 %></div>
+        <div class="notif-stat-label">Khuyến mại</div>
+      </div>
+    </div>
+    <div class="notif-stat-card">
+      <div class="notif-stat-icon" style="background: #EAFAF1; color: #27AE60;">
+        <i class="fa-solid fa-receipt"></i>
+      </div>
+      <div>
+        <div class="notif-stat-value"><%= countsByType.order || 0 %></div>
+        <div class="notif-stat-label">Đơn hàng</div>
+      </div>
+    </div>
+    <div class="notif-stat-card">
+      <div class="notif-stat-icon" style="background: #EAF2F8; color: #2980B9;">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      <div>
+        <div class="notif-stat-value"><%= countsByType.system || 0 %></div>
+        <div class="notif-stat-label">Hệ thống</div>
+      </div>
+    </div>
+  </div>
+
   <div class="content-grid">
     <div class="section-card">
       <div class="section-header"><h3>Lịch sử thông báo đã gửi (<%= total %>)</h3></div>
@@ -29,9 +70,18 @@
               </td></tr>
             <% } %>
             <% notifications.forEach(n => { %>
-              <tr>
+              <tr
+                style="cursor:pointer;"
+                onclick='showNotificationDetail(<%= JSON.stringify({
+                  title: n.title,
+                  body: n.body,
+                  type: n.type,
+                  recipient: n.user_id ? n.user_id.full_name : null,
+                  sentAt: n.sent_at
+                }) %>)'
+              >
                 <td><strong><%= n.title %></strong></td>
-                <td style="max-width:260px;"><%= n.body %></td>
+                <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= n.body %></td>
                 <td>
                   <% if (n.type === 'voucher') { %>Khuyến mại
                   <% } else if (n.type === 'order') { %>Đơn hàng
@@ -67,7 +117,76 @@
   </div>
 </div>
 
+<!-- Dialog xem chi tiết thông báo đã gửi -->
+<div class="product-modal-overlay" id="notificationDetailOverlay">
+  <div class="product-modal-card" style="max-width: 480px;">
+    <div class="product-modal-header">
+      <h3>Chi tiết thông báo</h3>
+      <button type="button" class="product-modal-close" onclick="closeNotificationDetail()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="product-modal-body">
+      <div class="form-group">
+        <label>Tiêu đề</label>
+        <p id="notifDetailTitle" style="font-weight:700; color:var(--text);"></p>
+      </div>
+      <div class="form-group">
+        <label>Nội dung</label>
+        <p id="notifDetailBody" style="color:var(--text); line-height:1.5; white-space:pre-wrap;"></p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Loại</label>
+          <p id="notifDetailType" style="color:var(--text-muted);"></p>
+        </div>
+        <div class="form-group">
+          <label>Người nhận</label>
+          <p id="notifDetailRecipient" style="color:var(--text-muted);"></p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Thời gian gửi</label>
+        <p id="notifDetailSentAt" style="color:var(--text-muted);"></p>
+      </div>
+    </div>
+    <div class="product-modal-footer">
+      <button type="button" class="btn-submit" onclick="closeNotificationDetail()">Đóng</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  const notificationDetailOverlay = document.getElementById("notificationDetailOverlay");
+
+  function notificationTypeLabel(type) {
+    if (type === "voucher") return "Khuyến mại";
+    if (type === "order") return "Đơn hàng";
+    return "Hệ thống";
+  }
+
+  function showNotificationDetail(n) {
+    document.getElementById("notifDetailTitle").innerText = n.title;
+    document.getElementById("notifDetailBody").innerText = n.body;
+    document.getElementById("notifDetailType").innerText = notificationTypeLabel(n.type);
+    document.getElementById("notifDetailRecipient").innerText = n.recipient || "Khách hàng của shop";
+    document.getElementById("notifDetailSentAt").innerText = n.sentAt ? new Date(n.sentAt).toLocaleString("vi-VN") : "-";
+    notificationDetailOverlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeNotificationDetail() {
+    notificationDetailOverlay.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  notificationDetailOverlay.addEventListener("click", (e) => {
+    if (e.target === notificationDetailOverlay) closeNotificationDetail();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && notificationDetailOverlay.classList.contains("show")) closeNotificationDetail();
+  });
+
   document.getElementById("notifyForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);

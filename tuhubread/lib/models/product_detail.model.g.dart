@@ -34,7 +34,7 @@ ProductDetailModel _$ProductDetailModelFromJson(
   categoryId: json['global_category_id'] as String,
   productName: json['product_name'] as String,
   productSlug: json['product_slug'] as String,
-  description: json['description'] as String,
+  description: json['description'] as String?,
   preparationTimeMinutes: (json['preparation_time_minutes'] as num).toInt(),
   status: json['status'] as String,
   rating: (json['rating'] as num?)?.toDouble() ?? 0.0,

@@ -25,6 +25,15 @@ function zeroFillDailyRevenue(rawDaily, sinceDate, days) {
 const MAX_RANGE_DAYS = 366;
 
 /**
+ * % thay đổi so với kỳ trước. Trả về null khi kỳ trước bằng 0 — lúc đó không
+ * có gì để so sánh, hiện "+100%" hay "+∞%" đều gây hiểu nhầm.
+ */
+function percentChange(current, previous) {
+  if (!previous) return null;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
+
+/**
  * Xác định khoảng ngày dùng cho báo cáo: ưu tiên from/to tuỳ chỉnh (dạng
  * YYYY-MM-DD) nếu hợp lệ, ngược lại rơi về cửa sổ trượt N ngày gần nhất (hành
  * vi cũ, giữ tương thích ngược cho các lựa chọn nhanh 7/30/90 ngày).
@@ -55,21 +64,66 @@ class ReportService {
   async getRevenueReport(shopId, { days = 30, from, to } = {}) {
     const { sinceDate, untilDate, numDays } = resolveDateRange({ days, from, to });
 
-    const [rawDaily, topProducts] = await Promise.all([
+    // Kỳ liền trước, dài đúng bằng kỳ đang xem, để so sánh tăng/giảm.
+    const previousUntil = new Date(sinceDate.getTime() - 1);
+    const previousSince = new Date(sinceDate.getTime() - numDays * 86400000);
+
+    const [
+      rawDaily,
+      topProducts,
+      statusBreakdown,
+      paymentMethods,
+      ordersByHour,
+      previousDaily,
+    ] = await Promise.all([
       reportRepository.getRevenueByDay(shopId, sinceDate, untilDate),
-      reportRepository.getTopProducts(shopId, sinceDate, untilDate, 10)
+      reportRepository.getTopProducts(shopId, sinceDate, untilDate, 10),
+      reportRepository.getOrderStatusBreakdown(shopId, sinceDate, untilDate),
+      reportRepository.getRevenueByPaymentMethod(shopId, sinceDate, untilDate),
+      reportRepository.getOrdersByHour(shopId, sinceDate, untilDate),
+      reportRepository.getRevenueByDay(shopId, previousSince, previousUntil),
     ]);
 
     const dailyRevenue = zeroFillDailyRevenue(rawDaily, sinceDate, numDays);
 
     const totalRevenue = dailyRevenue.reduce((sum, d) => sum + d.revenue, 0);
     const totalOrders = dailyRevenue.reduce((sum, d) => sum + d.orders_count, 0);
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    const previousRevenue = previousDaily.reduce((sum, d) => sum + d.revenue, 0);
+    const previousOrders = previousDaily.reduce((sum, d) => sum + d.orders_count, 0);
+
+    // Đơn theo trạng thái + tỷ lệ huỷ (các số khác chỉ tính đơn hoàn thành
+    // nên không thấy được đơn huỷ).
+    const statusCounts = statusBreakdown.reduce((acc, row) => {
+      acc[row._id] = row.count;
+      return acc;
+    }, {});
+    const totalAllStatus = statusBreakdown.reduce((sum, r) => sum + r.count, 0);
+    const cancelledOrders = statusCounts.cancelled || 0;
+    const cancelRate = totalAllStatus > 0 ? (cancelledOrders / totalAllStatus) * 100 : 0;
+
+    // Trải đủ 24 giờ để biểu đồ không bị khuyết cột.
+    const hourly = Array.from({ length: 24 }, (_, h) => {
+      const found = ordersByHour.find((r) => r._id === h);
+      return { hour: h, orders_count: found ? found.orders_count : 0 };
+    });
 
     return {
       dailyRevenue,
       topProducts,
-      summary: { totalRevenue, totalOrders, avgOrderValue }
+      statusCounts,
+      paymentMethods,
+      hourly,
+      summary: {
+        totalRevenue,
+        totalOrders,
+        cancelledOrders,
+        cancelRate: Math.round(cancelRate * 10) / 10,
+        revenueChangePercent: percentChange(totalRevenue, previousRevenue),
+        ordersChangePercent: percentChange(totalOrders, previousOrders),
+        previousRevenue,
+        previousOrders,
+      }
     };
   }
 

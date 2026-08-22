@@ -38,7 +38,7 @@ class ProductDetailModel {
   final String categoryId;
   final String productName;
   final String productSlug;
-  final String description;
+  final String? description;
   final int preparationTimeMinutes;
   final String status;
   @JsonKey(defaultValue: 0.0)
@@ -62,7 +62,7 @@ class ProductDetailModel {
     required this.categoryId,
     required this.productName,
     required this.productSlug,
-    required this.description,
+    this.description,
     required this.preparationTimeMinutes,
     required this.status,
     required this.rating,

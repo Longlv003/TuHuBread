@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/result.dart';
 import '../../services/api_service.dart';
 import '../../models/order.model.dart';
 import '../../models/order_item.model.dart';
@@ -68,7 +69,11 @@ class OrderCubit extends Cubit<OrderState> {
 
   /// Gửi đánh giá cho 1 SẢN PHẨM cụ thể trong đơn hàng đã hoàn thành — cập
   /// nhật lại đúng đơn/item đó (không cần tải lại toàn bộ lịch sử).
-  Future<bool> submitReview(
+  ///
+  /// Trả về [Result] (thay vì bool) để UI hiển thị ĐÚNG lý do thất bại từ
+  /// server (vd. "Sản phẩm này đã được đánh giá rồi", "Chỉ cho phép tải lên
+  /// file ảnh...") thay vì một thông báo lỗi chung chung không rõ nguyên nhân.
+  Future<Result<void>> submitReview(
     String orderId, {
     required String productId,
     required int rating,
@@ -81,13 +86,20 @@ class OrderCubit extends Cubit<OrderState> {
         'rating': rating,
         if (comment != null && comment.trim().isNotEmpty)
           'comment': comment.trim(),
+        // Không truyền `filename: img.name` — tên hiển thị do image_picker trả
+        // về đôi khi thiếu đuôi file hoặc sai định dạng thật trên nhiều máy
+        // Android, khiến Dio suy đoán content-type thành application/octet-stream
+        // và bị backend từ chối (cùng lỗi đã fix cho avatar upload). Để Dio tự
+        // lấy filename/content-type từ file thật trên đĩa (img.path) là đáng tin
+        // cậy hơn.
         'images': [
-          for (final img in images)
-            await MultipartFile.fromFile(img.path, filename: img.name),
+          for (final img in images) await MultipartFile.fromFile(img.path),
         ],
       });
       final res = await apiService.post('/api/orders/$orderId/review', formData);
-      if (res['data'] == null) return false;
+      if (res['data'] == null) {
+        return Failure(res['msg'] ?? 'Không thể gửi đánh giá');
+      }
 
       final currentState = state;
       if (currentState is OrderLoaded) {
@@ -108,9 +120,9 @@ class OrderCubit extends Cubit<OrderState> {
         }).toList();
         emit(currentState.copyWith(order: updatedOrder, items: updatedItems));
       }
-      return true;
+      return const Success(null);
     } catch (e) {
-      return false;
+      return Failure(e.toString());
     }
   }
 

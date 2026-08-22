@@ -90,11 +90,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return BlocBuilder<NotificationCubit, NotificationState>(
       bloc: getIt<NotificationCubit>(),
       builder: (context, state) {
-        final items = state is NotificationLoaded ? state.items : <NotificationItemModel>[];
-        final unreadCount = state is NotificationLoaded ? state.unreadCount : 0;
-        final unreadByType = state is NotificationLoaded ? state.unreadByType : const <NotificationType, int>{};
-        final hasUnread = unreadCount > 0;
+        final items = state is NotificationLoaded ? state.items : <NotificationItemModel>[];
         final filteredItems = _filtered(items);
+
+        // TỔNG số thông báo mỗi loại — hiện ở badge đỏ trên từng nút lọc để
+        // biết đang có bao nhiêu thông báo khuyến mại, bao nhiêu về đơn hàng.
+        // Trạng thái đã/chưa đọc vẫn phân biệt được ở từng dòng trong danh
+        // sách (nền và độ đậm chữ khác nhau).
+        final totalByType = <NotificationType, int>{};
+        for (final item in items) {
+          totalByType[item.type] = (totalByType[item.type] ?? 0) + 1;
+        }
 
         return Scaffold(
           backgroundColor: const Color(0xFFFDFBF7),
@@ -113,8 +119,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           body: Column(
             children: [
               // Hàng thao tác riêng (không chung app bar với tiêu đề nữa) —
-              // tránh tiêu đề "Thông báo" bị co lại/cắt chữ khi 2 nút này dài.
-              // Đã thu nhỏ padding/tap target và kéo lên gần AppBar hơn.
+              // tránh tiêu đề "Thông báo" bị co lại/cắt chữ.
               Transform.translate(
                 offset: const Offset(0, -8),
                 child: Padding(
@@ -122,22 +127,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: hasUnread ? () => getIt<NotificationCubit>().markAllAsRead() : null,
-                        child: Text(
-                          l10n.notificationsMarkAllRead,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: hasUnread ? const Color(0xFFE67E22) : const Color(0xFFBDC3C7),
-                          ),
-                        ),
-                      ),
                       IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -158,7 +147,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       icon: Icons.notifications_rounded,
                       label: l10n.notificationsFilterAll,
                       selected: _filter == null,
-                      count: unreadCount,
+                      total: items.length,
                       onTap: () => setState(() => _filter = null),
                     ),
                     const SizedBox(width: 8),
@@ -166,7 +155,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       icon: Icons.receipt_long_rounded,
                       label: l10n.notificationsFilterOrder,
                       selected: _filter == NotificationType.order,
-                      count: unreadByType[NotificationType.order] ?? 0,
+                      total: totalByType[NotificationType.order] ?? 0,
                       onTap: () => setState(() => _filter = NotificationType.order),
                     ),
                     const SizedBox(width: 8),
@@ -174,7 +163,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       icon: Icons.local_offer_rounded,
                       label: l10n.notificationsFilterPromotion,
                       selected: _filter == NotificationType.voucher,
-                      count: unreadByType[NotificationType.voucher] ?? 0,
+                      total: totalByType[NotificationType.voucher] ?? 0,
                       onTap: () => setState(() => _filter = NotificationType.voucher),
                     ),
                     const SizedBox(width: 8),
@@ -182,7 +171,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       icon: Icons.campaign_rounded,
                       label: l10n.notificationsFilterSystem,
                       selected: _filter == NotificationType.system,
-                      count: unreadByType[NotificationType.system] ?? 0,
+                      total: totalByType[NotificationType.system] ?? 0,
                       onTap: () => setState(() => _filter = NotificationType.system),
                     ),
                   ],
@@ -354,7 +343,10 @@ class _FilterChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
-  final int count;
+
+  /// TỔNG số thông báo thuộc loại này — hiện ở badge đỏ góc trên.
+  final int total;
+
   final VoidCallback onTap;
 
   const _FilterChip({
@@ -362,7 +354,7 @@ class _FilterChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.count = 0,
+    this.total = 0,
   });
 
   @override
@@ -398,22 +390,29 @@ class _FilterChip extends StatelessWidget {
                   ),
                 ],
               ),
-              if (count > 0)
+              // Số đỏ ở góc trên = TỔNG số thông báo thuộc loại này, luôn
+              // hiện chừng nào còn thông báo (không phụ thuộc đã đọc hay
+              // chưa), để nhìn là biết mỗi loại đang có bao nhiêu cái.
+              if (total > 0)
                 Positioned(
-                  top: -6,
-                  right: 8,
+                  top: -7,
+                  right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    constraints: const BoxConstraints(minWidth: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    constraints: const BoxConstraints(minWidth: 20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE74C3C),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     child: Text(
-                      count > 99 ? '99+' : '$count',
+                      total > 99 ? '99+' : '$total',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

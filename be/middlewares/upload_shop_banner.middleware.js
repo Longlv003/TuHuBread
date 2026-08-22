@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const shopId = req.shop ? req.shop._id : "unknown";
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = safeImageExtension(file.originalname);
+    const ext = safeImageExtension(file.originalname, file.mimetype);
     cb(null, `banner_${shopId}_${uniqueSuffix}${ext}`);
   }
 });

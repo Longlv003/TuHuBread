@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = safeImageExtension(file.originalname);
+    const ext = safeImageExtension(file.originalname, file.mimetype);
     cb(null, `banner_${uniqueSuffix}${ext}`);
   }
 });

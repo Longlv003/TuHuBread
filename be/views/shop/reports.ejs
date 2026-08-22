@@ -23,11 +23,26 @@
     </form>
   </div>
 
+  <%
+    // Hàm dựng dòng "so với kỳ trước". Trả về null nghĩa là kỳ trước không có
+    // dữ liệu -> không so sánh được, hiện chữ trung tính thay vì +100%.
+    const trendHtml = (percent) => {
+      if (percent === null || percent === undefined) {
+        return '<span class="kpi-trend neutral">Chưa có dữ liệu kỳ trước</span>';
+      }
+      const up = percent >= 0;
+      const icon = up ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+      const cls = up ? 'up' : 'down';
+      return `<span class="kpi-trend ${cls}"><i class="fa-solid ${icon}"></i> ${up ? '+' : ''}${percent}% so với kỳ trước</span>`;
+    };
+  %>
+
   <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 30px;">
     <div class="kpi-card">
       <div class="kpi-info">
         <h4>Tổng doanh thu</h4>
         <h2><%= Math.round(report.summary.totalRevenue).toLocaleString('vi-VN') %>đ</h2>
+        <%- trendHtml(report.summary.revenueChangePercent) %>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
     </div>
@@ -35,15 +50,17 @@
       <div class="kpi-info">
         <h4>Đơn hoàn thành</h4>
         <h2><%= report.summary.totalOrders %></h2>
+        <%- trendHtml(report.summary.ordersChangePercent) %>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
     </div>
     <div class="kpi-card">
       <div class="kpi-info">
-        <h4>Giá trị đơn TB</h4>
-        <h2><%= Math.round(report.summary.avgOrderValue).toLocaleString('vi-VN') %>đ</h2>
+        <h4>Tỷ lệ huỷ đơn</h4>
+        <h2><%= report.summary.cancelRate %>%</h2>
+        <span class="kpi-trend neutral"><%= report.summary.cancelledOrders %> đơn bị huỷ</span>
       </div>
-      <div class="kpi-icon"><i class="fa-solid fa-chart-simple"></i></div>
+      <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
     </div>
   </div>
 
@@ -51,6 +68,55 @@
     <div class="section-header"><h3>Doanh thu theo ngày</h3></div>
     <div class="chart-container">
       <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+
+  <div class="report-split">
+    <div class="section-card">
+      <div class="section-header"><h3>Doanh thu theo hình thức thanh toán</h3></div>
+      <% if (report.paymentMethods.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-wallet"></i></div>
+          <div class="empty-state-title">Chưa có dữ liệu</div>
+          <div class="empty-state-desc">Khi có đơn hoàn thành, tỷ lệ tiền mặt / VNPay sẽ hiện ở đây.</div>
+        </div>
+      <% } else { %>
+        <div class="chart-container" style="height: 260px;">
+          <canvas id="paymentChart"></canvas>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header"><h3>Khung giờ đông khách</h3></div>
+      <div class="chart-container" style="height: 260px;">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin: 24px 0;">
+    <div class="section-header"><h3>Đơn hàng theo trạng thái</h3></div>
+    <div class="status-stat-grid">
+      <%
+        const statusLabels = {
+          pending: ['Chờ xác nhận', 'fa-hourglass-half', '#F1C40F'],
+          confirmed: ['Đã xác nhận', 'fa-circle-check', '#2980B9'],
+          preparing: ['Đang chuẩn bị', 'fa-utensils', '#E67E22'],
+          delivering: ['Đang giao', 'fa-truck-fast', '#8E44AD'],
+          completed: ['Hoàn thành', 'fa-flag-checkered', '#27AE60'],
+          cancelled: ['Đã huỷ', 'fa-circle-xmark', '#E74C3C'],
+        };
+      %>
+      <% Object.entries(statusLabels).forEach(([key, [label, icon, color]]) => { %>
+        <div class="status-stat">
+          <i class="fa-solid <%= icon %>" style="color: <%= color %>;"></i>
+          <div>
+            <div class="status-stat-value"><%= report.statusCounts[key] || 0 %></div>
+            <div class="status-stat-label"><%= label %></div>
+          </div>
+        </div>
+      <% }) %>
     </div>
   </div>
 
@@ -103,6 +169,70 @@
       scales: {
         x: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } },
         y: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } }
+      }
+    }
+  });
+
+  // ─────────── Doanh thu theo hình thức thanh toán ───────────
+  const paymentMethods = <%- JSON.stringify(report.paymentMethods) %>;
+  const PAYMENT_LABELS = { cash: "Tiền mặt", vnpay: "VNPay", momo: "MoMo", zalopay: "ZaloPay", bank: "Chuyển khoản" };
+
+  const paymentCanvas = document.getElementById("paymentChart");
+  if (paymentCanvas && paymentMethods.length > 0) {
+    new Chart(paymentCanvas.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: paymentMethods.map(p => PAYMENT_LABELS[p._id] || p._id),
+        datasets: [{
+          data: paymentMethods.map(p => p.revenue),
+          backgroundColor: ["#E67E22", "#2980B9", "#27AE60", "#8E44AD", "#F1C40F"],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#2C3E50", padding: 14, boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const item = paymentMethods[ctx.dataIndex];
+                return ` ${ctx.label}: ${item.revenue.toLocaleString("vi-VN")}đ (${item.orders_count} đơn)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ─────────── Khung giờ đông khách ───────────
+  const hourly = <%- JSON.stringify(report.hourly) %>;
+  const maxHourOrders = Math.max(...hourly.map(h => h.orders_count));
+
+  new Chart(document.getElementById("hourlyChart").getContext("2d"), {
+    type: "bar",
+    data: {
+      labels: hourly.map(h => `${h.hour}h`),
+      datasets: [{
+        label: "Số đơn",
+        data: hourly.map(h => h.orders_count),
+        // Tô đậm đúng (các) khung giờ cao điểm để nhìn phát thấy ngay.
+        backgroundColor: hourly.map(h =>
+          h.orders_count > 0 && h.orders_count === maxHourOrders ? "#D35400" : "#F0B27A"
+        ),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7F8C8D", maxRotation: 0, autoSkipPadding: 8 }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { color: "#7F8C8D", precision: 0 }, grid: { color: "rgba(44,62,80,0.06)" } }
       }
     }
   });

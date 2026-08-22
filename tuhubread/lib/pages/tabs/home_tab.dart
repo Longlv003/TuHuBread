@@ -2,16 +2,30 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../../blocs/home/home_cubit.dart';
 import '../../blocs/home/home_state.dart';
+import '../../di.dart';
+import '../../helpers/cart_action_helper.dart';
+import '../../services/location_service.dart';
+import '../../models/category.model.dart';
+import '../../models/product.model.dart';
 import '../../models/shop.model.dart';
 import '../../models/user.model.dart';
 import '../../models/voucher.model.dart';
 import '../../routes/routes.dart';
 import '../../utils/currency_formatter.dart';
+import '../../widgets/app_network_image.dart';
+import '../../widgets/horizontal_product_card.dart';
+import '../../widgets/skeleton.dart';
+import '../../widgets/tap_scale.dart';
+import '../category_products_page.dart';
+
+/// Cách sắp xếp danh sách cửa hàng ở màn hình chủ (giống ShopeeFood).
+enum _ShopSort { nearby, bestSelling, rating }
 
 class HomeTab extends StatelessWidget {
   final UserModel user;
@@ -55,6 +69,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   final ScrollController _scrollController = ScrollController();
   double _lastScrollOffset = 0;
   bool _navHidden = false;
+
+  // Cách sắp xếp danh sách cửa hàng (Gần tôi / Bán chạy / Đánh giá)
+  _ShopSort _shopSort = _ShopSort.nearby;
 
   @override
   void initState() {
@@ -126,6 +143,66 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     }).toList();
   }
 
+  /// Sản phẩm của các cửa hàng trong danh sách hiện tại (backend đã lọc theo
+  /// bán kính) — dùng cho các mục "Món đang giảm giá"/"Món nổi bật" để chúng
+  /// luôn thuộc cửa hàng gần khách, đúng yêu cầu nghiệp vụ.
+  List<ProductModel> _productsOfNearbyShops(HomeLoaded state) {
+    final nearbyShopIds = state.shops.map((s) => s.id).toSet();
+    return state.products
+        .where((p) => nearbyShopIds.contains(p.shopId))
+        .toList();
+  }
+
+  List<ProductModel> _getDiscountedProducts(HomeLoaded state) {
+    final list = _productsOfNearbyShops(state).where((p) => p.hasDiscount).toList()
+      ..sort((a, b) => b.discountPercent.compareTo(a.discountPercent));
+    return list.take(10).toList();
+  }
+
+  List<ProductModel> _getFeaturedProducts(HomeLoaded state) {
+    return _productsOfNearbyShops(state)
+        .where((p) => p.isFeatured && !p.hasDiscount)
+        .take(10)
+        .toList();
+  }
+
+  /// Danh mục có thật trong các cửa hàng gần khách — không hiện danh mục rỗng.
+  List<CategoryModel> _getAvailableCategories(HomeLoaded state) {
+    final categoryIds =
+        _productsOfNearbyShops(state).map((p) => p.categoryId).toSet();
+    return state.categories.where((c) => categoryIds.contains(c.id)).toList();
+  }
+
+  /// Danh sách cửa hàng đã sắp xếp theo tab đang chọn. `state.shops` đã được
+  /// backend lọc sẵn theo bán kính 10km nên cả 3 tab đều chỉ hiện cửa hàng
+  /// trong phạm vi đó.
+  List<ShopModel> _getVisibleShops(HomeLoaded state) {
+    final nearbyProducts = _productsOfNearbyShops(state);
+    final result = state.shops.toList();
+
+    switch (_shopSort) {
+      case _ShopSort.nearby:
+        // Backend đã trả về theo thứ tự gần nhất; shop thiếu toạ độ xếp cuối.
+        result.sort(
+          (a, b) => (a.distanceKm ?? double.infinity)
+              .compareTo(b.distanceKm ?? double.infinity),
+        );
+      case _ShopSort.bestSelling:
+        final soldByShop = <String, int>{};
+        for (final p in nearbyProducts) {
+          soldByShop[p.shopId] = (soldByShop[p.shopId] ?? 0) + p.salesCount;
+        }
+        result.sort(
+          (a, b) => (soldByShop[b.id] ?? 0).compareTo(soldByShop[a.id] ?? 0),
+        );
+      case _ShopSort.rating:
+        result.sort(
+          (a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0),
+        );
+    }
+    return result;
+  }
+
   // ─────────── BUILD ───────────
 
   @override
@@ -134,11 +211,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        if (state is HomeLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFE67E22)),
-          );
-        }
+        // Khung chờ mô phỏng bố cục thật thay vì vòng xoay giữa màn hình —
+        // người dùng thấy ngay trang sắp có gì và không bị "nhảy" bố cục khi
+        // dữ liệu về.
+        if (state is HomeLoading) return const HomeSkeleton();
 
         if (state is HomeFailure) {
           return Center(
@@ -178,6 +254,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
         if (state is HomeLoaded) {
           final visibleVouchers = _getVisibleVouchers(state);
+          final discounted = _getDiscountedProducts(state);
+          final featured = _getFeaturedProducts(state);
+          final categories = _getAvailableCategories(state);
 
           return RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().refresh(),
@@ -195,8 +274,48 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                     const SizedBox(height: 24),
                   ],
 
-                  // 2. Danh sách Shop
-                  _buildShopsSection(state.shops, l10n),
+                  // 2. Món đang giảm giá (chỉ từ cửa hàng gần khách)
+                  if (discounted.isNotEmpty) ...[
+                    _buildProductsSection(
+                      title: 'Món đang giảm giá',
+                      icon: Icons.local_fire_department_rounded,
+                      accent: const Color(0xFFE74C3C),
+                      products: discounted,
+                      l10n: l10n,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // 3. Món nổi bật
+                  if (featured.isNotEmpty) ...[
+                    _buildProductsSection(
+                      title: 'Món nổi bật',
+                      icon: Icons.star_rounded,
+                      accent: const Color(0xFFE67E22),
+                      products: featured,
+                      l10n: l10n,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // 4. Danh mục dạng icon — bấm vào mở trang riêng liệt kê
+                  // sản phẩm thuộc danh mục đó (trong bán kính giao hàng).
+                  if (categories.isNotEmpty) ...[
+                    _buildCategoryGrid(categories, state),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // 5. Tab sắp xếp + danh sách Shop
+                  _buildSortTabs(),
+                  const SizedBox(height: 14),
+                  // Backend chỉ trả distance_km khi biết vị trí khách — dùng
+                  // chính nó làm dấu hiệu danh sách có thực sự được lọc theo
+                  // bán kính hay không.
+                  _buildShopsSection(
+                    _getVisibleShops(state),
+                    l10n,
+                    hasLocation: state.shops.any((s) => s.distanceKm != null),
+                  ),
                 ],
               ),
             ),
@@ -208,9 +327,352 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     );
   }
 
+  // ─────────── MỤC SẢN PHẨM (GIẢM GIÁ / NỔI BẬT) ───────────
+
+  Widget _buildProductsSection({
+    required String title,
+    required IconData icon,
+    required Color accent,
+    required List<ProductModel> products,
+    required AppLocalizations l10n,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: accent, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 205,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: products.length,
+            itemBuilder: (context, idx) {
+              final product = products[idx];
+              return HorizontalProductCard(
+                product: product,
+                onTap: () => getx.Get.toNamed(
+                  Routes.productDetailPage,
+                  arguments: product.id,
+                ),
+                onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
+                  context,
+                  product.id,
+                  successMessage: l10n.detailAddedToCart,
+                  failureFallback: l10n.cartAddFailed,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─────────── DANH MỤC DẠNG ICON ───────────
+
+  Widget _buildCategoryGrid(List<CategoryModel> categories, HomeLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            'Danh mục',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 92,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: categories.length,
+            itemBuilder: (context, idx) =>
+                _buildCategoryIcon(categories[idx], state),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryIcon(CategoryModel category, HomeLoaded state) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: TapScale(
+        pressedScale: 0.92,
+        onTap: () => getx.Get.to(
+          () => CategoryProductsPage(
+            category: category,
+            products: _productsOfNearbyShops(state),
+            nearbyShops: state.shops,
+          ),
+        ),
+        child: SizedBox(
+          width: 66,
+          child: Column(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF1EAE1)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: AppNetworkImage(
+                  url: category.categoryIcon,
+                  fallbackIconSize: 26,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                category.categoryName,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2C3E50),
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─────────── TAB SẮP XẾP ───────────
+
+  Widget _buildSortTabs() {
+    const labels = {
+      _ShopSort.nearby: 'Gần tôi',
+      _ShopSort.bestSelling: 'Bán chạy',
+      _ShopSort.rating: 'Đánh giá',
+    };
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF1EAE1)),
+      ),
+      child: Row(
+        children: _ShopSort.values.map((sort) {
+          final isSelected = _shopSort == sort;
+          return Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _shopSort = sort),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isSelected
+                          ? const Color(0xFFE67E22)
+                          : Colors.transparent,
+                      width: 2.5,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  labels[sort]!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected
+                        ? const Color(0xFFE67E22)
+                        : const Color(0xFF7F8C8D),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   // ─────────── SHOP SELECTOR ───────────
 
-  Widget _buildShopsSection(List<ShopModel> shops, AppLocalizations l10n) {
+  /// Chủ động xin quyền + lấy GPS rồi tải lại trang chủ.
+  ///
+  /// Dùng [LocationService.requestCurrentLocation] (bản ném lỗi cụ thể) thay
+  /// vì bản chạy ngầm im lặng — người dùng đã bấm nút nên cần biết rõ vì sao
+  /// không lấy được và phải làm gì tiếp.
+  Future<void> _requestLocationAndReload() async {
+    final locationService = getIt<LocationService>();
+    final messenger = ScaffoldMessenger.of(context);
+    final homeCubit = context.read<HomeCubit>();
+
+    try {
+      final coords = await locationService.requestCurrentLocation();
+      await homeCubit.updateDeliveryLocation(
+        coords.latitude,
+        coords.longitude,
+      );
+    } on LocationException catch (e) {
+      if (!mounted) return;
+      final (message, actionLabel, action) = switch (e.reason) {
+        LocationFailureReason.serviceDisabled => (
+            'Định vị đang tắt. Bật định vị để tìm cửa hàng gần bạn.',
+            'Mở cài đặt',
+            Geolocator.openLocationSettings,
+          ),
+        LocationFailureReason.permissionDeniedForever => (
+            'Bạn đã từ chối quyền vị trí. Cấp lại quyền trong Cài đặt ứng dụng.',
+            'Mở cài đặt',
+            Geolocator.openAppSettings,
+          ),
+        LocationFailureReason.permissionDenied => (
+            'Cần quyền truy cập vị trí để tìm cửa hàng gần bạn.',
+            null,
+            null,
+          ),
+        LocationFailureReason.timeout => (
+            'Không lấy được vị trí. Kiểm tra tín hiệu GPS rồi thử lại.',
+            null,
+            null,
+          ),
+      };
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: const Color(0xFFE74C3C),
+          action: (actionLabel != null && action != null)
+              ? SnackBarAction(
+                  label: actionLabel,
+                  textColor: Colors.white,
+                  onPressed: () => action(),
+                )
+              : null,
+        ),
+      );
+    }
+  }
+
+  /// Khối nhắc bật/ghim vị trí khi chưa xác định được khách ở đâu.
+  Widget _buildNoLocationNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF9E7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF5E6B8)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.location_off_rounded,
+            size: 18,
+            color: Color(0xFF9C7A0A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Chưa xác định được vị trí của bạn',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF9C7A0A),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                const Text(
+                  'Đang hiển thị tất cả cửa hàng. Hãy bật định vị hoặc ghim '
+                  'vị trí cho địa chỉ giao hàng để xem đúng cửa hàng gần bạn.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFF9C7A0A),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _requestLocationAndReload,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE67E22),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Dùng vị trí hiện tại',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShopsSection(
+    List<ShopModel> shops,
+    AppLocalizations l10n, {
+    required bool hasLocation,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,9 +693,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                "Cửa hàng gần bạn",
-                style: TextStyle(
+              Text(
+                hasLocation ? "Cửa hàng gần bạn" : "Tất cả cửa hàng",
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2C3E50),
@@ -251,6 +713,16 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             ],
           ),
         ),
+        // Chưa xác định được vị trí thì danh sách này KHÔNG phải "gần bạn" —
+        // nói thẳng và chỉ cách khắc phục, thay vì lặng lẽ hiện toàn bộ cửa
+        // hàng như thể chúng đều ở gần.
+        if (!hasLocation) ...[
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: _buildNoLocationNotice(),
+          ),
+        ],
         const SizedBox(height: 14),
         if (shops.isEmpty)
           Padding(
@@ -325,21 +797,18 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                       padding: const EdgeInsets.all(12),
                       child: Row(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Image.network(
-                              shop.logo,
-                              width: 64,
-                              height: 64,
-                              fit: BoxFit.cover,
-                              errorBuilder: (c, e, s) => Container(
+                          // Quán đang đóng thì làm mờ logo để nhìn lướt qua
+                          // cũng phân biệt được ngay với quán đang mở.
+                          Opacity(
+                            opacity: shop.isOpen ? 1 : 0.45,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: AppNetworkImage(
+                                url: shop.logo,
                                 width: 64,
                                 height: 64,
-                                color: const Color(0xFFF1EAE1),
-                                child: const Icon(
-                                  Icons.store_rounded,
-                                  color: Color(0xFFE67E22),
-                                ),
+                                fallbackIcon: Icons.store_rounded,
+                                fallbackIconSize: 24,
                               ),
                             ),
                           ),
@@ -348,15 +817,44 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  shop.shopName,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2C3E50),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        shop.shopName,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: shop.isOpen
+                                              ? const Color(0xFF2C3E50)
+                                              : const Color(0xFF95A5A6),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (!shop.isOpen) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFDECEA),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'Đóng cửa',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFE74C3C),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 const SizedBox(height: 6),
                                 Row(

@@ -18,6 +18,16 @@ class ShopModel {
   @JsonKey(name: 'distance_km')
   final double? distanceKm;
 
+  /// Cửa hàng có đang mở bán không (chủ shop tự bật/tắt trong trang quản trị).
+  /// Quán đang đóng vẫn hiện trong danh sách nhưng không cho đặt hàng.
+  @JsonKey(name: 'is_open', defaultValue: true)
+  final bool isOpen;
+
+  /// Giờ mở/đóng cửa dạng "HH:mm" — dùng để nói rõ cho khách biết khi nào
+  /// quán mở lại, thay vì chỉ báo cụt lủn là "đã đóng".
+  final String? openTime;
+  final String? closeTime;
+
   ShopModel({
     required this.id,
     required this.shopName,
@@ -28,6 +38,9 @@ class ShopModel {
     required this.status,
     required this.address,
     this.distanceKm,
+    this.isOpen = true,
+    this.openTime,
+    this.closeTime,
   });
 
   factory ShopModel.fromJson(Map<String, dynamic> json) =>

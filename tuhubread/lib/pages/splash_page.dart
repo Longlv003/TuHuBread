@@ -8,6 +8,7 @@ import 'package:tuhubread/blocs/splash/splash_state.dart';
 import 'package:tuhubread/di.dart';
 import 'package:tuhubread/l10n/app_localizations.dart';
 import 'package:tuhubread/routes/routes.dart';
+import 'package:tuhubread/utils/onboarding_prefs.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -36,6 +37,14 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     super.dispose();
   }
 
+  /// Khách chưa đăng nhập: lần mở app đầu tiên thì xem màn giới thiệu trước,
+  /// các lần sau vào thẳng màn đăng nhập. Người đã đăng nhập không bao giờ
+  /// thấy màn giới thiệu vì họ đã dùng app rồi.
+  Future<void> _goToLoginOrOnboarding() async {
+    final seen = await OnboardingPrefs.hasSeen();
+    Get.offAllNamed(seen ? Routes.loginPage : Routes.onboardingPage);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -57,13 +66,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                       );
                   Get.offAllNamed(Routes.homePage);
                 } else {
-                  Get.offAllNamed(Routes.loginPage);
+                  _goToLoginOrOnboarding();
                 }
               }).catchError((_) {
-                Get.offAllNamed(Routes.loginPage);
+                _goToLoginOrOnboarding();
               });
             } else {
-              Get.offAllNamed(Routes.loginPage);
+              _goToLoginOrOnboarding();
             }
           }
         },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/product.model.dart';
 import '../utils/currency_formatter.dart';
+import 'app_network_image.dart';
 
 /// Thẻ sản phẩm gợi ý thêm vào giỏ (vd: đồ uống), hiển thị dạng lưới ngang
 /// kèm nút "+" để thêm nhanh không cần vào màn chi tiết chọn biến thể.
@@ -32,20 +33,12 @@ class CartSuggestionCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                product.image,
+              child: AppNetworkImage(
+                url: product.image,
                 height: 56,
                 width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(
-                  height: 56,
-                  width: double.infinity,
-                  color: const Color(0xFFF1EAE1),
-                  child: const Icon(
-                    Icons.local_drink_outlined,
-                    color: Color(0xFFE67E22),
-                  ),
-                ),
+                fallbackIcon: Icons.local_drink_outlined,
+                fallbackIconSize: 24,
               ),
             ),
             const SizedBox(height: 8),

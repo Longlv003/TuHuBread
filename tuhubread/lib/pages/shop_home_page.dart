@@ -13,8 +13,10 @@ import '../models/product.model.dart';
 import '../models/shop.model.dart';
 import '../helpers/cart_action_helper.dart';
 import '../routes/routes.dart';
+import '../widgets/app_network_image.dart';
 import '../widgets/horizontal_product_card.dart';
 import '../widgets/product_grid_card.dart';
+import '../widgets/skeleton.dart';
 
 class ShopHomePage extends StatefulWidget {
   const ShopHomePage({super.key});
@@ -28,11 +30,37 @@ class _ShopHomePageState extends State<ShopHomePage> {
   String _selectedCategoryId = 'all';
   String _searchQuery = '';
 
+  /// Chiều cao banner khi mở hết. Khi cuộn quá ngưỡng này, banner thu lại và
+  /// thanh tìm kiếm hiện lên trên header (giống ShopeeFood).
+  static const double _bannerHeight = 180;
+
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  bool _isHeaderCollapsed = false;
+
   @override
   void initState() {
     super.initState();
     final args = getx.Get.arguments as Map<String, dynamic>;
     _shop = args['shop'] as ShopModel;
+    _scrollController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    // Trừ kToolbarHeight vì SliverAppBar luôn ghim lại phần thanh công cụ.
+    final collapsed = _scrollController.offset > (_bannerHeight - kToolbarHeight);
+    if (collapsed != _isHeaderCollapsed) {
+      setState(() => _isHeaderCollapsed = collapsed);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<ProductModel> _getBestSellers(HomeLoaded state) {
@@ -65,11 +93,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
       body: SafeArea(
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
-            if (state is HomeLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFE67E22)),
-              );
-            }
+            if (state is HomeLoading) return const ProductGridSkeleton();
 
             if (state is HomeFailure) {
               return Center(
@@ -97,40 +121,79 @@ class _ShopHomePageState extends State<ShopHomePage> {
               return RefreshIndicator(
                 onRefresh: () => context.read<HomeCubit>().refresh(),
                 color: const Color(0xFFE67E22),
-                child: SingleChildScrollView(
+                child: CustomScrollView(
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Shop Banner with Back Button
-                      Stack(
-                        children: [
-                          Image.network(
-                            _shop.banner,
-                            width: double.infinity,
-                            height: 180,
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => Container(
-                              width: double.infinity,
-                              height: 180,
-                              color: const Color(0xFFF1EAE1),
-                              child: const Icon(Icons.image, size: 48, color: Color(0xFFBDC3C7)),
+                  slivers: [
+                    // Banner thu gọn dần khi cuộn; cuộn quá banner thì thanh
+                    // tìm kiếm hiện lên và ghim lại ở đầu màn hình.
+                    SliverAppBar(
+                      expandedHeight: _bannerHeight,
+                      pinned: true,
+                      backgroundColor: Colors.white,
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 1,
+                      automaticallyImplyLeading: false,
+                      leading: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: CircleAvatar(
+                          backgroundColor: _isHeaderCollapsed
+                              ? const Color(0xFFF1EAE1)
+                              : Colors.black.withValues(alpha: 0.5),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: _isHeaderCollapsed
+                                  ? const Color(0xFF2C3E50)
+                                  : Colors.white,
+                              size: 18,
                             ),
+                            onPressed: () => getx.Get.back(),
                           ),
-                          Positioned(
-                            top: 12,
-                            left: 12,
-                            child: CircleAvatar(
-                              backgroundColor: Colors.black.withOpacity(0.5),
-                              child: IconButton(
-                                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-                                onPressed: () => getx.Get.back(),
+                        ),
+                      ),
+                      titleSpacing: 0,
+                      // Ô tìm kiếm chỉ hiện khi đã cuộn qua banner — lúc
+                      // banner đang mở thì ẩn đi để không che ảnh cửa hàng.
+                      title: _isHeaderCollapsed
+                          ? Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: _buildSearchField(
+                                hint: "Tìm món tại ${_shop.shopName}",
+                              ),
+                            )
+                          : null,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            AppNetworkImage(
+                              url: _shop.banner,
+                              width: double.infinity,
+                              fallbackIcon: Icons.image,
+                              fallbackIconSize: 48,
+                            ),
+                            // Lớp tối nhẹ phía trên để ô tìm kiếm và nút quay
+                            // lại luôn đọc được dù ảnh banner sáng màu.
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Color(0x59000000), Colors.transparent],
+                                  stops: [0.0, 0.45],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-
+                    ),
+                    SliverList(
+                      delegate: SliverChildListDelegate([
+                      // Báo ngay đầu trang khi quán đang tạm đóng, để khách
+                      // không chọn cả giỏ rồi mới bị chặn lúc đặt hàng.
+                      if (!_shop.isOpen) _buildClosedBanner(),
                       // Shop Information Panel
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -139,17 +202,12 @@ class _ShopHomePageState extends State<ShopHomePage> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _shop.logo,
+                              child: AppNetworkImage(
+                                url: _shop.logo,
                                 width: 64,
                                 height: 64,
-                                fit: BoxFit.cover,
-                                errorBuilder: (c, e, s) => Container(
-                                  width: 64,
-                                  height: 64,
-                                  color: const Color(0xFFF1EAE1),
-                                  child: const Icon(Icons.store, color: Color(0xFFE67E22)),
-                                ),
+                                fallbackIcon: Icons.store,
+                                fallbackIconSize: 24,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -216,10 +274,6 @@ class _ShopHomePageState extends State<ShopHomePage> {
                       const Divider(height: 1, color: Color(0xFFF1EAE1)),
                       const SizedBox(height: 16),
 
-                      // Search bar inside shop
-                      _buildSearchBar(l10n),
-                      const SizedBox(height: 20),
-
                       // Best sellers
                       if (bestSellers.isNotEmpty) ...[
                         _buildBestSellersSection(bestSellers, l10n),
@@ -233,8 +287,9 @@ class _ShopHomePageState extends State<ShopHomePage> {
                       // Product Grid
                       _buildProductsSection(l10n, filteredProducts),
                       const SizedBox(height: 24),
-                    ],
-                  ),
+                      ]),
+                    ),
+                  ],
                 ),
               );
             }
@@ -295,30 +350,113 @@ class _ShopHomePageState extends State<ShopHomePage> {
     );
   }
 
-  Widget _buildSearchBar(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE67E22).withOpacity(0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+  /// Ô tìm kiếm duy nhất của trang, nằm trên header. Khi banner đang mở thì
+  /// ô nổi trên ảnh (có viền trắng mờ cho dễ nhìn), khi đã cuộn thì đổi sang
+  /// nền xám nhạt hoà vào thanh header trắng.
+  /// Dải báo quán đang tạm đóng, kèm giờ mở cửa nếu shop có khai báo.
+  Widget _buildClosedBanner() {
+    final hasHours = _shop.openTime != null && _shop.closeTime != null;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDECEA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF5C6C0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.storefront_rounded,
+              size: 18, color: Color(0xFFC0392B)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Cửa hàng đang tạm đóng',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFC0392B),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  hasHours
+                      ? 'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được. '
+                          'Giờ mở cửa: ${_shop.openTime} - ${_shop.closeTime}.'
+                      : 'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được.',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFFC0392B),
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: TextField(
-          onChanged: (val) => setState(() => _searchQuery = val),
-          decoration: InputDecoration(
-            hintText: "Tìm kiếm món ăn tại cửa hàng...",
-            hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
-            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFE67E22)),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchField({required String hint}) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: _isHeaderCollapsed ? const Color(0xFFF4F5F7) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _isHeaderCollapsed
+              ? const Color(0xFFF1EAE1)
+              : Colors.white.withValues(alpha: 0.9),
+        ),
+        boxShadow: _isHeaderCollapsed
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x1F000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (val) => setState(() => _searchQuery = val),
+        textAlignVertical: TextAlignVertical.center,
+        style: const TextStyle(fontSize: 13, color: Color(0xFF2C3E50)),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: Color(0xFFE67E22),
+            size: 20,
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 38),
+          suffixIcon: _searchQuery.isEmpty
+              ? null
+              : GestureDetector(
+                  onTap: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: Color(0xFF7F8C8D),
+                  ),
+                ),
+          suffixIconConstraints: const BoxConstraints(minWidth: 36),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
         ),
       ),
     );
@@ -377,17 +515,32 @@ class _ShopHomePageState extends State<ShopHomePage> {
     );
   }
 
-  Widget _buildHorizontalProductCard(ProductModel product) {
+  /// Thêm món vào giỏ — chặn ngay tại app khi quán đang đóng, kèm giải thích
+  /// ngắn. (Server vẫn chặn lần nữa lúc đặt hàng, đây chỉ là lớp cho êm tay.)
+  void _addToCart(ProductModel product) {
+    if (!_shop.isOpen) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_shop.shopName} đang tạm đóng cửa'),
+          backgroundColor: const Color(0xFFE74C3C),
+        ),
+      );
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
+    CartActionHelper.quickAddProductWithFeedback(
+      context,
+      product.id,
+      successMessage: l10n.detailAddedToCart,
+      failureFallback: l10n.cartAddFailed,
+    );
+  }
+
+  Widget _buildHorizontalProductCard(ProductModel product) {
     return HorizontalProductCard(
       product: product,
       onTap: () => getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
-      onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
-        context,
-        product.id,
-        successMessage: l10n.detailAddedToCart,
-        failureFallback: l10n.cartAddFailed,
-      ),
+      onAddToCart: () => _addToCart(product),
     );
   }
 
@@ -463,17 +616,12 @@ class _ShopHomePageState extends State<ShopHomePage> {
           children: [
             if (iconUrl != null) ...[
               ClipOval(
-                child: Image.network(
-                  iconUrl,
+                child: AppNetworkImage(
+                  url: iconUrl,
                   width: 26,
                   height: 26,
-                  fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Container(
-                    width: 26,
-                    height: 26,
-                    color: isSelected ? Colors.white.withOpacity(0.3) : const Color(0xFFF1EAE1),
-                    child: const Icon(Icons.image_not_supported_rounded, size: 14, color: Color(0xFFBDC3C7)),
-                  ),
+                  fallbackIcon: Icons.image_not_supported_rounded,
+                  fallbackIconSize: 14,
                 ),
               ),
               const SizedBox(width: 7),
@@ -525,12 +673,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
           return ProductGridCard(
             product: product,
             onTap: () => getx.Get.toNamed(Routes.productDetailPage, arguments: product.id),
-            onAddToCart: () => CartActionHelper.quickAddProductWithFeedback(
-              context,
-              product.id,
-              successMessage: l10n.detailAddedToCart,
-              failureFallback: l10n.cartAddFailed,
-            ),
+            onAddToCart: () => _addToCart(product),
           );
         },
       ),

@@ -78,13 +78,20 @@ exports.getProducts = async (req, res) => {
               else: 0.0
             }
           },
-          sales_count: { $literal: 100 },
+          // Số lượng đã bán thật = tổng sold_quantity của các biến thể (giống
+          // cách getBestSellers/getFeaturedProducts đang tính). Trước đây gán
+          // cứng 100 nên mọi sản phẩm, kể cả món vừa tạo chưa bán cái nào,
+          // đều hiện "Đã bán 100".
+          sales_count: { $sum: "$variants.sold_quantity" },
           price: {
             $ifNull: [
               { $arrayElemAt: ["$variants.price", 0] },
               0
             ]
           },
+          // Giá khuyến mãi của biến thể đầu tiên (nếu shop có đặt) — client
+          // dùng để hiển thị mục "Món đang giảm giá" và gạch giá gốc.
+          sale_price: { $arrayElemAt: ["$variants.sale_price", 0] },
           image: {
             $ifNull: [
               { $arrayElemAt: ["$variants.image", 0] },
@@ -426,7 +433,10 @@ exports.getProductDetail = async (req, res) => {
       is_new: product.is_new,
       storage_note: product.storage_note,
       rating: ratingAverage,
-      sales_count: product.sales_count || 100,
+      // productModel không có trường sales_count, nên `product.sales_count`
+      // luôn undefined và rơi vào giá trị mặc định 100 -> mọi sản phẩm đều
+      // hiện "Đã bán 100". Tính thật từ sold_quantity của các biến thể.
+      sales_count: variants.reduce((sum, v) => sum + (v.sold_quantity || 0), 0),
       price: variants.length > 0 ? variants[0].price : 0,
       image: defaultImage,
       shop: shop ? {

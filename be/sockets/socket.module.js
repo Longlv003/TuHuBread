@@ -1,9 +1,45 @@
 const { Server } = require("socket.io");
+const cookie = require("cookie");
 const { auth } = require("../configs/firebase.config");
 const { userModel } = require("../models/user.model");
 const { shopModel } = require("../models/shop.model");
 
 let ioInstance = null;
+
+/**
+ * Xác định tài khoản đứng sau 1 kết nối socket.
+ *
+ * Hỗ trợ 2 cách, theo đúng cách từng loại client vốn đã đăng nhập:
+ *  - Firebase ID token (app mobile / client tự truyền token).
+ *  - Session cookie (shop/admin portal trên web).
+ *
+ * Trước đây chỉ chấp nhận ID token, nên web bắt buộc phải còn phiên Firebase
+ * phía trình duyệt (localStorage) mới kết nối được — trong khi bản thân trang
+ * web lại được xác thực bằng session cookie sống tới 5 ngày. Hai nguồn này
+ * lệch nhau (xoá dữ liệu trình duyệt, đổi profile, refresh token lỗi...) làm
+ * socket chết âm thầm còn trang vẫn chạy bình thường, dẫn tới mất realtime mà
+ * không có dấu hiệu gì.
+ */
+async function resolveSocketUser(socket) {
+  const rawToken =
+    socket.handshake.auth.token || socket.handshake.headers["authorization"];
+
+  if (rawToken) {
+    const decoded = await auth.verifyIdToken(rawToken.replace("Bearer ", ""));
+    return userModel.findOne({ firebase_uid: decoded.uid });
+  }
+
+  const cookieHeader = socket.handshake.headers.cookie;
+  if (cookieHeader) {
+    const sessionCookie = cookie.parse(cookieHeader).session;
+    if (sessionCookie) {
+      const decoded = await auth.verifySessionCookie(sessionCookie, true);
+      return userModel.findOne({ firebase_uid: decoded.uid });
+    }
+  }
+
+  return null;
+}
 
 /**
  * Initialize Socket.IO Server
@@ -20,14 +56,7 @@ function initSocket(server) {
   // Authentication Middleware for Socket.IO
   ioInstance.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.headers["authorization"];
-      if (!token) {
-        return next(new Error("Authentication error: Token is required"));
-      }
-
-      // Verify token via Firebase Admin
-      const decodedToken = await auth.verifyIdToken(token.replace("Bearer ", ""));
-      const user = await userModel.findOne({ firebase_uid: decodedToken.uid });
+      const user = await resolveSocketUser(socket);
 
       if (!user) {
         return next(new Error("Authentication error: Account not found"));

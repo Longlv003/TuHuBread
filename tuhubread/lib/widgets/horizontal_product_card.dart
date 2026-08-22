@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/product.model.dart';
 import '../utils/currency_formatter.dart';
+import 'app_network_image.dart';
+import 'tap_scale.dart';
 
 class HorizontalProductCard extends StatelessWidget {
   final ProductModel product;
@@ -18,7 +20,7 @@ class HorizontalProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      child: GestureDetector(
+      child: TapScale(
         onTap: onTap,
         child: Container(
           width: 150,
@@ -43,23 +45,36 @@ class HorizontalProductCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
-                    child: Image.network(
-                      product.image,
+                    child: AppNetworkImage(
+                      url: product.image,
                       height: 100,
                       width: 150,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        height: 100,
-                        width: 150,
-                        color: const Color(0xFFF1EAE1),
-                        child: const Icon(
-                          Icons.bakery_dining,
-                          color: Color(0xFFE67E22),
-                          size: 30,
+                      fallbackIconSize: 30,
+                    ),
+                  ),
+                  if (product.hasDiscount)
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE74C3C),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '-${product.discountPercent}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
               Expanded(
@@ -96,8 +111,19 @@ class HorizontalProductCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (product.hasDiscount)
+                                Text(
+                                  CurrencyFormatter.formatVND(product.price),
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    color: Color(0xFFBDC3C7),
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
                               Text(
-                                CurrencyFormatter.formatVND(product.price),
+                                CurrencyFormatter.formatVND(
+                                  product.displayPrice,
+                                ),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,

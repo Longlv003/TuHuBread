@@ -83,6 +83,22 @@ class NotificationRepository {
   async countByShopSender(shopId) {
     return notificationModel.countDocuments({ sender_shop_id: shopId, deleted_at: null });
   }
+
+  /**
+   * Đếm số thông báo shop đã gửi, tách theo từng loại (order/voucher/system).
+   * Trả về object dạng { voucher: 12, order: 3, ... } — loại nào chưa có thì
+   * không xuất hiện, phía view tự coi là 0.
+   */
+  async countByShopSenderGroupedByType(shopId) {
+    const rows = await notificationModel.aggregate([
+      { $match: { sender_shop_id: shopId, deleted_at: null } },
+      { $group: { _id: "$type", count: { $sum: 1 } } },
+    ]);
+    return rows.reduce((acc, row) => {
+      acc[row._id] = row.count;
+      return acc;
+    }, {});
+  }
 }
 
 module.exports = new NotificationRepository();

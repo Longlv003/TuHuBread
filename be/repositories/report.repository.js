@@ -93,6 +93,71 @@ class ReportRepository {
     ]);
   }
 
+  /**
+   * Đếm đơn theo TỪNG trạng thái (kể cả huỷ) trong khoảng thời gian.
+   * Các thống kê khác chỉ tính đơn "completed", nên đây là chỗ duy nhất nhìn
+   * được tỷ lệ đơn bị huỷ.
+   */
+  async getOrderStatusBreakdown(shopId, sinceDate, untilDate) {
+    return orderModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(shopId),
+          deleted_at: null,
+          createdAt: { $gte: sinceDate, $lte: untilDate }
+        }
+      },
+      { $group: { _id: "$order_status", count: { $sum: 1 } } }
+    ]);
+  }
+
+  /** Doanh thu tách theo hình thức thanh toán (tiền mặt / VNPay...). */
+  async getRevenueByPaymentMethod(shopId, sinceDate, untilDate) {
+    return orderModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(shopId),
+          order_status: "completed",
+          deleted_at: null,
+          createdAt: { $gte: sinceDate, $lte: untilDate }
+        }
+      },
+      {
+        $group: {
+          _id: "$payment_method",
+          revenue: { $sum: { $subtract: ["$items_total", "$discount_amount"] } },
+          orders_count: { $sum: 1 }
+        }
+      },
+      { $sort: { revenue: -1 } }
+    ]);
+  }
+
+  /**
+   * Số đơn theo giờ trong ngày (0-23) — cho chủ shop biết khung giờ đông
+   * khách để chuẩn bị hàng và bố trí người.
+   */
+  async getOrdersByHour(shopId, sinceDate, untilDate) {
+    return orderModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(shopId),
+          order_status: "completed",
+          deleted_at: null,
+          createdAt: { $gte: sinceDate, $lte: untilDate }
+        }
+      },
+      {
+        $group: {
+          // timezone để giờ khớp với giờ Việt Nam thay vì giờ UTC.
+          _id: { $hour: { date: "$createdAt", timezone: "Asia/Ho_Chi_Minh" } },
+          orders_count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+  }
+
   async getTopProducts(shopId, sinceDate, untilDate, limit = 10) {
     return orderModel.aggregate([
       {

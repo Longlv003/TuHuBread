@@ -46,10 +46,32 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-info">
+        <h4>Đang xử lý</h4>
+        <h2><%= stats.processingOrders %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-truck-fast"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
         <h4>Đơn thành công</h4>
         <h2 id="completedText"><%= stats.completedOrders %></h2>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-info">
+        <h4>Đơn đã huỷ</h4>
+        <h2><%= stats.cancelledOrders %></h2>
+      </div>
+      <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+    </div>
+  </div>
+
+  <!-- Xu hướng doanh thu 7 ngày gần nhất -->
+  <div class="section-card" style="margin-bottom: 30px;">
+    <div class="section-header"><h3>Doanh thu 7 ngày gần nhất</h3></div>
+    <div class="chart-container" style="height: 240px;">
+      <canvas id="trendChart"></canvas>
     </div>
   </div>
 
@@ -169,6 +191,51 @@
       console.error("Failed to refresh dashboard:", err);
     }
   }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const revenueTrend = <%- JSON.stringify(stats.revenueTrend) %>;
+
+  new Chart(document.getElementById("trendChart").getContext("2d"), {
+    type: "line",
+    data: {
+      // Nhãn dạng dd/MM cho dễ đọc hơn chuỗi ISO đầy đủ.
+      labels: revenueTrend.map(d => {
+        const [, m, day] = d.date.split("-");
+        return `${day}/${m}`;
+      }),
+      datasets: [{
+        label: "Doanh thu (đ)",
+        data: revenueTrend.map(d => d.revenue),
+        borderColor: "#E67E22",
+        backgroundColor: "rgba(230, 126, 34, 0.15)",
+        fill: true,
+        tension: 0.35,
+        pointRadius: 3,
+        pointBackgroundColor: "#D35400"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const item = revenueTrend[ctx.dataIndex];
+              return ` ${item.revenue.toLocaleString("vi-VN")}đ · ${item.orders_count} đơn`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: "#7F8C8D" }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } }
+      }
+    }
+  });
 </script>
 
 <%- include('partials/footer') %>

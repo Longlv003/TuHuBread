@@ -204,24 +204,28 @@
       }, 6000);
     }
 
-    let socket;
+    // Kết nối realtime ngay khi tải trang, xác thực bằng chính session cookie
+    // đang dùng để vào được trang này (trình duyệt tự gửi kèm) — không còn phụ
+    // thuộc vào phiên Firebase phía client. Trước đây nếu phiên Firebase mất
+    // (xoá dữ liệu trình duyệt, đổi profile, refresh token lỗi) thì socket im
+    // lặng không kết nối, trang vẫn chạy nên không ai biết đã mất realtime.
+    let socket = io({ withCredentials: true, reconnectionAttempts: Infinity });
 
-    // Listen on Firebase Auth State
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (user) {
-        try {
-          const token = await user.getIdToken(true);
-          socket = io({ auth: { token } });
-          
-          // Trigger socket connected callback if page-specific handler exists
-          if (typeof onSocketConnected === "function") {
-            onSocketConnected(socket);
-          }
-        } catch (err) {
-          console.error("Error setting up socket auth:", err);
-        }
-      }
+    socket.on("connect_error", (err) => {
+      console.error("Realtime connect error:", err.message);
     });
+
+    // Sau khi mất kết nối rồi nối lại, dữ liệu trên trang có thể đã cũ so với
+    // các sự kiện bị bỏ lỡ -> tải lại cho khớp.
+    socket.io.on("reconnect", () => {
+      showToast("Đã kết nối lại, đang cập nhật dữ liệu...", "success");
+      setTimeout(() => window.location.reload(), 800);
+    });
+
+    // Trigger socket connected callback if page-specific handler exists
+    if (typeof onSocketConnected === "function") {
+      onSocketConnected(socket);
+    }
 
     // Logo upload AJAX handler (Sidebar logo)
     const logoUploadInput = document.getElementById("logoUploadInput");

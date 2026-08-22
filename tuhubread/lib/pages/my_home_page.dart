@@ -17,6 +17,7 @@ import '../di.dart';
 import '../models/address.model.dart';
 import '../routes/routes.dart';
 import '../widgets/customer_bottom_nav.dart';
+import '../widgets/app_background.dart';
 import '../widgets/customer_header.dart';
 import 'addresses_page.dart';
 import 'notifications_page.dart';
@@ -102,8 +103,21 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
               child: Builder(
                 builder: (context) {
-                  return Scaffold(
-                    backgroundColor: const Color(0xFFFDFBF7),
+                  return BlocListener<AddressCubit, AddressState>(
+                    // Đổi/chọn địa chỉ giao hàng -> tính lại "Cửa hàng gần
+                    // bạn" theo toạ độ địa chỉ đó thay vì GPS của máy.
+                    listener: (context, addressState) {
+                      if (addressState is! AddressLoaded) return;
+                      final forNearby = _addressForNearbyShops(addressState);
+                      context.read<HomeCubit>().updateDeliveryLocation(
+                            forNearby?.latitude,
+                            forNearby?.longitude,
+                          );
+                    },
+                    child: AppBackground(
+                      child: Scaffold(
+                    // Trong suốt để lộ ảnh nền phía sau.
+                    backgroundColor: Colors.transparent,
                     body: SafeArea(
                       child: Column(
                         children: [
@@ -112,6 +126,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           CustomerHeader(
                             user: user,
                             titleWidget: _buildHeaderWidgetForTab(user, l10n),
+                            // Các tab chỉ có tiêu đề chữ thì căn giữa cho cân
+                            // đối; riêng tab Home có avatar + địa chỉ nên giữ
+                            // căn trái.
+                            centerTitle: _currentIndex != 0,
+                            leading: _buildHeaderLeadingForTab(context),
                             unreadNotifications: context.select<NotificationCubit, int>(
                               (cubit) => cubit.state is NotificationLoaded
                                   ? (cubit.state as NotificationLoaded).unreadCount
@@ -150,6 +169,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                             )
                           : const SizedBox(width: double.infinity),
+                    ),
+                    ),
                     ),
                   );
                 },
@@ -242,11 +263,61 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  /// Nút phụ bên trái tiêu đề. Hiện tại chỉ tab Giỏ hàng dùng tới: nút xoá
+  /// sạch giỏ dạng icon đặt ngay trên thanh tiêu đề, thay vì chiếm nguyên 1
+  /// hàng riêng bên dưới như trước.
+  Widget? _buildHeaderLeadingForTab(BuildContext context) {
+    if (_currentIndex != 1) return null;
+
+    final hasItems = context.select<CartCubit, bool>(
+      (cubit) => cubit.state.items.isNotEmpty,
+    );
+    if (!hasItems) return null;
+
+    return IconButton(
+      onPressed: () => CartTab.confirmClearCart(context),
+      icon: const Icon(
+        Icons.delete_sweep_outlined,
+        color: Color(0xFFE74C3C),
+        size: 22,
+      ),
+      tooltip: AppLocalizations.of(context)!.cartClearAll,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+    );
+  }
+
   Future<void> _openAddressesPage(BuildContext context) async {
     await getx.Get.to(() => const AddressesPage());
     if (context.mounted) {
       context.read<AddressCubit>().loadMyAddresses();
     }
+  }
+
+  /// Địa chỉ giao hàng đang áp dụng: ưu tiên địa chỉ mặc định, không có thì
+  /// lấy địa chỉ đầu tiên. Dùng chung cho cả dòng hiển thị ở header và việc
+  /// tính "Cửa hàng gần bạn".
+  AddressModel? _activeDeliveryAddress(AddressLoaded state) {
+    if (state.addresses.isEmpty) return null;
+    final defaultMatches = state.addresses.where((a) => a.isDefault);
+    return defaultMatches.isEmpty ? state.addresses.first : defaultMatches.first;
+  }
+
+  /// Địa chỉ dùng để tính "Cửa hàng gần bạn".
+  ///
+  /// Ưu tiên địa chỉ giao hàng đang chọn, nhưng nếu địa chỉ đó chưa được ghim
+  /// trên bản đồ (không có toạ độ) thì lấy tạm một địa chỉ khác của khách có
+  /// toạ độ. Trước đây gặp trường hợp này là trả về null rồi lùi về GPS —
+  /// GPS lỗi nữa thì coi như không biết vị trí và trang chủ hiện ra toàn bộ
+  /// cửa hàng, kể cả cách hàng trăm km.
+  AddressModel? _addressForNearbyShops(AddressLoaded state) {
+    final active = _activeDeliveryAddress(state);
+    if (active?.latitude != null && active?.longitude != null) return active;
+
+    for (final a in state.addresses) {
+      if (a.latitude != null && a.longitude != null) return a;
+    }
+    return active;
   }
 
   /// Dòng địa chỉ giao hàng hiện tại ngay dưới lời chào — bấm vào để đổi
@@ -283,10 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         }
 
-        final defaultMatches = addresses.where((a) => a.isDefault);
-        final AddressModel current = defaultMatches.isEmpty
-            ? addresses.first
-            : defaultMatches.first;
+        final AddressModel current = _activeDeliveryAddress(state)!;
 
         return GestureDetector(
           onTap: () => _openAddressesPage(context),

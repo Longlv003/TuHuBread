@@ -26,6 +26,26 @@ class ProductVariantRepository {
     return !!doc;
   }
 
+  /**
+   * Kiểm tra trùng TÊN biến thể (không phân biệt hoa/thường, đã trim) trong
+   * cùng 1 sản phẩm — khác với existsByProductIdAndSlug vốn chỉ đảm bảo slug
+   * (định danh nội bộ) là duy nhất chứ không ngăn 2 biến thể hiển thị cùng
+   * tên "M" gây nhầm lẫn cho cả chủ shop lẫn khách hàng khi chọn mua.
+   */
+  async existsByProductIdAndName(productId, variantName, excludeVariantId) {
+    const escaped = variantName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const query = {
+      product_id: productId,
+      variant_name: { $regex: `^${escaped}$`, $options: "i" },
+      deleted_at: null,
+    };
+    if (excludeVariantId) {
+      query._id = { $ne: excludeVariantId };
+    }
+    const doc = await productVariantModel.findOne(query).select("_id");
+    return !!doc;
+  }
+
   async create(data) {
     return productVariantModel.create(data);
   }

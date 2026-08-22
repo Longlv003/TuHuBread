@@ -51,7 +51,23 @@
             </td></tr>
           <% } %>
           <% reviews.forEach(r => { %>
-            <tr data-rating="<%= r.rating %>" data-product-id="<%= r.product_id ? r.product_id._id : '' %>">
+            <tr
+              data-rating="<%= r.rating %>"
+              data-product-id="<%= r.product_id ? r.product_id._id : '' %>"
+              style="cursor:pointer;"
+              onclick='showReviewDetail(<%= JSON.stringify({
+                id: r._id,
+                customerName: r.user_id ? r.user_id.full_name : "N/A",
+                customerAvatar: r.user_id && r.user_id.avatar ? r.user_id.avatar : null,
+                productName: r.product_id ? r.product_id.product_name : "N/A",
+                orderCode: r.order_id ? r.order_id.order_code : null,
+                rating: r.rating,
+                comment: r.comment || "",
+                images: r.images || [],
+                status: r.status,
+                createdAt: r.createdAt
+              }) %>)'
+            >
               <td>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <img src="<%= r.user_id && r.user_id.avatar ? r.user_id.avatar : 'https://placehold.co/32' %>" onerror="this.src='https://placehold.co/32'" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
@@ -65,14 +81,12 @@
                   <i class="fa-solid fa-star" style="color: <%= i < r.rating ? '#F1C40F' : '#E8DFD3' %>; font-size: 12px;"></i>
                 <% } %>
               </td>
-              <td style="max-width: 260px;"><%= r.comment || '(Không có nội dung)' %></td>
+              <td style="max-width: 260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= r.comment || '(Không có nội dung)' %></td>
               <td>
                 <% if (r.images && r.images.length > 0) { %>
                   <div style="display:flex; gap:4px; flex-wrap:wrap; max-width:140px;">
                     <% r.images.forEach(img => { %>
-                      <a href="<%= img %>" target="_blank" rel="noopener">
-                        <img src="<%= img %>" onerror="this.style.display='none'" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #F1EAE1;">
-                      </a>
+                      <img src="<%= img %>" onerror="this.style.display='none'" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #F1EAE1;">
                     <% }) %>
                   </div>
                 <% } else { %>
@@ -84,7 +98,7 @@
               </td>
               <td class="col-actions">
                 <div class="actions-wrap">
-                  <button type="button" class="btn-action" onclick="onToggleReview('<%= r._id %>')"><%= r.status === 'visible' ? 'Ẩn đánh giá' : 'Hiện đánh giá' %></button>
+                  <button type="button" class="btn-action" onclick="event.stopPropagation(); onToggleReview('<%= r._id %>')"><%= r.status === 'visible' ? 'Ẩn đánh giá' : 'Hiện đánh giá' %></button>
                 </div>
               </td>
             </tr>
@@ -96,7 +110,159 @@
   </div>
 </div>
 
+<!-- Dialog xem chi tiết đánh giá -->
+<div class="product-modal-overlay" id="reviewDetailOverlay">
+  <div class="product-modal-card" style="max-width: 480px;">
+    <div class="product-modal-header">
+      <h3>Chi tiết đánh giá</h3>
+      <button type="button" class="product-modal-close" onclick="closeReviewDetail()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="product-modal-body">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+        <img id="reviewDetailAvatar" src="" onerror="this.src='https://placehold.co/40'" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+        <div>
+          <p id="reviewDetailCustomer" style="font-weight:700; color:var(--text);"></p>
+          <p id="reviewDetailCreatedAt" style="font-size:12px; color:var(--text-muted);"></p>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sản phẩm</label>
+          <p id="reviewDetailProduct" style="color:var(--text);"></p>
+        </div>
+        <div class="form-group">
+          <label>Đơn hàng</label>
+          <p id="reviewDetailOrder" style="color:var(--text);"></p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Số sao</label>
+        <p id="reviewDetailStars"></p>
+      </div>
+      <div class="form-group">
+        <label>Nội dung</label>
+        <p id="reviewDetailComment" style="color:var(--text); line-height:1.5; white-space:pre-wrap;"></p>
+      </div>
+      <div class="form-group" id="reviewDetailImagesGroup" style="display:none;">
+        <label>Hình ảnh</label>
+        <div id="reviewDetailImages" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      </div>
+      <div class="form-group">
+        <label>Trạng thái</label>
+        <span id="reviewDetailStatus" class="status-badge"></span>
+      </div>
+    </div>
+    <div class="product-modal-footer">
+      <button type="button" class="btn-cancel" onclick="closeReviewDetail()">Đóng</button>
+      <button type="button" class="btn-submit" id="reviewDetailToggleBtn" onclick="onToggleReviewFromDetail()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox phóng to ảnh đánh giá ngay trên trang, không mở tab mới -->
+<div class="image-lightbox-overlay" id="imageLightboxOverlay" onclick="closeImageLightbox()">
+  <button type="button" class="image-lightbox-close" onclick="closeImageLightbox()">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+  <img id="imageLightboxImg" src="" alt="">
+</div>
+
 <script>
+  const imageLightboxOverlay = document.getElementById("imageLightboxOverlay");
+
+  function openImageLightbox(src) {
+    document.getElementById("imageLightboxImg").src = src;
+    imageLightboxOverlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeImageLightbox() {
+    imageLightboxOverlay.classList.remove("show");
+    // Lightbox thường mở chồng lên dialog chi tiết đánh giá — chỉ mở lại
+    // cuộn trang nếu dialog phía sau cũng không còn mở, tránh cuộn được nền
+    // trong khi dialog chi tiết vẫn đang hiện.
+    if (!reviewDetailOverlay.classList.contains("show")) {
+      document.body.style.overflow = "";
+    }
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && imageLightboxOverlay.classList.contains("show")) closeImageLightbox();
+  });
+</script>
+
+<script>
+  let currentReviewDetailId = null;
+
+  const reviewDetailOverlay = document.getElementById("reviewDetailOverlay");
+
+  function showReviewDetail(r) {
+    currentReviewDetailId = r.id;
+    document.getElementById("reviewDetailAvatar").src = r.customerAvatar || "https://placehold.co/40";
+    document.getElementById("reviewDetailCustomer").innerText = r.customerName;
+    document.getElementById("reviewDetailCreatedAt").innerText = r.createdAt ? new Date(r.createdAt).toLocaleString("vi-VN") : "";
+    document.getElementById("reviewDetailProduct").innerText = r.productName;
+    document.getElementById("reviewDetailOrder").innerText = r.orderCode ? `#${r.orderCode}` : "N/A";
+
+    const stars = document.getElementById("reviewDetailStars");
+    stars.innerHTML = "";
+    for (let i = 0; i < 5; i++) {
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-star";
+      icon.style.color = i < r.rating ? "#F1C40F" : "#E8DFD3";
+      icon.style.fontSize = "16px";
+      icon.style.marginRight = "2px";
+      stars.appendChild(icon);
+    }
+
+    document.getElementById("reviewDetailComment").innerText = r.comment || "(Không có nội dung)";
+
+    const imagesGroup = document.getElementById("reviewDetailImagesGroup");
+    const imagesContainer = document.getElementById("reviewDetailImages");
+    imagesContainer.innerHTML = "";
+    if (r.images && r.images.length > 0) {
+      imagesGroup.style.display = "block";
+      r.images.forEach(img => {
+        const el = document.createElement("img");
+        el.src = img;
+        el.style.cssText = "width:90px; height:90px; border-radius:10px; object-fit:cover; border:1px solid var(--border); cursor:zoom-in;";
+        el.onerror = () => { el.style.display = "none"; };
+        el.onclick = () => openImageLightbox(img);
+        imagesContainer.appendChild(el);
+      });
+    } else {
+      imagesGroup.style.display = "none";
+    }
+
+    const statusBadge = document.getElementById("reviewDetailStatus");
+    statusBadge.className = "status-badge " + (r.status === "visible" ? "status-active" : "status-inactive");
+    statusBadge.innerText = r.status === "visible" ? "Hiển thị" : "Đã ẩn";
+
+    document.getElementById("reviewDetailToggleBtn").innerText = r.status === "visible" ? "Ẩn đánh giá" : "Hiện đánh giá";
+
+    reviewDetailOverlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeReviewDetail() {
+    reviewDetailOverlay.classList.remove("show");
+    document.body.style.overflow = "";
+    currentReviewDetailId = null;
+  }
+
+  async function onToggleReviewFromDetail() {
+    if (currentReviewDetailId) await onToggleReview(currentReviewDetailId);
+  }
+
+  reviewDetailOverlay.addEventListener("click", (e) => {
+    if (e.target === reviewDetailOverlay) closeReviewDetail();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && reviewDetailOverlay.classList.contains("show")) closeReviewDetail();
+  });
+
   async function onToggleReview(id) {
     if (!(await showConfirmDialog({ title: "Thay đổi hiển thị", message: "Bạn có chắc muốn thay đổi trạng thái hiển thị đánh giá này?" }))) return;
     try {

@@ -33,6 +33,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordHint => 'Password';
 
   @override
+  String get authEmailPlaceholder => 'example@gmail.com';
+
+  @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
+  String get authNamePlaceholder => 'John Doe';
+
+  @override
+  String get authConfirmPasswordPlaceholder => 'Re-type password';
+
+  @override
   String get confirmPasswordHint => 'Confirm Password';
 
   @override
@@ -1070,4 +1082,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkoutVnpayFailed => 'Payment via VNPAY was not successful.';
+
+  @override
+  String get onboardingTitle1 => 'All your favorites';
+
+  @override
+  String get onboardingDesc1 =>
+      'Get all your loved breads in one place. Just place the order, we do the rest.';
+
+  @override
+  String get onboardingTitle2 => 'Order from the shop you want';
+
+  @override
+  String get onboardingDesc2 =>
+      'Browse shops near you, compare ratings and pick the one you like best.';
+
+  @override
+  String get onboardingTitle3 => 'Fast delivery to your door';
+
+  @override
+  String get onboardingDesc3 =>
+      'Track your order in real time and get your bread hot and fresh at home.';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingStart => 'Get started';
 }

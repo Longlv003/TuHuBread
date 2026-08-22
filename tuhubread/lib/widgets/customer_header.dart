@@ -7,12 +7,22 @@ class CustomerHeader extends StatelessWidget {
   final int unreadNotifications;
   final VoidCallback onNotificationTap;
 
+  /// Căn giữa tiêu đề (dùng cho các tab chỉ có tiêu đề chữ như Giỏ hàng).
+  /// Khi bật, phía trái được chừa đúng bề rộng của nút chuông bên phải để
+  /// tiêu đề nằm chính giữa màn hình thay vì bị lệch.
+  final bool centerTitle;
+
+  /// Nút phụ đặt bên trái tiêu đề (chỉ dùng khi [centerTitle] = true).
+  final Widget? leading;
+
   const CustomerHeader({
     super.key,
     required this.user,
     required this.titleWidget,
     required this.unreadNotifications,
     required this.onNotificationTap,
+    this.centerTitle = false,
+    this.leading,
   });
 
   @override
@@ -22,7 +32,11 @@ class CustomerHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: titleWidget),
+          if (centerTitle)
+            SizedBox(width: 40, child: leading),
+          Expanded(
+            child: centerTitle ? Center(child: titleWidget) : titleWidget,
+          ),
           GestureDetector(
             onTap: onNotificationTap,
             behavior: HitTestBehavior.opaque,

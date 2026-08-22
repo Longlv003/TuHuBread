@@ -146,6 +146,30 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get passwordHint;
 
+  /// No description provided for @authEmailPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'example@gmail.com'**
+  String get authEmailPlaceholder;
+
+  /// No description provided for @authPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'••••••••'**
+  String get authPasswordPlaceholder;
+
+  /// No description provided for @authNamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'John Doe'**
+  String get authNamePlaceholder;
+
+  /// No description provided for @authConfirmPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-type password'**
+  String get authConfirmPasswordPlaceholder;
+
   /// No description provided for @confirmPasswordHint.
   ///
   /// In en, this message translates to:
@@ -2047,6 +2071,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment via VNPAY was not successful.'**
   String get checkoutVnpayFailed;
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'All your favorites'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingDesc1.
+  ///
+  /// In en, this message translates to:
+  /// **'Get all your loved breads in one place. Just place the order, we do the rest.'**
+  String get onboardingDesc1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Order from the shop you want'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingDesc2.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse shops near you, compare ratings and pick the one you like best.'**
+  String get onboardingDesc2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast delivery to your door'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingDesc3.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your order in real time and get your bread hot and fresh at home.'**
+  String get onboardingDesc3;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingStart;
 }
 
 class _AppLocalizationsDelegate

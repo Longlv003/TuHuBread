@@ -13,6 +13,7 @@ import '../models/product_review.model.dart';
 import '../models/product_variant.model.dart';
 import '../utils/currency_formatter.dart';
 import 'checkout_page.dart';
+import 'product_reviews_page.dart';
 
 class ProductDetailPage extends StatelessWidget {
   const ProductDetailPage({super.key});
@@ -311,25 +312,30 @@ class _ProductDetailContent extends StatelessWidget {
                             const Divider(height: 32, color: Color(0xFFF1EAE1)),
                           ],
 
-                          // 4. Phần mô tả chi tiết sản phẩm
-                          Text(
-                            l10n.detailDescription,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
+                          // 4. Phần mô tả chi tiết sản phẩm — ẩn hẳn mục này
+                          // nếu shop chưa nhập mô tả, thay vì hiện tiêu đề
+                          // với nội dung trống bên dưới.
+                          if (detail.description != null &&
+                              detail.description!.trim().isNotEmpty) ...[
+                            Text(
+                              l10n.detailDescription,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2C3E50),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            detail.description,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF7F8C8D),
-                              height: 1.5,
+                            const SizedBox(height: 6),
+                            Text(
+                              detail.description!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF7F8C8D),
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const Divider(height: 32, color: Color(0xFFF1EAE1)),
+                            const Divider(height: 32, color: Color(0xFFF1EAE1)),
+                          ],
 
                           // 5. Chọn kích cỡ (Variants)
                           _buildVariantsSection(
@@ -354,11 +360,12 @@ class _ProductDetailContent extends StatelessWidget {
                           ],
 
                           // ─────────── 8. ĐÁNH GIÁ & BÌNH LUẬN (REVIEWS) ───────────
-                          _buildReviewsSection(
-                            context,
-                            detail.reviews ?? [],
-                            detail.totalReviews ?? 0,
-                            l10n,
+                          // Chỉ hiện dòng tóm tắt bấm được — danh sách đầy đủ
+                          // nằm ở ProductReviewsPage để trang chi tiết không
+                          // bị kéo dài quá mức.
+                          _buildReviewsSummaryRow(
+                            detail: detail,
+                            l10n: l10n,
                           ),
                           const SizedBox(height: 24),
                         ],
@@ -882,153 +889,77 @@ class _ProductDetailContent extends StatelessWidget {
     );
   }
 
-  // ─────────── HIỂN THỊ ĐÁNH GIÁ (REVIEWS) ───────────
+  // ─────────── TÓM TẮT ĐÁNH GIÁ (bấm để mở trang riêng) ───────────
 
-  Widget _buildReviewsSection(
-    BuildContext context,
-    List<ProductReviewModel> reviews,
-    int totalCount,
-    AppLocalizations l10n,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.detailReviewsSection(totalCount.toString()),
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C3E50),
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (reviews.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Center(
-              child: Text(
-                l10n.detailNoReviews,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF7F8C8D),
-                  fontStyle: FontStyle.italic,
+  Widget _buildReviewsSummaryRow({
+    required ProductDetailModel detail,
+    required AppLocalizations l10n,
+  }) {
+    final reviews = detail.reviews ?? const <ProductReviewModel>[];
+    final total = detail.totalReviews ?? 0;
+    final hasReviews = reviews.isNotEmpty;
+
+    return InkWell(
+      onTap: hasReviews
+          ? () => getx.Get.to(
+                () => ProductReviewsPage(
+                  productName: detail.productName,
+                  rating: detail.rating,
+                  totalReviews: total,
+                  reviews: reviews,
                 ),
-              ),
-            ),
-          )
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: reviews.length,
-            separatorBuilder: (c, i) =>
-                const Divider(height: 24, color: Color(0xFFF1EAE1)),
-            itemBuilder: (context, idx) {
-              final review = reviews[idx];
-
-              return Column(
+              )
+          : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      // Avatar nguoi dung
-                      ClipOval(
-                        child: review.user.avatar != null
-                            ? Image.network(
-                                review.user.avatar!,
-                                width: 36,
-                                height: 36,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      color: const Color(0xFFF1EAE1),
-                                      child: const Icon(
-                                        Icons.person,
-                                        color: Color(0xFF7F8C8D),
-                                        size: 18,
-                                      ),
-                                    ),
-                              )
-                            : Container(
-                                width: 36,
-                                height: 36,
-                                color: const Color(0xFFF1EAE1),
-                                child: const Icon(
-                                  Icons.person,
-                                  color: Color(0xFF7F8C8D),
-                                  size: 18,
-                                ),
-                              ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              review.user.fullName,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2C3E50),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            // Render ngoi sao vang dua vao rating
-                            Row(
-                              children: List.generate(5, (index) {
-                                return Icon(
-                                  Icons.star_rounded,
-                                  color: index < review.rating
-                                      ? const Color(0xFFF1C40F)
-                                      : const Color(0xFFBDC3C7),
-                                  size: 14,
-                                );
-                              }),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (review.comment != null && review.comment!.isNotEmpty)
-                    Text(
-                      review.comment!,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF34495E),
-                        height: 1.4,
-                      ),
+                  Text(
+                    l10n.detailReviewsSection(total.toString()),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C3E50),
                     ),
-                  if (review.images.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 60,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: review.images.length,
-                        separatorBuilder: (c, i) => const SizedBox(width: 8),
-                        itemBuilder: (c, imgIdx) => ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            review.images[imgIdx],
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 4),
+                  if (hasReviews)
+                    Row(
+                      children: [
+                        const Icon(Icons.star_rounded,
+                            color: Color(0xFFF1C40F), size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${detail.rating} · Xem tất cả bình luận',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF7F8C8D),
                           ),
                         ),
+                      ],
+                    )
+                  else
+                    Text(
+                      l10n.detailNoReviews,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF7F8C8D),
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                  ],
                 ],
-              );
-            },
-          ),
-      ],
+              ),
+            ),
+            if (hasReviews)
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFBDC3C7)),
+          ],
+        ),
+      ),
     );
   }
 

@@ -22,6 +22,36 @@ class CartTab extends StatelessWidget {
 
   const CartTab({super.key, required this.user});
 
+  /// Hỏi xác nhận rồi xoá sạch giỏ hàng — expose ra ngoài để nút xoá có thể
+  /// nằm trên thanh tiêu đề chung (my_home_page) thay vì chiếm thêm 1 hàng
+  /// riêng trong nội dung tab.
+  static Future<void> confirmClearCart(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final cubit = context.read<CartCubit>();
+
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      type: ConfirmDialogType.danger,
+      title: l10n.cartClearAll,
+      description: l10n.cartClearAllConfirm,
+      confirmTitle: l10n.cartClearAll,
+      cancelTitle: l10n.cartCancel,
+    );
+    if (confirmed != true) return;
+
+    // requestClearCart (xoá thật trên server) chứ không phải clearCart (chỉ
+    // reset state cục bộ) — nếu dùng nhầm, mở lại app giỏ hàng cũ sẽ hiện lại.
+    final success = await cubit.requestClearCart();
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể xoá giỏ hàng, vui lòng thử lại'),
+          backgroundColor: Color(0xFFE74C3C),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CartCubit, CartState>(
@@ -49,33 +79,12 @@ class CartTab extends StatelessWidget {
 
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _confirmClearCart(context, cubit, l10n),
-                  icon: const Icon(
-                    Icons.delete_sweep_outlined,
-                    size: 18,
-                    color: Color(0xFFE74C3C),
-                  ),
-                  label: Text(
-                    l10n.cartClearAll,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFE74C3C),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => cubit.loadCart(),
                 color: const Color(0xFFE67E22),
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     for (final item in cartState.items)
@@ -149,11 +158,18 @@ class CartTab extends StatelessWidget {
 
   /// Gợi ý đồ uống chưa có trong giỏ, dựa trên danh mục global có tên/slug
   /// liên quan tới "nước"/"uống"/"drink".
+  ///
+  /// CHỈ lấy đồ uống của đúng cửa hàng đang có trong giỏ — giỏ hàng chỉ chứa
+  /// món của 1 cửa hàng tại 1 thời điểm, nên gợi ý món của cửa hàng khác sẽ
+  /// khiến khách bấm thêm rồi bị hỏi xoá giỏ hàng. Cửa hàng không bán đồ uống
+  /// thì trả về rỗng và mục gợi ý tự ẩn đi.
   List<ProductModel> _drinkSuggestions(
     HomeState homeState,
     CartState cartState,
   ) {
-    if (homeState is! HomeLoaded) return const [];
+    if (homeState is! HomeLoaded || cartState.items.isEmpty) return const [];
+
+    final cartShopId = cartState.items.first.shopId;
 
     bool isDrinkKeyword(String value) {
       final v = value.toLowerCase();
@@ -178,6 +194,7 @@ class CartTab extends StatelessWidget {
     return homeState.products
         .where(
           (p) =>
+              p.shopId == cartShopId &&
               drinkCategoryIds.contains(p.categoryId) &&
               !cartProductIds.contains(p.id),
         )
@@ -198,22 +215,4 @@ class CartTab extends StatelessWidget {
     return confirmed == true;
   }
 
-  void _confirmClearCart(
-    BuildContext context,
-    CartCubit cubit,
-    AppLocalizations l10n,
-  ) {
-    AppConfirmDialog.show(
-      context,
-      type: ConfirmDialogType.danger,
-      title: l10n.cartClearAll,
-      description: l10n.cartClearAllConfirm,
-      confirmTitle: l10n.cartClearAll,
-      cancelTitle: l10n.cartCancel,
-    ).then((confirmed) {
-      if (confirmed == true) {
-        cubit.clearCart();
-      }
-    });
-  }
 }

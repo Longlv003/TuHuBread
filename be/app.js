@@ -3,6 +3,8 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var helmet = require("helmet");
+var multer = require("multer");
+var { ImageValidationError } = require("./utils/imageUpload.util");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -51,6 +53,17 @@ app.use((err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
+
+  // Lỗi từ multer (vượt giới hạn dung lượng/số lượng file) hoặc từ
+  // imageFileFilter (từ chối định dạng ảnh) ném ra TRƯỚC khi vào tới
+  // controller, nên không đi qua được try/catch ở đó — luôn có msg cụ thể
+  // sẵn (vd. "Chỉ cho phép tải lên file ảnh..."), trả thẳng cho client thay
+  // vì che thành "Server error" chung chung khiến không biết ảnh bị từ chối
+  // vì lý do gì.
+  if ((err instanceof multer.MulterError || err instanceof ImageValidationError) && req.path.startsWith("/api")) {
+    return res.status(400).json({ msg: err.message, data: null });
+  }
+
   if (req.path.startsWith("/api")) {
     return res.status(500).json({ msg: "Server error", data: null });
   }

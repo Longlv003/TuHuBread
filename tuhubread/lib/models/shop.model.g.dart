@@ -16,6 +16,9 @@ ShopModel _$ShopModelFromJson(Map<String, dynamic> json) => ShopModel(
   status: json['status'] as String,
   address: json['address'] as String,
   distanceKm: (json['distance_km'] as num?)?.toDouble(),
+  isOpen: json['is_open'] as bool? ?? true,
+  openTime: json['open_time'] as String?,
+  closeTime: json['close_time'] as String?,
 );
 
 Map<String, dynamic> _$ShopModelToJson(ShopModel instance) => <String, dynamic>{
@@ -28,4 +31,7 @@ Map<String, dynamic> _$ShopModelToJson(ShopModel instance) => <String, dynamic>{
   'status': instance.status,
   'address': instance.address,
   'distance_km': instance.distanceKm,
+  'is_open': instance.isOpen,
+  'open_time': instance.openTime,
+  'close_time': instance.closeTime,
 };

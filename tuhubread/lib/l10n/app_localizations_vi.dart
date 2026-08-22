@@ -33,6 +33,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get passwordHint => 'Mật khẩu';
 
   @override
+  String get authEmailPlaceholder => 'example@gmail.com';
+
+  @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
+  String get authNamePlaceholder => 'Nguyễn Văn A';
+
+  @override
+  String get authConfirmPasswordPlaceholder => 'Nhập lại mật khẩu';
+
+  @override
   String get confirmPasswordHint => 'Xác nhận mật khẩu';
 
   @override
@@ -1074,4 +1086,34 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get checkoutVnpayFailed => 'Thanh toán qua VNPAY không thành công.';
+
+  @override
+  String get onboardingTitle1 => 'Tất cả món bạn thích';
+
+  @override
+  String get onboardingDesc1 =>
+      'Mọi món bánh mì bạn yêu thích gom về một nơi. Bạn chỉ cần đặt, phần còn lại để chúng tôi lo.';
+
+  @override
+  String get onboardingTitle2 => 'Chọn đúng cửa hàng bạn muốn';
+
+  @override
+  String get onboardingDesc2 =>
+      'Xem cửa hàng gần bạn, so sánh đánh giá và chọn nơi ưng ý nhất để đặt món.';
+
+  @override
+  String get onboardingTitle3 => 'Giao hàng nhanh tận nơi';
+
+  @override
+  String get onboardingDesc3 =>
+      'Theo dõi đơn hàng theo thời gian thực và nhận bánh mì nóng giòn ngay tại nhà.';
+
+  @override
+  String get onboardingSkip => 'Bỏ qua';
+
+  @override
+  String get onboardingNext => 'Tiếp tục';
+
+  @override
+  String get onboardingStart => 'Bắt đầu';
 }

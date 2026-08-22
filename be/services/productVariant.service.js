@@ -27,8 +27,11 @@ class ProductVariantService {
     }
 
     const { variantName, price, salePrice, stockQuantity, status, image, expiredAt } = data;
-    if (!variantName) {
+    if (!variantName || !variantName.trim()) {
       throw new Error("Tên biến thể là bắt buộc");
+    }
+    if (await productVariantRepository.existsByProductIdAndName(productId, variantName.trim())) {
+      throw new Error("Sản phẩm đã có biến thể trùng tên này");
     }
     const parsedPrice = parseFloat(price);
     if (!price || isNaN(parsedPrice) || parsedPrice <= 0) {
@@ -88,8 +91,12 @@ class ProductVariantService {
     const { variantName, price, salePrice, stockQuantity, status, image, expiredAt } = data;
     const updateData = {};
 
-    if (variantName) {
-      updateData.variant_name = variantName.trim();
+    if (variantName && variantName.trim()) {
+      const trimmedName = variantName.trim();
+      if (await productVariantRepository.existsByProductIdAndName(productId, trimmedName, variantId)) {
+        throw new Error("Sản phẩm đã có biến thể trùng tên này");
+      }
+      updateData.variant_name = trimmedName;
       const baseSlug = toSlug(variantName) || variant.variant_slug;
       updateData.variant_slug = await this._generateUniqueVariantSlug(productId, baseSlug, variantId);
     }

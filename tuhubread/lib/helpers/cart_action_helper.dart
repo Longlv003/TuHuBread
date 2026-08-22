@@ -171,7 +171,7 @@ class CartActionHelper {
       description:
           "Giỏ hàng của bạn đang có món của${oldShopName != null ? ' $oldShopName' : ' một cửa hàng khác'}."
           " Bạn có muốn xoá giỏ hàng cũ để đặt món${shopName != null ? ' từ $shopName' : ' mới'} không?",
-      confirmTitle: "Xoá & thêm món mới",
+      confirmTitle: "Xoá",
       cancelTitle: "Hủy",
     );
     if (confirmed != true) return null;

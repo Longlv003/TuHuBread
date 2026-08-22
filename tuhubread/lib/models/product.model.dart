@@ -12,13 +12,25 @@ class ProductModel {
   final String productName;
   final String productSlug;
   final double price; // Giá gốc của sản phẩm (lấy từ variant mặc định)
+  final double? salePrice; // Giá khuyến mãi của variant mặc định (nếu có)
   final String image;
   final String? description;
   @JsonKey(defaultValue: 5.0)
   final double rating;
   @JsonKey(defaultValue: 0)
   final int salesCount;
+  @JsonKey(defaultValue: false)
+  final bool isFeatured;
   final String status;
+
+  bool get hasDiscount => salePrice != null && salePrice! < price;
+
+  /// Giá thực tế hiển thị cho khách (đã áp khuyến mãi nếu có).
+  double get displayPrice => hasDiscount ? salePrice! : price;
+
+  /// Phần trăm giảm giá đã làm tròn, dùng cho nhãn "-20%".
+  int get discountPercent =>
+      hasDiscount && price > 0 ? (((price - salePrice!) / price) * 100).round() : 0;
 
   ProductModel({
     required this.id,
@@ -27,10 +39,12 @@ class ProductModel {
     required this.productName,
     required this.productSlug,
     required this.price,
+    this.salePrice,
     required this.image,
     this.description,
     required this.rating,
     required this.salesCount,
+    this.isFeatured = false,
     required this.status,
   });
 

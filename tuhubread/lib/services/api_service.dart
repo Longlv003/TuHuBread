@@ -62,13 +62,18 @@ class ApiService {
         path,
         data: data,
         queryParameters: queryParameters,
-        // BaseOptions ép cứng Content-Type: application/json qua header, nên với
-        // FormData (multipart upload) phải xoá header đó để Dio tự suy luận
-        // `multipart/form-data; boundary=...` — nếu không, request rời đi với
-        // Content-Type sai và backend (multer) sẽ không parse được file.
-        options: data is FormData
-            ? Options(method: method, headers: {'Content-Type': null})
-            : Options(method: method),
+        // Không cần tự xoá/ghi đè header Content-Type cho FormData: Dio luôn
+        // tự ghi đè header này thành `multipart/form-data; boundary=...`
+        // ngay trước khi gửi (dio_mixin._transformData), bất kể BaseOptions
+        // đặt sẵn Content-Type: application/json hay không.
+        // Truyền `headers: {'Content-Type': null}` để "xoá" header tưởng như
+        // đúng nhưng lại gây crash: Options.compose() merge header đó vào bản
+        // sao rồi so sánh với contentType lấy từ BaseOptions gốc (vẫn còn
+        // 'application/json') — 2 giá trị lệch nhau (null vs 'application/json')
+        // khiến RequestOptions ném ArgumentError "Unable to set different
+        // values for `contentType` and the content-type header." trước khi
+        // request kịp gửi đi.
+        options: Options(method: method),
       );
 
       final responseData = response.data;

@@ -3,6 +3,7 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../models/cart_item.model.dart';
 import '../utils/currency_formatter.dart';
+import 'app_network_image.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItemModel item;
@@ -44,20 +45,11 @@ class CartItemCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              item.image,
+            child: AppNetworkImage(
+              url: item.image,
               width: 72,
               height: 72,
-              fit: BoxFit.cover,
-              errorBuilder: (c, e, s) => Container(
-                width: 72,
-                height: 72,
-                color: const Color(0xFFF1EAE1),
-                child: const Icon(
-                  Icons.bakery_dining_rounded,
-                  color: Color(0xFFE67E22),
-                ),
-              ),
+              fallbackIconSize: 24,
             ),
           ),
           const SizedBox(width: 12),

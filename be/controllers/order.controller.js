@@ -12,7 +12,14 @@ const { cartItemModel } = require("../models/cartItem.model");
 const { voucherSaveModel } = require("../models/voucherSave.model");
 const socketService = require("../services/socket.service");
 const notificationService = require("../services/notification.service");
-const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
+const {
+  calculateDeliveryFee,
+  getDeliveryDistanceKm,
+  getDeliveryBlockReason,
+  getDeliveryBlockMessage,
+  DELIVERY_MULTIPLIERS,
+  MAX_DELIVERY_DISTANCE_KM,
+} = require("../utils/deliveryFee.util");
 const { buildCartItemConfigKey } = require("../utils/cartItemKey.util");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
 const orderService = require("../services/order.service");
@@ -292,6 +299,14 @@ exports.previewDeliveryFee = async (req, res) => {
       priority: calculateDeliveryFee(shopCoords, addressCoords, "priority"),
       standard: calculateDeliveryFee(shopCoords, addressCoords, "standard"),
       saving: calculateDeliveryFee(shopCoords, addressCoords, "saving"),
+      // Khoảng cách thật + lý do không giao được (nếu có) — màn Thanh toán
+      // dùng để báo đỏ và khoá nút đặt hàng.
+      distance_km: getDeliveryDistanceKm(shopCoords, addressCoords),
+      block_reason: getDeliveryBlockReason(shopCoords, addressCoords),
+      block_message: getDeliveryBlockMessage(
+        getDeliveryBlockReason(shopCoords, addressCoords),
+      ),
+      max_delivery_km: MAX_DELIVERY_DISTANCE_KM,
     };
     return res.json(dataRes);
   } catch (err) {
@@ -471,6 +486,26 @@ exports.createOrder = async (req, res) => {
     if (!shop) {
       dataRes.msg = "Không tìm thấy cửa hàng cho một số sản phẩm trong giỏ hàng";
       return res.status(404).json(dataRes);
+    }
+
+    // Cửa hàng đang tạm đóng thì không nhận đơn. Chủ shop tự bật/tắt trạng
+    // thái này trong trang quản trị, nên phải chặn ở server — nếu chỉ ẩn nút
+    // bên app thì đơn vẫn lọt qua khi shop đóng cửa lúc khách đang đặt dở.
+    if (!shop.is_open) {
+      dataRes.msg = `${shop.shop_name} hiện đang tạm đóng cửa, vui lòng quay lại sau`;
+      return res.status(400).json(dataRes);
+    }
+
+    // Từ chối đơn không giao được (ngoài bán kính, hoặc địa chỉ chưa có toạ
+    // độ nên không kiểm tra được) — client đã khoá nút đặt hàng, nhưng vẫn
+    // phải chặn ở server để không thể lách qua.
+    const blockReason = getDeliveryBlockReason(
+      shop.location ? shop.location.coordinates : undefined,
+      address.location ? address.location.coordinates : undefined,
+    );
+    if (blockReason) {
+      dataRes.msg = getDeliveryBlockMessage(blockReason);
+      return res.status(400).json(dataRes);
     }
 
     const itemsTotal = items.reduce(

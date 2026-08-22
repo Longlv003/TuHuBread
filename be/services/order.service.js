@@ -14,7 +14,12 @@ const orderRepository = require("../repositories/order.repository");
 const orderStatusHistoryRepository = require("../repositories/orderStatusHistory.repository");
 const socketService = require("./socket.service");
 const notificationService = require("./notification.service");
-const { calculateDeliveryFee, DELIVERY_MULTIPLIERS } = require("../utils/deliveryFee.util");
+const {
+  calculateDeliveryFee,
+  getDeliveryBlockReason,
+  getDeliveryBlockMessage,
+  DELIVERY_MULTIPLIERS,
+} = require("../utils/deliveryFee.util");
 const { ORDER_STATUS_LABELS } = require("../utils/orderStatus.util");
 
 const ORDER_FLOW = ["pending", "confirmed", "preparing", "delivering", "completed"];
@@ -284,6 +289,23 @@ class OrderService {
     // hàng (đồng nhất với luồng thanh toán tiền mặt) — giỏ hàng chỉ chứa sản
     // phẩm của 1 chi nhánh tại 1 thời điểm nên lấy toạ độ từ item đầu tiên là đủ.
     const shop = await shopModel.findOne({ _id: validatedItems[0].shop_id, deleted_at: null });
+
+    // Cửa hàng đang tạm đóng thì không nhận đơn (áp dụng cho cả tiền mặt lẫn
+    // VNPay vì hai luồng đều đi qua hàm này).
+    if (shop && !shop.is_open) {
+      throw new Error(`${shop.shop_name} hiện đang tạm đóng cửa, vui lòng quay lại sau`);
+    }
+
+    // Chặn địa chỉ không giao được (ngoài bán kính hoặc chưa có toạ độ) —
+    // áp dụng cho cả luồng tiền mặt lẫn VNPay (đều qua hàm này).
+    const blockReason = getDeliveryBlockReason(
+      shop && shop.location ? shop.location.coordinates : undefined,
+      address.location ? address.location.coordinates : undefined,
+    );
+    if (blockReason) {
+      throw new Error(getDeliveryBlockMessage(blockReason));
+    }
+
     const deliveryFee = calculateDeliveryFee(
       shop && shop.location ? shop.location.coordinates : undefined,
       address.location ? address.location.coordinates : undefined,

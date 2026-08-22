@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uid = req.user?.uid || "unknown";
-    const ext = safeImageExtension(file.originalname);
+    const ext = safeImageExtension(file.originalname, file.mimetype);
     cb(null, `${uid}_${Date.now()}${ext}`);
   },
 });

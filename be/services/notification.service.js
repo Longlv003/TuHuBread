@@ -55,11 +55,20 @@ class NotificationService {
   async getNotificationsSentByShop(shopId, page = 1) {
     const parsedPage = Math.max(parseInt(page) || 1, 1);
     const limit = 10;
-    const [notifications, total] = await Promise.all([
+    const [notifications, total, countsByType] = await Promise.all([
       notificationRepository.findByShopSenderPaginated(shopId, { page: parsedPage, limit }),
       notificationRepository.countByShopSender(shopId),
+      notificationRepository.countByShopSenderGroupedByType(shopId),
     ]);
-    return { notifications, total, page: parsedPage, totalPages: Math.max(Math.ceil(total / limit), 1) };
+    return {
+      notifications,
+      total,
+      // Đếm trên TOÀN BỘ dữ liệu chứ không phải trang hiện tại, để con số
+      // hiển thị đúng tổng số thông báo mỗi loại.
+      countsByType,
+      page: parsedPage,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    };
   }
 
   async createAndSendFromShop(shopId, { title, body, type }) {

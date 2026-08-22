@@ -7,6 +7,10 @@
   "loginSubheading": "Vui lòng điền email và mật khẩu của bạn",
   "emailHint": "Email",
   "passwordHint": "Mật khẩu",
+  "authEmailPlaceholder": "example@gmail.com",
+  "authPasswordPlaceholder": "••••••••",
+  "authNamePlaceholder": "Nguyễn Văn A",
+  "authConfirmPasswordPlaceholder": "Nhập lại mật khẩu",
   "confirmPasswordHint": "Xác nhận mật khẩu",
   "loginButton": "Đăng nhập",
   "noAccountText": "Chưa có tài khoản? ",
@@ -382,5 +386,14 @@
   "paymentVnpayFailedOrCancelled": "Thanh toán VNPay thất bại hoặc đã bị hủy",
   "paymentVnpayInitFailed": "Không thể khởi tạo liên kết thanh toán VNPay",
   "checkoutVnpayInitFailed": "Không thể tạo link thanh toán",
-  "checkoutVnpayFailed": "Thanh toán qua VNPAY không thành công."
+  "checkoutVnpayFailed": "Thanh toán qua VNPAY không thành công.",
+  "onboardingTitle1": "Tất cả món bạn thích",
+  "onboardingDesc1": "Mọi món bánh mì bạn yêu thích gom về một nơi. Bạn chỉ cần đặt, phần còn lại để chúng tôi lo.",
+  "onboardingTitle2": "Chọn đúng cửa hàng bạn muốn",
+  "onboardingDesc2": "Xem cửa hàng gần bạn, so sánh đánh giá và chọn nơi ưng ý nhất để đặt món.",
+  "onboardingTitle3": "Giao hàng nhanh tận nơi",
+  "onboardingDesc3": "Theo dõi đơn hàng theo thời gian thực và nhận bánh mì nóng giòn ngay tại nhà.",
+  "onboardingSkip": "Bỏ qua",
+  "onboardingNext": "Tiếp tục",
+  "onboardingStart": "Bắt đầu"
 }

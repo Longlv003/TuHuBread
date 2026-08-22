@@ -9,6 +9,7 @@ import 'package:tuhubread/l10n/app_localizations.dart';
 import 'package:tuhubread/routes/routes.dart';
 import '../../blocs/order/order_cubit.dart';
 import '../../blocs/order/order_state.dart';
+import '../../core/result.dart';
 import '../../models/order.model.dart';
 import '../../models/order_item.model.dart';
 import '../../models/user.model.dart';
@@ -681,7 +682,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
     }
 
     setState(() => _submitting = true);
-    final success = await context.read<OrderCubit>().submitReview(
+    final result = await context.read<OrderCubit>().submitReview(
           widget.orderId,
           productId: widget.item.productId,
           rating: _rating,
@@ -690,12 +691,19 @@ class _ReviewSheetState extends State<_ReviewSheet> {
         );
     if (!mounted) return;
 
-    if (success) {
+    if (result is Success<void>) {
       Navigator.of(context).pop(true);
     } else {
       setState(() => _submitting = false);
+      // Hiện đúng lý do thất bại từ server (vd. "đã đánh giá rồi", "chỉ cho
+      // phép tải lên file ảnh...") thay vì thông báo chung chung không rõ
+      // nguyên nhân, để người dùng biết cách sửa thay vì bấm gửi lại vô ích.
+      final message = (result as Failure<void>).message;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.historyReviewError), backgroundColor: const Color(0xFFE74C3C)),
+        SnackBar(
+          content: Text(message.isNotEmpty ? message : l10n.historyReviewError),
+          backgroundColor: const Color(0xFFE74C3C),
+        ),
       );
     }
   }
