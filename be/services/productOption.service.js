@@ -1,6 +1,7 @@
 const productRepository = require("../repositories/product.repository");
 const productOptionRepository = require("../repositories/productOption.repository");
 const { toSlug } = require("../utils/slug.util");
+const { parseNonNegativeNumber } = require("../utils/validate.util");
 
 class ProductOptionService {
   /**
@@ -33,10 +34,7 @@ class ProductOptionService {
     if (await productOptionRepository.existsByProductIdAndName(productId, trimmedName)) {
       throw new Error("Sản phẩm đã có topping trùng tên này");
     }
-    const parsedExtraPrice = extraPrice !== undefined && extraPrice !== "" ? parseFloat(extraPrice) : 0;
-    if (isNaN(parsedExtraPrice) || parsedExtraPrice < 0) {
-      throw new Error("Giá thêm phải lớn hơn hoặc bằng 0");
-    }
+    const parsedExtraPrice = parseNonNegativeNumber(extraPrice, "Giá thêm");
 
     const baseSlug = toSlug(optionName) || `option-${Date.now()}`;
     const uniqueSlug = await this._generateUniqueOptionSlug(productId, baseSlug);

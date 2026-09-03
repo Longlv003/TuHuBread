@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuhubread/configs/system.dart';
+import '../l10n/app_strings.dart';
 
 class ApiService {
   late final Dio _dio;
@@ -85,12 +86,14 @@ class ApiService {
           "msg": responseData['msg'] ?? "Success",
           "data": responseData['data'],
           "success": true,
+          "statusCode": response.statusCode,
         };
       }
       return {
         "msg": "Success",
         "data": responseData,
         "success": true,
+        "statusCode": response.statusCode,
       };
     } on DioException catch (e) {
       final errData = e.response?.data;
@@ -101,13 +104,16 @@ class ApiService {
       } else if (errData is String && errData.isNotEmpty) {
         errorMsg = _sanitizeErrorMessage(errData, e.response?.statusCode);
       } else if (e.response?.statusCode == 404) {
-        errorMsg = 'Không tìm thấy dữ liệu yêu cầu';
+        errorMsg = AppStrings.current.errorDataNotFound;
       }
 
       return {
         "msg": errorMsg,
         "data": null,
         "success": false,
+        // null khi request còn chưa tới được server (mất mạng, sai IP, timeout)
+        // — khác hẳn với việc server trả về lỗi có mã cụ thể.
+        "statusCode": e.response?.statusCode,
       };
     }
   }
@@ -117,12 +123,12 @@ class ApiService {
     final lower = raw.toLowerCase();
     if (lower.contains('<!doctype html') || lower.contains('<html')) {
       if (lower.contains('cannot get')) {
-        return 'API chưa được cấu hình hoặc không tồn tại';
+        return AppStrings.current.errorApiNotConfigured;
       }
       if (statusCode == 404) {
-        return 'Không tìm thấy dữ liệu yêu cầu';
+        return AppStrings.current.errorDataNotFound;
       }
-      return 'Lỗi kết nối máy chủ';
+      return AppStrings.current.errorServerConnection;
     }
     return raw;
   }

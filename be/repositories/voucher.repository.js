@@ -44,11 +44,11 @@ class VoucherRepository {
   }
 
   async update(id, updateData) {
-    return voucherModel.findByIdAndUpdate(id, updateData, { new: true });
+    return voucherModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
   }
 
   async softDelete(id) {
-    return voucherModel.findByIdAndUpdate(id, { deleted_at: new Date(), status: "inactive" }, { new: true });
+    return voucherModel.findByIdAndUpdate(id, { deleted_at: new Date(), status: "inactive" }, { new: true, runValidators: true });
   }
 }
 

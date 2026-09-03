@@ -2125,6 +2125,762 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get started'**
   String get onboardingStart;
+
+  /// No description provided for @errorServerConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Server connection error'**
+  String get errorServerConnection;
+
+  /// No description provided for @errorConnectServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to the server'**
+  String get errorConnectServer;
+
+  /// No description provided for @errorDataNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested data was not found'**
+  String get errorDataNotFound;
+
+  /// No description provided for @errorApiNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'The API is not configured or does not exist'**
+  String get errorApiNotConfigured;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error'**
+  String get errorUnknown;
+
+  /// No description provided for @errorLoadAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the address list'**
+  String get errorLoadAddresses;
+
+  /// No description provided for @errorLoadAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the address'**
+  String get errorLoadAddress;
+
+  /// No description provided for @errorAddAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the address'**
+  String get errorAddAddress;
+
+  /// No description provided for @errorUpdateAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the address'**
+  String get errorUpdateAddress;
+
+  /// No description provided for @errorDeleteAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the address'**
+  String get errorDeleteAddress;
+
+  /// No description provided for @errorLoadCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the cart'**
+  String get errorLoadCart;
+
+  /// No description provided for @errorConnectLoadCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to load the cart'**
+  String get errorConnectLoadCart;
+
+  /// No description provided for @errorAddToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to the cart'**
+  String get errorAddToCart;
+
+  /// No description provided for @errorConnectAddToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to add to the cart'**
+  String get errorConnectAddToCart;
+
+  /// No description provided for @errorClearCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear the cart'**
+  String get errorClearCart;
+
+  /// No description provided for @errorConnectClearCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to clear the cart'**
+  String get errorConnectClearCart;
+
+  /// No description provided for @errorUpdateQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the quantity'**
+  String get errorUpdateQuantity;
+
+  /// No description provided for @errorConnectUpdateQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to update the quantity'**
+  String get errorConnectUpdateQuantity;
+
+  /// No description provided for @errorRemoveFromCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove from the cart'**
+  String get errorRemoveFromCart;
+
+  /// No description provided for @errorConnectRemoveFromCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to remove from the cart'**
+  String get errorConnectRemoveFromCart;
+
+  /// No description provided for @errorClearCartRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear the cart, please try again'**
+  String get errorClearCartRetry;
+
+  /// No description provided for @errorLoadShops.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the shop list'**
+  String get errorLoadShops;
+
+  /// No description provided for @errorLoadCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the categories'**
+  String get errorLoadCategories;
+
+  /// No description provided for @errorLoadMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the menu'**
+  String get errorLoadMenu;
+
+  /// No description provided for @errorLoadBestSellers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the best sellers'**
+  String get errorLoadBestSellers;
+
+  /// No description provided for @errorLoadProductDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the product details'**
+  String get errorLoadProductDetail;
+
+  /// No description provided for @errorNoVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'This product has no variant on sale yet'**
+  String get errorNoVariant;
+
+  /// No description provided for @errorLoadVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the vouchers'**
+  String get errorLoadVouchers;
+
+  /// No description provided for @errorLoadVoucherList.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the voucher list'**
+  String get errorLoadVoucherList;
+
+  /// No description provided for @errorLoadSavedVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your saved vouchers'**
+  String get errorLoadSavedVouchers;
+
+  /// No description provided for @errorSaveVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the voucher'**
+  String get errorSaveVoucher;
+
+  /// No description provided for @errorSaveVoucherFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving the voucher failed'**
+  String get errorSaveVoucherFailed;
+
+  /// No description provided for @errorConnectSaveVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to save the voucher'**
+  String get errorConnectSaveVoucher;
+
+  /// No description provided for @errorApplyVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not apply the voucher code'**
+  String get errorApplyVoucher;
+
+  /// No description provided for @errorLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load notifications'**
+  String get errorLoadNotifications;
+
+  /// No description provided for @errorConnectLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to load notifications'**
+  String get errorConnectLoadNotifications;
+
+  /// No description provided for @errorLoadUnreadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the unread notification count'**
+  String get errorLoadUnreadCount;
+
+  /// No description provided for @errorMarkRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not mark as read'**
+  String get errorMarkRead;
+
+  /// No description provided for @errorMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not mark all as read'**
+  String get errorMarkAllRead;
+
+  /// No description provided for @errorDeleteNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the notification'**
+  String get errorDeleteNotification;
+
+  /// No description provided for @errorDeleteAllNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete all notifications'**
+  String get errorDeleteAllNotifications;
+
+  /// No description provided for @errorRegisterNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not register for notifications'**
+  String get errorRegisterNotifications;
+
+  /// No description provided for @errorUnregisterNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not unregister from notifications'**
+  String get errorUnregisterNotifications;
+
+  /// No description provided for @notificationDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New notification'**
+  String get notificationDefaultTitle;
+
+  /// No description provided for @errorPlaceOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not place the order'**
+  String get errorPlaceOrder;
+
+  /// No description provided for @errorConnectPlaceOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to place the order'**
+  String get errorConnectPlaceOrder;
+
+  /// No description provided for @errorLoadOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the order list'**
+  String get errorLoadOrders;
+
+  /// No description provided for @errorLoadOrderDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the order details'**
+  String get errorLoadOrderDetail;
+
+  /// No description provided for @errorSubmitReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit the review'**
+  String get errorSubmitReview;
+
+  /// No description provided for @errorCalcShippingFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not calculate the delivery fee'**
+  String get errorCalcShippingFee;
+
+  /// No description provided for @errorConnectCalcShippingFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to calculate the delivery fee'**
+  String get errorConnectCalcShippingFee;
+
+  /// No description provided for @errorCreateVnpayLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the VNPay payment link'**
+  String get errorCreateVnpayLink;
+
+  /// No description provided for @errorCreatePaymentLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the payment link'**
+  String get errorCreatePaymentLink;
+
+  /// No description provided for @errorConnectPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server to pay'**
+  String get errorConnectPayment;
+
+  /// No description provided for @errorVerifyTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not verify the transaction'**
+  String get errorVerifyTransaction;
+
+  /// No description provided for @errorNoPaymentUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'The backend did not return a payment URL'**
+  String get errorNoPaymentUrl;
+
+  /// No description provided for @paymentProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'The transaction is being processed'**
+  String get paymentProcessing;
+
+  /// No description provided for @paymentFailedWithCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction failed (code: {code})'**
+  String paymentFailedWithCode(String code);
+
+  /// No description provided for @paymentVnpayFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The VNPAY payment was not successful.'**
+  String get paymentVnpayFailed;
+
+  /// No description provided for @deliveryFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get deliveryFree;
+
+  /// No description provided for @addressPickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an address'**
+  String get addressPickTitle;
+
+  /// No description provided for @addressBuildingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Building, floor (optional)'**
+  String get addressBuildingHint;
+
+  /// No description provided for @addressGateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Gate (optional)'**
+  String get addressGateHint;
+
+  /// No description provided for @mapSearchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Search is unavailable right now, please check your connection'**
+  String get mapSearchError;
+
+  /// No description provided for @mapGpsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Location (GPS) is turned off on this device'**
+  String get mapGpsOff;
+
+  /// No description provided for @mapEnableGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on GPS'**
+  String get mapEnableGps;
+
+  /// No description provided for @mapPermissionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to allow location access to use this feature'**
+  String get mapPermissionNeeded;
+
+  /// No description provided for @mapPermissionDeniedBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was denied earlier'**
+  String get mapPermissionDeniedBefore;
+
+  /// No description provided for @mapOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get mapOpenSettings;
+
+  /// No description provided for @mapNoSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get a location signal, please try again'**
+  String get mapNoSignal;
+
+  /// No description provided for @mapSearchPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a place'**
+  String get mapSearchPlace;
+
+  /// No description provided for @mapTypeAtLeast3Chars.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 3 characters to search for a place'**
+  String get mapTypeAtLeast3Chars;
+
+  /// No description provided for @mapNoPlaceFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching place found'**
+  String get mapNoPlaceFound;
+
+  /// No description provided for @mapPinnedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned location'**
+  String get mapPinnedLocation;
+
+  /// No description provided for @mapResolvingAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolving the address...'**
+  String get mapResolvingAddress;
+
+  /// No description provided for @mapDragToPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the map to pin your delivery location'**
+  String get mapDragToPin;
+
+  /// No description provided for @mapConfirmLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm this location'**
+  String get mapConfirmLocation;
+
+  /// No description provided for @homeDiscountedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Discounted items'**
+  String get homeDiscountedSection;
+
+  /// No description provided for @homeFeaturedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured items'**
+  String get homeFeaturedSection;
+
+  /// No description provided for @homeCategoriesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get homeCategoriesSection;
+
+  /// No description provided for @homeShopsNearYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Shops near you'**
+  String get homeShopsNearYou;
+
+  /// No description provided for @homeAllShops.
+  ///
+  /// In en, this message translates to:
+  /// **'All shops'**
+  String get homeAllShops;
+
+  /// No description provided for @homeNoShopNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no shops near you yet'**
+  String get homeNoShopNearby;
+
+  /// No description provided for @homeLocationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location has not been determined yet'**
+  String get homeLocationUnknown;
+
+  /// No description provided for @homeLocationFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing all shops. Turn on location or pin your delivery address to see the shops that are really near you.'**
+  String get homeLocationFallbackHint;
+
+  /// No description provided for @homeUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get homeUseCurrentLocation;
+
+  /// No description provided for @homeLocationOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is off. Turn it on to find shops near you.'**
+  String get homeLocationOffHint;
+
+  /// No description provided for @homeLocationDeniedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You denied location access. Grant it again in the app settings.'**
+  String get homeLocationDeniedHint;
+
+  /// No description provided for @homeLocationRequiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Location access is required to find shops near you.'**
+  String get homeLocationRequiredHint;
+
+  /// No description provided for @homeLocationFailedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get your location. Check your GPS signal and try again.'**
+  String get homeLocationFailedHint;
+
+  /// No description provided for @homeOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get homeOpenSettings;
+
+  /// No description provided for @filterNearMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Near me'**
+  String get filterNearMe;
+
+  /// No description provided for @filterBestSelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Best selling'**
+  String get filterBestSelling;
+
+  /// No description provided for @filterRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get filterRating;
+
+  /// No description provided for @labelClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get labelClosed;
+
+  /// No description provided for @labelNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get labelNew;
+
+  /// No description provided for @categorySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in {category}'**
+  String categorySearchHint(String category);
+
+  /// No description provided for @categoryEmptyNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no items in this category near you'**
+  String get categoryEmptyNearby;
+
+  /// No description provided for @shopSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search at {shopName}'**
+  String shopSearchHint(String shopName);
+
+  /// No description provided for @shopNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get shopNoReviews;
+
+  /// No description provided for @shopViewCart.
+  ///
+  /// In en, this message translates to:
+  /// **'View cart'**
+  String get shopViewCart;
+
+  /// No description provided for @shopBestSellers.
+  ///
+  /// In en, this message translates to:
+  /// **'Best sellers'**
+  String get shopBestSellers;
+
+  /// No description provided for @shopNoProductFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No products found'**
+  String get shopNoProductFound;
+
+  /// No description provided for @shopTemporarilyClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'The shop is temporarily closed'**
+  String get shopTemporarilyClosed;
+
+  /// No description provided for @shopClosedWithHours.
+  ///
+  /// In en, this message translates to:
+  /// **'You can still browse the menu but cannot order yet. Opening hours: {openTime} - {closeTime}.'**
+  String shopClosedWithHours(String openTime, String closeTime);
+
+  /// No description provided for @shopClosedNoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'You can still browse the menu but cannot order yet.'**
+  String get shopClosedNoHours;
+
+  /// No description provided for @shopClosedNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{shopName} is temporarily closed'**
+  String shopClosedNamed(String shopName);
+
+  /// No description provided for @cartClearOldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the old cart?'**
+  String get cartClearOldTitle;
+
+  /// No description provided for @cartClearOldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart contains items from {oldShop}. Do you want to clear it to order {newShop}?'**
+  String cartClearOldDescription(String oldShop, String newShop);
+
+  /// No description provided for @cartAnotherShop.
+  ///
+  /// In en, this message translates to:
+  /// **'another shop'**
+  String get cartAnotherShop;
+
+  /// No description provided for @cartFromShop.
+  ///
+  /// In en, this message translates to:
+  /// **'from {shopName}'**
+  String cartFromShop(String shopName);
+
+  /// No description provided for @cartNewItems.
+  ///
+  /// In en, this message translates to:
+  /// **'new items'**
+  String get cartNewItems;
+
+  /// No description provided for @commonConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get commonConfirm;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @commonAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get commonAll;
+
+  /// No description provided for @cartRemoveItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item?'**
+  String get cartRemoveItemTitle;
+
+  /// No description provided for @cartRemoveItemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove it from the cart?'**
+  String get cartRemoveItemDescription;
+
+  /// No description provided for @checkoutConfirmOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm order'**
+  String get checkoutConfirmOrder;
+
+  /// No description provided for @checkoutUndeliverableAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot deliver to this address. Please choose another one.'**
+  String get checkoutUndeliverableAddress;
+
+  /// No description provided for @reviewsPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product reviews'**
+  String get reviewsPageTitle;
+
+  /// No description provided for @reviewsEmptyForFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews at this rating yet'**
+  String get reviewsEmptyForFilter;
+
+  /// No description provided for @reviewsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String reviewsCount(String count);
+
+  /// No description provided for @reviewsViewAllWithRating.
+  ///
+  /// In en, this message translates to:
+  /// **'{rating} · See all reviews'**
+  String reviewsViewAllWithRating(String rating);
+
+  /// No description provided for @reviewsSelectProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a product to review'**
+  String get reviewsSelectProduct;
+
+  /// No description provided for @reviewsReviewedProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed {reviewed}/{total} items'**
+  String reviewsReviewedProgress(String reviewed, String total);
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 
+import '../l10n/app_localizations.dart';
 import '../models/product_review.model.dart';
 
 /// Trang xem toàn bộ đánh giá của 1 sản phẩm. Tách riêng khỏi trang chi tiết
@@ -49,14 +50,15 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
   Widget build(BuildContext context) {
     final counts = _countByStar;
     final visible = _visibleReviews;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF7),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Đánh giá sản phẩm',
+        title: Text(
+          l10n.reviewsPageTitle,
           style: TextStyle(
             color: Color(0xFF2C3E50),
             fontWeight: FontWeight.bold,
@@ -71,16 +73,16 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
       ),
       body: Column(
         children: [
-          _buildSummary(counts),
+          _buildSummary(counts, l10n),
           const Divider(height: 1, color: Color(0xFFF1EAE1)),
           Expanded(
             child: visible.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32.0),
+                      padding: const EdgeInsets.all(32.0),
                       child: Text(
-                        'Chưa có đánh giá nào ở mức này',
-                        style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 13),
+                        l10n.reviewsEmptyForFilter,
+                        style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 13),
                       ),
                     ),
                   )
@@ -97,7 +99,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
     );
   }
 
-  Widget _buildSummary(Map<int, int> counts) {
+  Widget _buildSummary(Map<int, int> counts, AppLocalizations l10n) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -132,7 +134,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${widget.totalReviews} đánh giá',
+                    l10n.reviewsCount('${widget.totalReviews}'),
                     style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
                   ),
                 ],
@@ -145,7 +147,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _buildStarChip(label: 'Tất cả', value: null, count: widget.reviews.length),
+                _buildStarChip(label: l10n.commonAll, value: null, count: widget.reviews.length),
                 for (var star = 5; star >= 1; star--)
                   _buildStarChip(label: '$star★', value: star, count: counts[star] ?? 0),
               ],

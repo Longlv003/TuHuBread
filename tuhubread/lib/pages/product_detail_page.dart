@@ -124,7 +124,7 @@ class _ProductDetailContent extends StatelessWidget {
                   leading: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: CircleAvatar(
-                      backgroundColor: Colors.black.withOpacity(0.4),
+                      backgroundColor: Colors.black.withValues(alpha: 0.4),
                       child: IconButton(
                         icon: const Icon(
                           Icons.arrow_back_ios_new_rounded,
@@ -286,7 +286,7 @@ class _ProductDetailContent extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                "Đã bán ${detail.salesCount}",
+                                l10n.detailSoldAmount(detail.salesCount),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF7F8C8D),
@@ -634,8 +634,8 @@ class _ProductDetailContent extends StatelessWidget {
                         color: const Color(0xFFE67E22),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        "Xem giá",
+                      child: Text(
+                        l10n.detailViewPrice,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -935,7 +935,7 @@ class _ProductDetailContent extends StatelessWidget {
                             color: Color(0xFFF1C40F), size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          '${detail.rating} · Xem tất cả bình luận',
+                          l10n.reviewsViewAllWithRating('${detail.rating}'),
                           style: const TextStyle(
                             fontSize: 12.5,
                             color: Color(0xFF7F8C8D),
@@ -973,7 +973,7 @@ class _ProductDetailContent extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -3),
           ),

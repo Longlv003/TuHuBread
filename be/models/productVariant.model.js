@@ -10,9 +10,9 @@ const productVariantSchema = new db.mongoose.Schema(
     variant_name: { type: String, required: true },
     variant_slug: { type: String, required: true },
     image: { type: String, default: null },
-    price: { type: Number, required: true },
-    sale_price: { type: Number, default: null },
-    stock_quantity: { type: Number, required: true, default: 0 },
+    price: { type: Number, required: true, min: [0, "Giá bán không được âm"] },
+    sale_price: { type: Number, default: null, min: [0, "Giá khuyến mãi không được âm"] },
+    stock_quantity: { type: Number, required: true, default: 0, min: [0, "Tồn kho không được âm"] },
     sold_quantity: { type: Number, required: true, default: 0 },
     status: {
       type: String,

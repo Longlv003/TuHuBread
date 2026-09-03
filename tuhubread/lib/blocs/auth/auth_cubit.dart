@@ -44,6 +44,20 @@ class AuthCubit extends Cubit<AuthState> {
           getIt<NotificationCubit>().refreshUnreadCount();
         } catch (_) {}
       } else {
+        // Chỉ 403 mới là "backend từ chối tài khoản này" (bị khoá / đã xoá):
+        // dọn luôn phiên Firebase phía máy để app không ở trạng thái "đã đăng
+        // nhập" nửa vời — có currentUser nhưng mọi API đều trả 403.
+        //
+        // Lỗi mạng thì statusCode là null: giữ nguyên phiên đăng nhập, chỉ báo
+        // lỗi. Đăng xuất trong trường hợp đó sẽ bắt người dùng nhập lại mật
+        // khẩu chỉ vì rớt Wi-Fi một nhịp.
+        if (response['statusCode'] == 403) {
+          try {
+            await FirebaseAuth.instance.signOut();
+          } catch (e) {
+            _log.w('[verifyFirebaseToken] signOut after rejected account failed', error: e);
+          }
+        }
         emit(AuthFailure(response['msg'] ?? defaultLoginError));
       }
     } on DioException catch (e) {
@@ -329,8 +343,8 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       final response = await apiService.put('/api/account/profile', {
-        if (fullName != null) 'full_name': fullName,
-        if (phone != null) 'phone': phone,
+        'full_name': ?fullName,
+        'phone': ?phone,
       });
 
       if (response['data'] != null) {

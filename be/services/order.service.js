@@ -21,6 +21,7 @@ const {
   DELIVERY_MULTIPLIERS,
 } = require("../utils/deliveryFee.util");
 const { ORDER_STATUS_LABELS } = require("../utils/orderStatus.util");
+const { requireText } = require("../utils/validate.util");
 
 const ORDER_FLOW = ["pending", "confirmed", "preparing", "delivering", "completed"];
 
@@ -94,8 +95,9 @@ class OrderService {
       throw new Error(`Không thể chuyển từ '${order.order_status}' sang '${newStatus}'`);
     }
 
-    if (newStatus === "cancelled" && !reason) {
-      throw new Error("Vui lòng nhập lý do hủy đơn");
+    let cancelReason = null;
+    if (newStatus === "cancelled") {
+      cancelReason = requireText(reason, "Lý do hủy đơn", { maxLength: 300 });
     }
 
     let paymentStatus;
@@ -106,6 +108,10 @@ class OrderService {
     const previousStatus = order.order_status;
     const updated = await orderRepository.updateStatus(orderId, newStatus, paymentStatus);
 
+    if (newStatus === "cancelled") {
+      await this.restoreStockForCancelledOrder(orderId);
+    }
+
     if (changedByAccount) {
       await orderStatusHistoryRepository.create({
         order_id: orderId,
@@ -113,7 +119,7 @@ class OrderService {
         to_status: newStatus,
         changed_by: changedByAccount._id,
         changed_by_name: changedByAccount.full_name,
-        note: newStatus === "cancelled" ? reason : null
+        note: cancelReason
       });
     }
 
@@ -394,6 +400,35 @@ class OrderService {
       .catch(() => {});
   }
 
+  /**
+   * Hoàn tồn kho cho 1 đơn đã bị huỷ.
+   *
+   * Tồn kho bị trừ ngay lúc tạo đơn (_claimStock) để tránh oversell, nên khi đơn
+   * bị huỷ phải cộng trả lại — nếu không, hàng "biến mất" khỏi kho vĩnh viễn và
+   * sold_quantity cũng bị tính dư.
+   *
+   * Cờ stock_restored_at được set bằng findOneAndUpdate có điều kiện, nên chỉ
+   * lần gọi đầu tiên mới thực sự cộng trả kho; các lần gọi sau (huỷ từ 2 luồng,
+   * retry...) thoát ngay thay vì cộng thừa.
+   * @param {string|import('mongoose').Types.ObjectId} orderId
+   */
+  async restoreStockForCancelledOrder(orderId) {
+    const claimed = await orderModel.findOneAndUpdate(
+      { _id: orderId, stock_restored_at: null },
+      { stock_restored_at: new Date() },
+    );
+    if (!claimed) {
+      return; // Đơn này đã được hoàn kho trước đó
+    }
+
+    const details = await orderDetailModel.find({ order_id: orderId, deleted_at: null });
+    for (const item of details) {
+      if (item.variant_id) {
+        await this._releaseStock(item.variant_id, item.quantity);
+      }
+    }
+  }
+
   async createOrderFromCart(user, { addressId, deliveryOption, paymentMethod, voucherCode, note }) {
     // 1. Validate & tính lại toàn bộ giá trên server
     const calc = await this.validateCartAndCalculate(user._id, { addressId, deliveryOption, voucherCode });
@@ -528,6 +563,10 @@ class OrderService {
     if (orderStatus) order.order_status = orderStatus;
     if (paymentStatus) order.payment_status = paymentStatus;
     await order.save();
+
+    if (orderStatus === "cancelled") {
+      await this.restoreStockForCancelledOrder(order._id);
+    }
 
     if (orderStatus) {
       await this.sendOrderStatusNotification(order, orderStatus);

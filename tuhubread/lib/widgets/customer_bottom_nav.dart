@@ -30,15 +30,15 @@ class CustomerBottomNav extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.45),
+          color: Colors.white.withValues(alpha: 0.45),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2C3E50).withOpacity(0.12),
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.12),
               blurRadius: 22,
               offset: const Offset(0, 8),
             ),

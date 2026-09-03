@@ -15,7 +15,7 @@ class PaymentRepository {
 
   async updatePaymentStatus(txnRef, status, details = {}) {
     const updateData = { status, ...details };
-    return await paymentModel.findOneAndUpdate({ txn_ref: txnRef }, updateData, { new: true });
+    return await paymentModel.findOneAndUpdate({ txn_ref: txnRef }, updateData, { new: true, runValidators: true });
   }
 }
 

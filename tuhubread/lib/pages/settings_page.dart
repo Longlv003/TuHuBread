@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 import '../utils/locale_prefs.dart';
 
@@ -14,6 +15,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   Future<void> _changeLocale(Locale locale) async {
     await LocalePrefs.saveLocale(locale);
+    AppStrings.setLocale(locale);
     getx.Get.updateLocale(locale);
     setState(() {});
   }
@@ -57,28 +59,45 @@ class _SettingsPageState extends State<SettingsPage> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFF1EAE1)),
               ),
-              child: Column(
-                children: [
-                  RadioListTile<String>(
-                    value: 'vi',
-                    groupValue: currentLanguageCode,
-                    activeColor: const Color(0xFFE67E22),
-                    title: Text(l10n.settingsLanguageVietnamese),
-                    onChanged: (_) => _changeLocale(const Locale('vi')),
-                  ),
-                  const Divider(height: 1, color: Color(0xFFF1EAE1)),
-                  RadioListTile<String>(
-                    value: 'en',
-                    groupValue: currentLanguageCode,
-                    activeColor: const Color(0xFFE67E22),
-                    title: Text(l10n.settingsLanguageEnglish),
-                    onChanged: (_) => _changeLocale(const Locale('en')),
-                  ),
-                ],
+              child: RadioGroup<String>(
+                groupValue: currentLanguageCode,
+                onChanged: (code) {
+                  if (code != null) _changeLocale(Locale(code));
+                },
+                child: const Column(
+                  children: [
+                    _LanguageOption(value: 'vi'),
+                    Divider(height: 1, color: Color(0xFFF1EAE1)),
+                    _LanguageOption(value: 'en'),
+                  ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Một dòng chọn ngôn ngữ trong RadioGroup ở trên.
+///
+/// Tách thành widget riêng để lấy được `context` nằm bên dưới RadioGroup —
+/// RadioListTile đọc giá trị đang chọn và callback từ RadioGroup gần nhất phía
+/// trên nó, nên không thể truyền groupValue/onChanged trực tiếp nữa.
+class _LanguageOption extends StatelessWidget {
+  const _LanguageOption({required this.value});
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return RadioListTile<String>(
+      value: value,
+      activeColor: const Color(0xFFE67E22),
+      title: Text(
+        value == 'vi' ? l10n.settingsLanguageVietnamese : l10n.settingsLanguageEnglish,
       ),
     );
   }

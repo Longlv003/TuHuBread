@@ -45,7 +45,7 @@ class AppNetworkImage extends StatelessWidget {
         height: height,
         color: AppColors.skeletonBase,
       ),
-      errorWidget: (context, _, __) => _buildFallback(),
+      errorWidget: (context, _, _) => _buildFallback(),
     );
   }
 

@@ -19,9 +19,9 @@ const voucherSchema = new db.mongoose.Schema(
       required: true,
       enum: ["percent", "amount", "free_shipping"],
     },
-    discount_value: { type: Number, required: true },
-    min_order_amount: { type: Number, required: true, default: 0 },
-    max_discount_amount: { type: Number, default: null },
+    discount_value: { type: Number, required: true, min: [0, "Giá trị giảm không được âm"] },
+    min_order_amount: { type: Number, required: true, default: 0, min: [0, "Đơn tối thiểu không được âm"] },
+    max_discount_amount: { type: Number, default: null, min: [0, "Giảm tối đa không được âm"] },
     claim_limit: { type: Number, default: null },   // số người tối đa được save
     claimed_count: { type: Number, default: 0 },     // số người đã save
     usage_limit: { type: Number, default: null },    // null = không giới hạn lần dùng

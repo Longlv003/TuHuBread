@@ -75,13 +75,18 @@
 
   <!-- TAB: Variants -->
   <div class="tab-panel active" id="tab-variants">
-    <div class="content-grid">
-      <div class="section-card">
-        <div class="section-header"><h3>Danh sách biến thể</h3></div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
-            <tbody>
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách biến thể</h3>
+        <button type="button" class="btn-primary-action" onclick="openVariantModal()">
+          <i class="fa-solid fa-plus"></i>
+          Thêm biến thể
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+          <tbody>
               <% variants.forEach(v => { %>
                 <tr>
                   <td><strong><%= v.variant_name %></strong></td>
@@ -92,59 +97,41 @@
                   <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
                   <td class="col-actions">
                     <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditVariant(<%= JSON.stringify(v) %>)'>Sửa</button>
+                      <button type="button" class="btn-action" onclick='openVariantModal(<%= JSON.stringify(v) %>)'>Sửa</button>
                       <button type="button" class="btn-action btn-delete" onclick="onDeleteVariant('<%= v._id %>')">Xóa</button>
                     </div>
                   </td>
                 </tr>
               <% }) %>
-            </tbody>
-          </table>
+              <% if (variants.length === 0) { %>
+                <tr><td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <div class="empty-state-title">Chưa có biến thể nào</div>
+                    <div class="empty-state-desc">Bấm "Thêm biến thể" để tạo size, giá và tồn kho cho sản phẩm.</div>
+                  </div>
+                </td></tr>
+              <% } %>
+          </tbody>
+        </table>
         </div>
-      </div>
-      <div class="section-card" id="variantAddCard">
-        <div class="section-header"><h3>Thêm biến thể</h3></div>
-        <form id="addVariantForm" enctype="multipart/form-data">
-          <div class="form-group"><label>Tên biến thể *</label><input type="text" name="variantName" required placeholder="Ví dụ: Size L"></div>
-          <div class="form-group"><label>Giá bán *</label><input type="number" name="price" required min="0"></div>
-          <div class="form-group"><label>Giá khuyến mãi</label><input type="number" name="salePrice" min="0"></div>
-          <div class="form-group"><label>Tồn kho</label><input type="number" name="stockQuantity" min="0" value="0"></div>
-          <div class="form-group"><label>Hạn sử dụng</label><input type="date" name="expiredAt"></div>
-          <div class="form-group"><label>Ảnh</label><input type="file" name="variantImage" accept="image/*"></div>
-          <button type="submit" class="btn-submit">Thêm biến thể</button>
-        </form>
-      </div>
-      <div class="section-card" id="variantEditCard" style="display:none;">
-        <div class="section-header"><h3>Sửa biến thể</h3></div>
-        <form id="editVariantForm" enctype="multipart/form-data">
-          <input type="hidden" id="editVariantId">
-          <div class="form-group"><label>Tên biến thể *</label><input type="text" id="editVariantName" name="variantName" required></div>
-          <div class="form-group"><label>Giá bán *</label><input type="number" id="editVariantPrice" name="price" required min="0"></div>
-          <div class="form-group"><label>Giá khuyến mãi</label><input type="number" id="editVariantSalePrice" name="salePrice" min="0"></div>
-          <div class="form-group"><label>Tồn kho</label><input type="number" id="editVariantStock" name="stockQuantity" min="0"></div>
-          <div class="form-group"><label>Hạn sử dụng (nếu vừa nhập thêm tồn kho)</label><input type="date" id="editVariantExpiredAt" name="expiredAt"></div>
-          <div class="form-group"><label>Trạng thái</label>
-            <select id="editVariantStatus" name="status">
-              <option value="active">Active</option><option value="inactive">Inactive</option><option value="out_of_stock">Out of stock</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Ảnh mới</label><input type="file" name="variantImage" accept="image/*"></div>
-          <button type="submit" class="btn-submit">Lưu</button>
-          <button type="button" class="btn-cancel" onclick="cancelVariantEdit()">Hủy</button>
-        </form>
-      </div>
     </div>
   </div>
 
   <!-- TAB: Options (Topping) -->
   <div class="tab-panel" id="tab-options">
-    <div class="content-grid">
-      <div class="section-card">
-        <div class="section-header"><h3>Danh sách topping</h3></div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Tên topping</th><th>Giá thêm</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
-            <tbody>
+    <div class="section-card">
+      <div class="section-header">
+        <h3>Danh sách topping</h3>
+        <button type="button" class="btn-primary-action" onclick="openOptionModal()">
+          <i class="fa-solid fa-plus"></i>
+          Thêm topping
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Tên topping</th><th>Giá thêm</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+          <tbody>
               <% options.forEach(o => { %>
                 <tr>
                   <td><strong><%= o.option_name %></strong></td>
@@ -152,40 +139,125 @@
                   <td><span class="status-badge <%= o.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= o.status %></span></td>
                   <td class="col-actions">
                     <div class="actions-wrap">
-                      <button type="button" class="btn-action" onclick='onEditOption(<%= JSON.stringify(o) %>)'>Sửa</button>
+                      <button type="button" class="btn-action" onclick='openOptionModal(<%= JSON.stringify(o) %>)'>Sửa</button>
                       <button type="button" class="btn-action btn-delete" onclick="onDeleteOption('<%= o._id %>')">Xóa</button>
                     </div>
                   </td>
                 </tr>
               <% }) %>
-            </tbody>
-          </table>
+              <% if (options.length === 0) { %>
+                <tr><td colspan="4">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fa-solid fa-plus-minus"></i></div>
+                    <div class="empty-state-title">Chưa có topping nào</div>
+                    <div class="empty-state-desc">Bấm "Thêm topping" để khách chọn thêm khi đặt món.</div>
+                  </div>
+                </td></tr>
+              <% } %>
+          </tbody>
+        </table>
         </div>
-      </div>
-      <div class="section-card" id="optionAddCard">
-        <div class="section-header"><h3>Thêm topping</h3></div>
-        <form id="addOptionForm">
-          <div class="form-group"><label>Tên topping *</label><input type="text" name="optionName" required placeholder="Ví dụ: Thêm trứng"></div>
-          <div class="form-group"><label>Giá thêm</label><input type="number" name="extraPrice" min="0" value="0"></div>
-          <button type="submit" class="btn-submit">Thêm topping</button>
-        </form>
-      </div>
-      <div class="section-card" id="optionEditCard" style="display:none;">
-        <div class="section-header"><h3>Sửa topping</h3></div>
-        <form id="editOptionForm">
-          <input type="hidden" id="editOptionId">
-          <div class="form-group"><label>Tên topping *</label><input type="text" id="editOptionName" name="optionName" required></div>
-          <div class="form-group"><label>Giá thêm</label><input type="number" id="editOptionExtraPrice" name="extraPrice" min="0"></div>
-          <div class="form-group"><label>Trạng thái</label>
-            <select id="editOptionStatus" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
-          </div>
-          <button type="submit" class="btn-submit">Lưu</button>
-          <button type="button" class="btn-cancel" onclick="cancelOptionEdit()">Hủy</button>
-        </form>
-      </div>
     </div>
   </div>
 
+</div>
+
+<!-- Dialog thêm/sửa biến thể — dùng chung 1 form, phân biệt bằng variantId ẩn -->
+<div class="product-modal-overlay" id="variantModalOverlay">
+  <div class="product-modal-card">
+    <div class="product-modal-header">
+      <h3 id="variantModalTitle">Thêm biến thể</h3>
+      <button type="button" class="product-modal-close" onclick="closeVariantModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form id="variantForm" enctype="multipart/form-data">
+      <input type="hidden" id="variantId">
+      <div class="product-modal-body">
+        <div class="form-group">
+          <label for="variantName">Tên biến thể *</label>
+          <input type="text" id="variantName" name="variantName" required placeholder="Ví dụ: Size L">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="variantPrice">Giá bán *</label>
+            <input type="number" id="variantPrice" name="price" required min="0" placeholder="20000">
+          </div>
+          <div class="form-group">
+            <label for="variantSalePrice">Giá khuyến mãi</label>
+            <input type="number" id="variantSalePrice" name="salePrice" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="variantStock">Tồn kho</label>
+            <input type="number" id="variantStock" name="stockQuantity" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="variantExpiredAt">Hạn sử dụng</label>
+            <input type="date" id="variantExpiredAt" name="expiredAt">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="variantStatus">Trạng thái</label>
+            <select id="variantStatus" name="status">
+              <option value="active">Đang bán</option>
+              <option value="inactive">Ngừng bán</option>
+              <option value="out_of_stock">Hết hàng</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="variantImage">Ảnh</label>
+            <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewVariantImage(this)">
+          </div>
+        </div>
+        <img id="variantPreview" class="preview-box">
+      </div>
+      <div class="product-modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeVariantModal()">Hủy</button>
+        <button type="submit" class="btn-submit" id="variantSubmitBtn">Lưu biến thể</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Dialog thêm/sửa topping -->
+<div class="product-modal-overlay" id="optionModalOverlay">
+  <div class="product-modal-card" style="max-width: 480px;">
+    <div class="product-modal-header">
+      <h3 id="optionModalTitle">Thêm topping</h3>
+      <button type="button" class="product-modal-close" onclick="closeOptionModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form id="optionForm">
+      <input type="hidden" id="optionId">
+      <div class="product-modal-body">
+        <div class="form-group">
+          <label for="optionName">Tên topping *</label>
+          <input type="text" id="optionName" name="optionName" required placeholder="Ví dụ: Thêm trứng">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="optionExtraPrice">Giá thêm</label>
+            <input type="number" id="optionExtraPrice" name="extraPrice" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="optionStatus">Trạng thái</label>
+            <select id="optionStatus" name="status">
+              <option value="active">Đang bán</option>
+              <option value="inactive">Ngừng bán</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="product-modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeOptionModal()">Hủy</button>
+        <button type="submit" class="btn-submit" id="optionSubmitBtn">Lưu topping</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -232,40 +304,104 @@
     return response.json();
   }
 
+  // ---- Dialog dùng chung cho cả thêm & sửa ----
+  //
+  // Trước đây form thêm và form sửa là 2 card cạnh bảng, bấm "Sửa" thì card
+  // thêm bị ẩn đi — nên đang sửa thì không còn nút/ô nào để thêm mới. Giờ cả
+  // hai đi qua cùng 1 dialog: không truyền dữ liệu là "thêm", có dữ liệu là
+  // "sửa" (id nằm trong input ẩn, quyết định gọi endpoint nào lúc submit).
+  function openModal(overlay) {
+    overlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal(overlay) {
+    overlay.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
   // ---- VARIANTS ----
-  document.getElementById("addVariantForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/variants/add`, e.target);
-      if (result.status === "success") { showToast("Thêm biến thể thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
+  const variantModalOverlay = document.getElementById("variantModalOverlay");
+  const variantForm = document.getElementById("variantForm");
+  const variantPreview = document.getElementById("variantPreview");
+
+  function previewVariantImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      variantPreview.src = e.target.result;
+      variantPreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function openVariantModal(v) {
+    variantForm.reset();
+    variantPreview.style.display = "none";
+    variantPreview.removeAttribute("src");
+
+    if (v) {
+      document.getElementById("variantModalTitle").innerText = "Sửa biến thể";
+      document.getElementById("variantSubmitBtn").innerText = "Lưu thay đổi";
+      document.getElementById("variantId").value = v._id;
+      document.getElementById("variantName").value = v.variant_name;
+      document.getElementById("variantPrice").value = v.price;
+      document.getElementById("variantSalePrice").value = v.sale_price || "";
+      document.getElementById("variantStock").value = v.stock_quantity;
+      // Hạn sử dụng để trống: chỉ điền khi vừa nhập thêm hàng, vì mỗi lần điền
+      // là tạo một lô mới chứ không sửa hạn của lô cũ.
+      document.getElementById("variantExpiredAt").value = "";
+      document.getElementById("variantStatus").value = v.status;
+      if (v.image) {
+        variantPreview.src = v.image;
+        variantPreview.style.display = "block";
+      }
+    } else {
+      document.getElementById("variantModalTitle").innerText = "Thêm biến thể";
+      document.getElementById("variantSubmitBtn").innerText = "Lưu biến thể";
+      document.getElementById("variantId").value = "";
+      document.getElementById("variantStatus").value = "active";
+    }
+
+    openModal(variantModalOverlay);
+  }
+
+  function closeVariantModal() {
+    closeModal(variantModalOverlay);
+  }
+
+  variantModalOverlay.addEventListener("click", (e) => {
+    if (e.target === variantModalOverlay) closeVariantModal();
   });
 
-  function onEditVariant(v) {
-    document.getElementById("variantAddCard").style.display = "none";
-    document.getElementById("variantEditCard").style.display = "block";
-    document.getElementById("editVariantId").value = v._id;
-    document.getElementById("editVariantName").value = v.variant_name;
-    document.getElementById("editVariantPrice").value = v.price;
-    document.getElementById("editVariantSalePrice").value = v.sale_price || "";
-    document.getElementById("editVariantStock").value = v.stock_quantity;
-    document.getElementById("editVariantExpiredAt").value = "";
-    document.getElementById("editVariantStatus").value = v.status;
-  }
-  function cancelVariantEdit() {
-    document.getElementById("variantEditCard").style.display = "none";
-    document.getElementById("variantAddCard").style.display = "block";
-  }
-  document.getElementById("editVariantForm").addEventListener("submit", async (e) => {
+  variantForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("editVariantId").value;
+    const id = document.getElementById("variantId").value;
+    const url = id
+      ? `/shop/products/${PRODUCT_ID}/variants/edit/${id}`
+      : `/shop/products/${PRODUCT_ID}/variants/add`;
+    const submitBtn = document.getElementById("variantSubmitBtn");
+    const originalLabel = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang lưu...";
     try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/variants/edit/${id}`, e.target);
-      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
+      const result = await submitForm(url, variantForm);
+      if (result.status === "success") {
+        showToast(id ? "Cập nhật biến thể thành công!" : "Thêm biến thể thành công!", "success");
+        closeVariantModal();
+        setTimeout(() => window.location.reload(), 900);
+      } else {
+        showToast(result.msg || "Thất bại", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Lỗi", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = originalLabel;
+    }
   });
+
   async function onDeleteVariant(id) {
     if (!(await showConfirmDialog({ title: "Xoá biến thể", message: "Xóa biến thể này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/variants/delete/${id}`, { method: "POST" });
@@ -275,35 +411,72 @@
   }
 
   // ---- OPTIONS (Topping) ----
-  document.getElementById("addOptionForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/options/add`, e.target);
-      if (result.status === "success") { showToast("Thêm topping thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
-  });
-  function onEditOption(o) {
-    document.getElementById("optionAddCard").style.display = "none";
-    document.getElementById("optionEditCard").style.display = "block";
-    document.getElementById("editOptionId").value = o._id;
-    document.getElementById("editOptionName").value = o.option_name;
-    document.getElementById("editOptionExtraPrice").value = o.extra_price;
-    document.getElementById("editOptionStatus").value = o.status;
+  const optionModalOverlay = document.getElementById("optionModalOverlay");
+  const optionForm = document.getElementById("optionForm");
+
+  function openOptionModal(o) {
+    optionForm.reset();
+
+    if (o) {
+      document.getElementById("optionModalTitle").innerText = "Sửa topping";
+      document.getElementById("optionSubmitBtn").innerText = "Lưu thay đổi";
+      document.getElementById("optionId").value = o._id;
+      document.getElementById("optionName").value = o.option_name;
+      document.getElementById("optionExtraPrice").value = o.extra_price;
+      document.getElementById("optionStatus").value = o.status;
+    } else {
+      document.getElementById("optionModalTitle").innerText = "Thêm topping";
+      document.getElementById("optionSubmitBtn").innerText = "Lưu topping";
+      document.getElementById("optionId").value = "";
+      document.getElementById("optionStatus").value = "active";
+    }
+
+    openModal(optionModalOverlay);
   }
-  function cancelOptionEdit() {
-    document.getElementById("optionEditCard").style.display = "none";
-    document.getElementById("optionAddCard").style.display = "block";
+
+  function closeOptionModal() {
+    closeModal(optionModalOverlay);
   }
-  document.getElementById("editOptionForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("editOptionId").value;
-    try {
-      const result = await submitForm(`/shop/products/${PRODUCT_ID}/options/edit/${id}`, e.target);
-      if (result.status === "success") { showToast("Cập nhật thành công!", "success"); setTimeout(() => window.location.reload(), 900); }
-      else showToast(result.msg || "Thất bại", "error");
-    } catch (err) { console.error(err); showToast("Lỗi", "error"); }
+
+  optionModalOverlay.addEventListener("click", (e) => {
+    if (e.target === optionModalOverlay) closeOptionModal();
   });
+
+  // Esc đóng dialog đang mở — hành vi dialog chuẩn, đặt chung cho cả 2.
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (variantModalOverlay.classList.contains("show")) closeVariantModal();
+    if (optionModalOverlay.classList.contains("show")) closeOptionModal();
+  });
+
+  optionForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("optionId").value;
+    const url = id
+      ? `/shop/products/${PRODUCT_ID}/options/edit/${id}`
+      : `/shop/products/${PRODUCT_ID}/options/add`;
+    const submitBtn = document.getElementById("optionSubmitBtn");
+    const originalLabel = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang lưu...";
+    try {
+      const result = await submitForm(url, optionForm);
+      if (result.status === "success") {
+        showToast(id ? "Cập nhật topping thành công!" : "Thêm topping thành công!", "success");
+        closeOptionModal();
+        setTimeout(() => window.location.reload(), 900);
+      } else {
+        showToast(result.msg || "Thất bại", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Lỗi", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = originalLabel;
+    }
+  });
+
   async function onDeleteOption(id) {
     if (!(await showConfirmDialog({ title: "Xoá topping", message: "Xóa topping này?", confirmText: "Xoá", danger: true }))) return;
     const response = await fetch(`/shop/products/${PRODUCT_ID}/options/delete/${id}`, { method: "POST" });

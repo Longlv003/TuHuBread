@@ -6,6 +6,7 @@ import '../models/order_result.model.dart';
 import '../models/payment_verify_result.model.dart';
 import '../services/api_service.dart';
 import 'payment_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -28,8 +29,8 @@ class PaymentRepositoryImpl implements PaymentRepository {
       final res = await apiService.post('/api/payments/vnpay', {
         'address_id': addressId,
         'delivery_option': deliveryOption,
-        if (voucherCode != null) 'voucher_code': voucherCode,
-        if (note != null) 'note': note,
+        'voucher_code': ?voucherCode,
+        'note': ?note,
         if (items != null)
           'items': items
               .map(
@@ -55,10 +56,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
           OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể tạo link thanh toán VNPay');
+      return Failure(res['msg'] ?? AppStrings.current.errorCreateVnpayLink);
     } catch (e, s) {
       _log.e('[createVnpayPayment] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để thanh toán');
+      return Failure(AppStrings.current.errorConnectPayment);
     }
   }
 
@@ -79,10 +80,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
           ),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể xác minh giao dịch');
+      return Failure(res['msg'] ?? AppStrings.current.errorVerifyTransaction);
     } catch (e, s) {
       _log.e('[verifyPayment] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 }

@@ -132,18 +132,18 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           } else {
             // Thanh toán thất bại hoặc hủy
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Thanh toán VNPay thất bại hoặc đã bị hủy'),
-                backgroundColor: Color(0xFFE74C3C),
+              SnackBar(
+                content: Text(l10n.paymentVnpayFailedOrCancelled),
+                backgroundColor: const Color(0xFFE74C3C),
                 behavior: SnackBarBehavior.floating,
               ),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Không thể khởi tạo liên kết thanh toán VNPay'),
-              backgroundColor: Color(0xFFE74C3C),
+            SnackBar(
+              content: Text(l10n.paymentVnpayInitFailed),
+              backgroundColor: const Color(0xFFE74C3C),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -341,7 +341,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -446,7 +446,7 @@ class _MethodTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: method.color.withOpacity(0.12),
+                color: method.color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(method.icon, color: method.color, size: 20),

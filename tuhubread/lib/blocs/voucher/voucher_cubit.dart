@@ -5,6 +5,7 @@ import '../../core/result.dart';
 import '../../models/voucher_save.model.dart';
 import '../../repositories/voucher_repository.dart';
 import 'voucher_state.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -31,7 +32,7 @@ class VoucherCubit extends Cubit<VoucherState> {
       ));
     } else {
       _log.e('[loadVouchers] Failed: ${savedRes.errorOrNull}');
-      emit(VoucherFailure(savedRes.errorOrNull ?? 'Không thể tải voucher'));
+      emit(VoucherFailure(savedRes.errorOrNull ?? AppStrings.current.errorLoadVouchers));
     }
   }
 
@@ -43,7 +44,7 @@ class VoucherCubit extends Cubit<VoucherState> {
       await loadVouchers();
       return null;
     }
-    return res.errorOrNull ?? 'Không thể áp dụng mã voucher';
+    return res.errorOrNull ?? AppStrings.current.errorApplyVoucher;
   }
 
   /// Lưu 1 voucher đang hiển thị ở danh sách "có thể lưu" vào ví.
@@ -53,6 +54,6 @@ class VoucherCubit extends Cubit<VoucherState> {
       await loadVouchers();
       return null;
     }
-    return res.errorOrNull ?? 'Không thể lưu voucher';
+    return res.errorOrNull ?? AppStrings.current.errorSaveVoucher;
   }
 }

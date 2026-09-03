@@ -159,7 +159,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                           ? Padding(
                               padding: const EdgeInsets.only(right: 12),
                               child: _buildSearchField(
-                                hint: "Tìm món tại ${_shop.shopName}",
+                                hint: l10n.shopSearchHint(_shop.shopName),
                               ),
                             )
                           : null,
@@ -193,7 +193,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                       delegate: SliverChildListDelegate([
                       // Báo ngay đầu trang khi quán đang tạm đóng, để khách
                       // không chọn cả giỏ rồi mới bị chặn lúc đặt hàng.
-                      if (!_shop.isOpen) _buildClosedBanner(),
+                      if (!_shop.isOpen) _buildClosedBanner(l10n),
                       // Shop Information Panel
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -229,7 +229,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                                       const Icon(Icons.star_rounded, color: Color(0xFFF1C40F), size: 16),
                                       const SizedBox(width: 4),
                                       Text(
-                                        _shop.rating == null ? "Chưa có đánh giá" : "${_shop.rating}",
+                                        _shop.rating == null ? l10n.shopNoReviews : "${_shop.rating}",
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
@@ -337,8 +337,8 @@ class _ShopHomePageState extends State<ShopHomePage> {
                 )
               ],
             ),
-            label: const Text(
-              "Xem giỏ hàng",
+            label: Text(
+              l10n.shopViewCart,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -354,7 +354,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
   /// ô nổi trên ảnh (có viền trắng mờ cho dễ nhìn), khi đã cuộn thì đổi sang
   /// nền xám nhạt hoà vào thanh header trắng.
   /// Dải báo quán đang tạm đóng, kèm giờ mở cửa nếu shop có khai báo.
-  Widget _buildClosedBanner() {
+  Widget _buildClosedBanner(AppLocalizations l10n) {
     final hasHours = _shop.openTime != null && _shop.closeTime != null;
 
     return Container(
@@ -376,8 +376,8 @@ class _ShopHomePageState extends State<ShopHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Cửa hàng đang tạm đóng',
+                Text(
+                  l10n.shopTemporarilyClosed,
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.bold,
@@ -387,9 +387,11 @@ class _ShopHomePageState extends State<ShopHomePage> {
                 const SizedBox(height: 3),
                 Text(
                   hasHours
-                      ? 'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được. '
-                          'Giờ mở cửa: ${_shop.openTime} - ${_shop.closeTime}.'
-                      : 'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được.',
+                      ? l10n.shopClosedWithHours(
+                          _shop.openTime ?? '',
+                          _shop.closeTime ?? '',
+                        )
+                      : l10n.shopClosedNoHours,
                   style: const TextStyle(
                     fontSize: 11.5,
                     color: Color(0xFFC0392B),
@@ -464,7 +466,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
 
   Widget _buildBestSellersSection(List<ProductModel> bestSellers, AppLocalizations l10n) {
     return _buildHorizontalProductsSection(
-      label: "Bán chạy nhất",
+      label: l10n.shopBestSellers,
       iconPath: Assets.icons.hot.path,
       badgeColor: const Color(0xFFE67E22),
       products: bestSellers,
@@ -521,7 +523,9 @@ class _ShopHomePageState extends State<ShopHomePage> {
     if (!_shop.isOpen) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${_shop.shopName} đang tạm đóng cửa'),
+          content: Text(
+            AppLocalizations.of(context)!.shopClosedNamed(_shop.shopName),
+          ),
           backgroundColor: const Color(0xFFE74C3C),
         ),
       );
@@ -642,14 +646,14 @@ class _ShopHomePageState extends State<ShopHomePage> {
 
   Widget _buildProductsSection(AppLocalizations l10n, List<ProductModel> products) {
     if (products.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(32.0),
+      return Padding(
+        padding: const EdgeInsets.all(32.0),
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFBDC3C7)),
-              SizedBox(height: 12),
-              Text("Không tìm thấy sản phẩm nào", style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 13)),
+              const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFBDC3C7)),
+              const SizedBox(height: 12),
+              Text(l10n.shopNoProductFound, style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 13)),
             ],
           ),
         ),

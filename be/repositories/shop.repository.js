@@ -18,7 +18,7 @@ class ShopRepository {
   }
 
   async update(id, updateData) {
-    return shopModel.findByIdAndUpdate(id, updateData, { new: true });
+    return shopModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
   }
 
   async findAllActive() {

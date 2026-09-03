@@ -1,0 +1,29 @@
+<table>
+  <thead>
+    <tr>
+      <th style="width: 48px;">#</th>
+      <th>Sản phẩm</th>
+      <th>Đã bán</th>
+      <th>Doanh thu</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (topProducts.length === 0) { %>
+      <tr><td colspan="4">
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-basket-shopping"></i></div>
+          <div class="empty-state-title">Hôm nay chưa bán được sản phẩm nào</div>
+          <div class="empty-state-desc">Danh sách này chỉ tính các đơn đã hoàn thành trong ngày.</div>
+        </div>
+      </td></tr>
+    <% } %>
+    <% topProducts.forEach((p, idx) => { %>
+      <tr>
+        <td><span class="rank-badge rank-<%= idx + 1 %>"><%= idx + 1 %></span></td>
+        <td><strong><%= p.product_name %></strong></td>
+        <td><%= p.quantity_sold %></td>
+        <td><%= Math.round(p.revenue).toLocaleString('vi-VN') %>đ</td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

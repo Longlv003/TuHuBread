@@ -15,7 +15,7 @@ const productSchema = new db.mongoose.Schema(
     product_name: { type: String, required: true },
     product_slug: { type: String, required: true },
     description: { type: String, default: null },
-    preparation_time_minutes: { type: Number, required: true, default: 0 },
+    preparation_time_minutes: { type: Number, required: true, default: 0, min: [0, "Thời gian chuẩn bị không được âm"] },
     status: {
       type: String,
       required: true,

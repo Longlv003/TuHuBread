@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/product.model.dart';
 import '../utils/currency_formatter.dart';
 import 'app_network_image.dart';
@@ -127,7 +128,9 @@ class ProductGridCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           Expanded(
                             child: Text(
-                              "Đã bán ${product.salesCount}",
+                              AppLocalizations.of(context)!.detailSoldAmount(
+                                product.salesCount,
+                              ),
                               style: const TextStyle(
                                 fontSize: 9,
                                 color: Color(0xFFBDC3C7),

@@ -255,8 +255,8 @@ class _SizeSelectSheetState extends State<_SizeSelectSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Số lượng',
+                Text(
+                  AppLocalizations.of(context)!.detailQuantity,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,

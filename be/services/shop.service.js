@@ -1,4 +1,5 @@
 const shopRepository = require("../repositories/shop.repository");
+const { normalizePhone, requireText, parseCoordinates } = require("../utils/validate.util");
 
 class ShopService {
   /**
@@ -21,9 +22,9 @@ class ShopService {
   async updateProfile(shopId, data) {
     const { shopName, phoneNumber, address, openTime, closeTime, latitude, longitude } = data;
 
-    if (!shopName || !phoneNumber || !address) {
-      throw new Error("Tên cửa hàng, số điện thoại và địa chỉ là bắt buộc");
-    }
+    const trimmedShopName = requireText(shopName, "Tên cửa hàng", { maxLength: 120 });
+    const trimmedAddress = requireText(address, "Địa chỉ", { maxLength: 255 });
+    const normalizedPhone = normalizePhone(phoneNumber);
 
     const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
     if (openTime && !timeRegex.test(openTime)) {
@@ -34,23 +35,19 @@ class ShopService {
     }
 
     const updateData = {
-      shop_name: shopName.trim(),
-      phone_number: phoneNumber.trim(),
-      address: address.trim(),
+      shop_name: trimmedShopName,
+      phone_number: normalizedPhone,
+      address: trimmedAddress,
       open_time: openTime || null,
       close_time: closeTime || null
     };
 
     // Vị trí trên bản đồ — tuỳ chọn, chỉ cập nhật nếu chủ shop có ghim lại vị trí mới.
     if (latitude !== undefined && longitude !== undefined && latitude !== "" && longitude !== "") {
-      const parsedLat = parseFloat(latitude);
-      const parsedLng = parseFloat(longitude);
-      if (isNaN(parsedLat) || isNaN(parsedLng) || parsedLat < -90 || parsedLat > 90 || parsedLng < -180 || parsedLng > 180) {
-        throw new Error("Toạ độ vị trí không hợp lệ");
-      }
+      const coords = parseCoordinates(latitude, longitude);
       updateData.location = {
         type: "Point",
-        coordinates: [parsedLng, parsedLat]
+        coordinates: [coords.longitude, coords.latitude]
       };
     }
 
@@ -113,13 +110,14 @@ class ShopService {
     const { shopName, phoneNumber, address, latitude, longitude, openTime, closeTime } = data;
     const updateData = {};
 
-    if (shopName) updateData.shop_name = shopName.trim();
-    if (phoneNumber) updateData.phone_number = phoneNumber.trim();
-    if (address) updateData.address = address.trim();
+    if (shopName) updateData.shop_name = requireText(shopName, "Tên cửa hàng", { maxLength: 120 });
+    if (phoneNumber) updateData.phone_number = normalizePhone(phoneNumber);
+    if (address) updateData.address = requireText(address, "Địa chỉ", { maxLength: 255 });
     if (latitude !== undefined && longitude !== undefined && latitude !== "" && longitude !== "") {
+      const coords = parseCoordinates(latitude, longitude);
       updateData.location = {
         type: "Point",
-        coordinates: [parseFloat(longitude), parseFloat(latitude)]
+        coordinates: [coords.longitude, coords.latitude]
       };
     }
 

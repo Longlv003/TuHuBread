@@ -44,9 +44,9 @@ class CartTab extends StatelessWidget {
     final success = await cubit.requestClearCart();
     if (!success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể xoá giỏ hàng, vui lòng thử lại'),
-          backgroundColor: Color(0xFFE74C3C),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorClearCartRetry),
+          backgroundColor: const Color(0xFFE74C3C),
         ),
       );
     }

@@ -32,6 +32,7 @@ class PaymentSessionRepository {
   async updateById(id, updateData) {
     return await paymentSessionModel.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true,
     });
   }
 
@@ -46,7 +47,7 @@ class PaymentSessionRepository {
     return await paymentSessionModel.findOneAndUpdate(
       { _id: id, status: "PENDING" },
       { status: "PROCESSING" },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 

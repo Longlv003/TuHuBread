@@ -190,7 +190,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 child: CircleAvatar(
                   radius: 36,
-                  backgroundColor: Colors.white.withOpacity(0.25),
+                  backgroundColor: Colors.white.withValues(alpha: 0.25),
                   backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
                   child: !hasAvatar
                       ? const Icon(Icons.person_rounded, size: 38, color: Colors.white)
@@ -208,7 +208,7 @@ class _ProfileHeader extends StatelessWidget {
                       color: Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 6, offset: const Offset(0, 2)),
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6, offset: const Offset(0, 2)),
                       ],
                     ),
                     child: const Icon(Icons.edit_rounded, size: 14, color: Color(0xFFE67E22)),
@@ -237,13 +237,13 @@ class _ProfileHeader extends StatelessWidget {
                   user.email ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.85)),
+                  style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85)),
                 ),
                 if (user.phone != null && user.phone!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     user.phone!,
-                    style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.85)),
+                    style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85)),
                   ),
                 ],
               ],
@@ -284,7 +284,7 @@ class _ProfileMenuGroup extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2C3E50).withOpacity(0.05),
+            color: const Color(0xFF2C3E50).withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -321,7 +321,7 @@ class _ProfileMenuTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: item.color.withOpacity(0.12),
+                color: item.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(item.icon, size: 20, color: item.color),

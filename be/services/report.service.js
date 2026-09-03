@@ -72,15 +72,11 @@ class ReportService {
       rawDaily,
       topProducts,
       statusBreakdown,
-      paymentMethods,
-      ordersByHour,
       previousDaily,
     ] = await Promise.all([
       reportRepository.getRevenueByDay(shopId, sinceDate, untilDate),
       reportRepository.getTopProducts(shopId, sinceDate, untilDate, 10),
       reportRepository.getOrderStatusBreakdown(shopId, sinceDate, untilDate),
-      reportRepository.getRevenueByPaymentMethod(shopId, sinceDate, untilDate),
-      reportRepository.getOrdersByHour(shopId, sinceDate, untilDate),
       reportRepository.getRevenueByDay(shopId, previousSince, previousUntil),
     ]);
 
@@ -102,18 +98,10 @@ class ReportService {
     const cancelledOrders = statusCounts.cancelled || 0;
     const cancelRate = totalAllStatus > 0 ? (cancelledOrders / totalAllStatus) * 100 : 0;
 
-    // Trải đủ 24 giờ để biểu đồ không bị khuyết cột.
-    const hourly = Array.from({ length: 24 }, (_, h) => {
-      const found = ordersByHour.find((r) => r._id === h);
-      return { hour: h, orders_count: found ? found.orders_count : 0 };
-    });
-
     return {
       dailyRevenue,
       topProducts,
       statusCounts,
-      paymentMethods,
-      hourly,
       summary: {
         totalRevenue,
         totalOrders,

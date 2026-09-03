@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
 const { userModel } = require("../models/user.model");
@@ -84,37 +85,98 @@ class OrderRepository {
     const updateData = {};
     if (orderStatus) updateData.order_status = orderStatus;
     if (paymentStatus) updateData.payment_status = paymentStatus;
-    return orderModel.findByIdAndUpdate(id, updateData, { new: true });
+    return orderModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
   }
 
-  async getDashboardStats(shopId, page = 1) {
-    const orders = await orderModel.find({ shop_id: shopId, deleted_at: null }).populate("user_id");
+  /**
+   * Doanh thu của các đơn hoàn thành & đã thanh toán trong khoảng thời gian.
+   * Tính bằng aggregate thay vì tải hết đơn về rồi cộng trong JS.
+   */
+  async getRevenueBetween(shopId, since, until) {
+    const [row] = await orderModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(String(shopId)),
+          order_status: "completed",
+          payment_status: "paid",
+          deleted_at: null,
+          createdAt: { $gte: since, $lte: until },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          revenue: { $sum: { $subtract: ["$items_total", "$discount_amount"] } },
+          orders_count: { $sum: 1 },
+        },
+      },
+    ]);
+    return { revenue: row ? row.revenue : 0, ordersCount: row ? row.orders_count : 0 };
+  }
 
-    const totalRevenue = orders
-      .filter(o => o.order_status === "completed" && o.payment_status === "paid")
-      .reduce((sum, o) => sum + (o.items_total - o.discount_amount), 0);
+  /** Đếm đơn theo trạng thái trong khoảng thời gian (một lượt cho mọi trạng thái). */
+  async countByStatusBetween(shopId, since, until) {
+    const rows = await orderModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(String(shopId)),
+          deleted_at: null,
+          createdAt: { $gte: since, $lte: until },
+        },
+      },
+      { $group: { _id: "$order_status", count: { $sum: 1 } } },
+    ]);
+    return rows.reduce((acc, r) => ({ ...acc, [r._id]: r.count }), {});
+  }
 
-    const pendingOrders = orders.filter(o => o.order_status === "pending").length;
-    const processingOrders = orders.filter(o => ["confirmed", "preparing", "delivering"].includes(o.order_status)).length;
-    const completedOrders = orders.filter(o => o.order_status === "completed").length;
-    const cancelledOrders = orders.filter(o => o.order_status === "cancelled").length;
+  /**
+   * Đơn khách đã nhận nhưng chưa trả tiền — dùng cho ô cảnh báo ở Dashboard.
+   * Đơn đã huỷ không tính vì không còn phải thu tiền nữa.
+   */
+  async countUnpaidActive(shopId) {
+    return orderModel.countDocuments({
+      shop_id: shopId,
+      payment_status: "unpaid",
+      order_status: { $ne: "cancelled" },
+      deleted_at: null,
+    });
+  }
 
+  /** Đơn đang ở 1 trong các trạng thái cần shop xử lý (không giới hạn ngày). */
+  async countByStatuses(shopId, statuses) {
+    return orderModel.countDocuments({
+      shop_id: shopId,
+      order_status: { $in: statuses },
+      deleted_at: null,
+    });
+  }
+
+  /**
+   * Trang danh sách "Đơn hàng mới nhất" trên Dashboard.
+   *
+   * Trước đây hàm này tải TOÀN BỘ đơn của shop về rồi mới lọc/đếm/cắt trang
+   * bằng JavaScript — càng bán được nhiều đơn thì mở Dashboard càng chậm và
+   * càng tốn RAM. Giờ đếm và phân trang ngay trong MongoDB.
+   */
+  async getRecentOrders(shopId, page = 1) {
     const parsedPage = Math.max(parseInt(page) || 1, 1);
     const limit = 10;
-    const sortedOrders = orders.slice().sort((a, b) => b.createdAt - a.createdAt);
-    const totalPages = Math.max(Math.ceil(sortedOrders.length / limit), 1);
-    const recentOrders = sortedOrders.slice((parsedPage - 1) * limit, parsedPage * limit);
+    const filter = { shop_id: shopId, deleted_at: null };
+
+    const [orders, total] = await Promise.all([
+      orderModel
+        .find(filter)
+        .populate("user_id")
+        .sort({ createdAt: -1 })
+        .skip((parsedPage - 1) * limit)
+        .limit(limit),
+      orderModel.countDocuments(filter),
+    ]);
 
     return {
-      totalRevenue,
-      totalOrdersCount: orders.length,
-      pendingOrders,
-      processingOrders,
-      completedOrders,
-      cancelledOrders,
-      recentOrders,
+      orders,
       page: parsedPage,
-      totalPages
+      totalPages: Math.max(Math.ceil(total / limit), 1),
     };
   }
 }

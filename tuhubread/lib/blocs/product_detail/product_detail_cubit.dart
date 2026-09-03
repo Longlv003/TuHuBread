@@ -4,6 +4,7 @@ import '../../models/product_detail.model.dart';
 import '../../models/product_variant.model.dart';
 import '../../repositories/home_repository.dart';
 import 'product_detail_state.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 class ProductDetailCubit extends Cubit<ProductDetailState> {
   final HomeRepository repository;
@@ -18,7 +19,7 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
     if (res is Success<ProductDetailModel>) {
       final detail = res.data;
       if (detail.variants.isEmpty) {
-        emit(const ProductDetailFailure('Sản phẩm chưa có phiên bản bán ra'));
+        emit(ProductDetailFailure(AppStrings.current.errorNoVariant));
         return;
       }
 
@@ -35,7 +36,7 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
         totalPrice: initialPrice,
       ));
     } else {
-      emit(ProductDetailFailure(res.errorOrNull ?? 'Lỗi không xác định'));
+      emit(ProductDetailFailure(res.errorOrNull ?? AppStrings.current.errorUnknown));
     }
   }
 

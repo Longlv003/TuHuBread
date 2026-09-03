@@ -277,7 +277,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   // 2. Món đang giảm giá (chỉ từ cửa hàng gần khách)
                   if (discounted.isNotEmpty) ...[
                     _buildProductsSection(
-                      title: 'Món đang giảm giá',
+                      title: l10n.homeDiscountedSection,
                       icon: Icons.local_fire_department_rounded,
                       accent: const Color(0xFFE74C3C),
                       products: discounted,
@@ -289,7 +289,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   // 3. Món nổi bật
                   if (featured.isNotEmpty) ...[
                     _buildProductsSection(
-                      title: 'Món nổi bật',
+                      title: l10n.homeFeaturedSection,
                       icon: Icons.star_rounded,
                       accent: const Color(0xFFE67E22),
                       products: featured,
@@ -301,12 +301,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   // 4. Danh mục dạng icon — bấm vào mở trang riêng liệt kê
                   // sản phẩm thuộc danh mục đó (trong bán kính giao hàng).
                   if (categories.isNotEmpty) ...[
-                    _buildCategoryGrid(categories, state),
+                    _buildCategoryGrid(categories, state, l10n),
                     const SizedBox(height: 20),
                   ],
 
                   // 5. Tab sắp xếp + danh sách Shop
-                  _buildSortTabs(),
+                  _buildSortTabs(l10n),
                   const SizedBox(height: 14),
                   // Backend chỉ trả distance_km khi biết vị trí khách — dùng
                   // chính nó làm dấu hiệu danh sách có thực sự được lọc theo
@@ -395,14 +395,18 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── DANH MỤC DẠNG ICON ───────────
 
-  Widget _buildCategoryGrid(List<CategoryModel> categories, HomeLoaded state) {
+  Widget _buildCategoryGrid(
+    List<CategoryModel> categories,
+    HomeLoaded state,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            'Danh mục',
+            l10n.homeCategoriesSection,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -485,11 +489,11 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   // ─────────── TAB SẮP XẾP ───────────
 
-  Widget _buildSortTabs() {
-    const labels = {
-      _ShopSort.nearby: 'Gần tôi',
-      _ShopSort.bestSelling: 'Bán chạy',
-      _ShopSort.rating: 'Đánh giá',
+  Widget _buildSortTabs(AppLocalizations l10n) {
+    final labels = {
+      _ShopSort.nearby: l10n.filterNearMe,
+      _ShopSort.bestSelling: l10n.filterBestSelling,
+      _ShopSort.rating: l10n.filterRating,
     };
 
     return Container(
@@ -549,6 +553,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     final locationService = getIt<LocationService>();
     final messenger = ScaffoldMessenger.of(context);
     final homeCubit = context.read<HomeCubit>();
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       final coords = await locationService.requestCurrentLocation();
@@ -560,22 +565,22 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       if (!mounted) return;
       final (message, actionLabel, action) = switch (e.reason) {
         LocationFailureReason.serviceDisabled => (
-            'Định vị đang tắt. Bật định vị để tìm cửa hàng gần bạn.',
-            'Mở cài đặt',
+            l10n.homeLocationOffHint,
+            l10n.homeOpenSettings,
             Geolocator.openLocationSettings,
           ),
         LocationFailureReason.permissionDeniedForever => (
-            'Bạn đã từ chối quyền vị trí. Cấp lại quyền trong Cài đặt ứng dụng.',
-            'Mở cài đặt',
+            l10n.homeLocationDeniedHint,
+            l10n.homeOpenSettings,
             Geolocator.openAppSettings,
           ),
         LocationFailureReason.permissionDenied => (
-            'Cần quyền truy cập vị trí để tìm cửa hàng gần bạn.',
+            l10n.homeLocationRequiredHint,
             null,
             null,
           ),
         LocationFailureReason.timeout => (
-            'Không lấy được vị trí. Kiểm tra tín hiệu GPS rồi thử lại.',
+            l10n.homeLocationFailedHint,
             null,
             null,
           ),
@@ -598,7 +603,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   }
 
   /// Khối nhắc bật/ghim vị trí khi chưa xác định được khách ở đâu.
-  Widget _buildNoLocationNotice() {
+  Widget _buildNoLocationNotice(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -620,8 +625,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Chưa xác định được vị trí của bạn',
+                Text(
+                  l10n.homeLocationUnknown,
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.bold,
@@ -629,9 +634,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   ),
                 ),
                 const SizedBox(height: 3),
-                const Text(
-                  'Đang hiển thị tất cả cửa hàng. Hãy bật định vị hoặc ghim '
-                  'vị trí cho địa chỉ giao hàng để xem đúng cửa hàng gần bạn.',
+                Text(
+                  l10n.homeLocationFallbackHint,
                   style: TextStyle(
                     fontSize: 11.5,
                     color: Color(0xFF9C7A0A),
@@ -650,8 +654,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                       color: const Color(0xFFE67E22),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'Dùng vị trí hiện tại',
+                    child: Text(
+                      l10n.homeUseCurrentLocation,
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.bold,
@@ -683,7 +687,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE67E22).withOpacity(0.12),
+                  color: const Color(0xFFE67E22).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: const Icon(
@@ -694,7 +698,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               ),
               const SizedBox(width: 8),
               Text(
-                hasLocation ? "Cửa hàng gần bạn" : "Tất cả cửa hàng",
+                hasLocation ? l10n.homeShopsNearYou : l10n.homeAllShops,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -720,7 +724,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildNoLocationNotice(),
+            child: _buildNoLocationNotice(l10n),
           ),
         ],
         const SizedBox(height: 14),
@@ -743,8 +747,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                     color: Color(0xFFBDC3C7),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Chưa có cửa hàng nào gần bạn",
+                  Text(
+                    l10n.homeNoShopNearby,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -844,8 +848,8 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                                           color: const Color(0xFFFDECEA),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
-                                        child: const Text(
-                                          'Đóng cửa',
+                                        child: Text(
+                                          l10n.labelClosed,
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
@@ -879,7 +883,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                                           const SizedBox(width: 3),
                                           Text(
                                             shop.rating == null
-                                                ? "Mới"
+                                                ? l10n.labelNew
                                                 : "${shop.rating}",
                                             style: const TextStyle(
                                               fontSize: 11,
@@ -996,7 +1000,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE67E22).withOpacity(0.12),
+                  color: const Color(0xFFE67E22).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: const Icon(
@@ -1089,7 +1093,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
         border: Border.all(color: borderColor, width: 1),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.08),
+            color: accentColor.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1101,7 +1105,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.15),
+              color: accentColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -1116,4 +1116,424 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onboardingStart => 'Bắt đầu';
+
+  @override
+  String get errorServerConnection => 'Lỗi kết nối máy chủ';
+
+  @override
+  String get errorConnectServer => 'Không thể kết nối đến máy chủ';
+
+  @override
+  String get errorDataNotFound => 'Không tìm thấy dữ liệu yêu cầu';
+
+  @override
+  String get errorApiNotConfigured =>
+      'API chưa được cấu hình hoặc không tồn tại';
+
+  @override
+  String get errorUnknown => 'Lỗi không xác định';
+
+  @override
+  String get errorLoadAddresses => 'Không thể tải danh sách địa chỉ';
+
+  @override
+  String get errorLoadAddress => 'Không thể tải địa chỉ';
+
+  @override
+  String get errorAddAddress => 'Không thể thêm địa chỉ';
+
+  @override
+  String get errorUpdateAddress => 'Không thể cập nhật địa chỉ';
+
+  @override
+  String get errorDeleteAddress => 'Không thể xóa địa chỉ';
+
+  @override
+  String get errorLoadCart => 'Không thể tải giỏ hàng';
+
+  @override
+  String get errorConnectLoadCart =>
+      'Không thể kết nối đến máy chủ để tải giỏ hàng';
+
+  @override
+  String get errorAddToCart => 'Không thể thêm vào giỏ hàng';
+
+  @override
+  String get errorConnectAddToCart =>
+      'Không thể kết nối đến máy chủ để thêm vào giỏ hàng';
+
+  @override
+  String get errorClearCart => 'Không thể xoá giỏ hàng';
+
+  @override
+  String get errorConnectClearCart =>
+      'Không thể kết nối đến máy chủ để xoá giỏ hàng';
+
+  @override
+  String get errorUpdateQuantity => 'Không thể cập nhật số lượng';
+
+  @override
+  String get errorConnectUpdateQuantity =>
+      'Không thể kết nối đến máy chủ để cập nhật số lượng';
+
+  @override
+  String get errorRemoveFromCart => 'Không thể xóa khỏi giỏ hàng';
+
+  @override
+  String get errorConnectRemoveFromCart =>
+      'Không thể kết nối đến máy chủ để xóa khỏi giỏ hàng';
+
+  @override
+  String get errorClearCartRetry => 'Không thể xoá giỏ hàng, vui lòng thử lại';
+
+  @override
+  String get errorLoadShops => 'Không thể tải danh sách cửa hàng';
+
+  @override
+  String get errorLoadCategories => 'Không thể tải danh mục';
+
+  @override
+  String get errorLoadMenu => 'Không thể tải thực đơn';
+
+  @override
+  String get errorLoadBestSellers => 'Không thể tải sản phẩm bán chạy';
+
+  @override
+  String get errorLoadProductDetail => 'Không thể tải chi tiết sản phẩm';
+
+  @override
+  String get errorNoVariant => 'Sản phẩm chưa có phiên bản bán ra';
+
+  @override
+  String get errorLoadVouchers => 'Không thể tải voucher';
+
+  @override
+  String get errorLoadVoucherList => 'Không thể tải danh sách voucher';
+
+  @override
+  String get errorLoadSavedVouchers => 'Không thể tải danh sách voucher đã lưu';
+
+  @override
+  String get errorSaveVoucher => 'Không thể lưu voucher';
+
+  @override
+  String get errorSaveVoucherFailed => 'Lưu voucher thất bại';
+
+  @override
+  String get errorConnectSaveVoucher =>
+      'Không thể kết nối đến máy chủ để lưu voucher';
+
+  @override
+  String get errorApplyVoucher => 'Không thể áp dụng mã voucher';
+
+  @override
+  String get errorLoadNotifications => 'Không thể tải thông báo';
+
+  @override
+  String get errorConnectLoadNotifications =>
+      'Không thể kết nối đến máy chủ để tải thông báo';
+
+  @override
+  String get errorLoadUnreadCount => 'Không thể tải số thông báo chưa đọc';
+
+  @override
+  String get errorMarkRead => 'Không thể đánh dấu đã đọc';
+
+  @override
+  String get errorMarkAllRead => 'Không thể đánh dấu đã đọc tất cả';
+
+  @override
+  String get errorDeleteNotification => 'Không thể xoá thông báo';
+
+  @override
+  String get errorDeleteAllNotifications => 'Không thể xoá tất cả thông báo';
+
+  @override
+  String get errorRegisterNotifications => 'Không thể đăng ký nhận thông báo';
+
+  @override
+  String get errorUnregisterNotifications => 'Không thể huỷ đăng ký thông báo';
+
+  @override
+  String get notificationDefaultTitle => 'Thông báo mới';
+
+  @override
+  String get errorPlaceOrder => 'Không thể đặt hàng';
+
+  @override
+  String get errorConnectPlaceOrder =>
+      'Không thể kết nối đến máy chủ để đặt hàng';
+
+  @override
+  String get errorLoadOrders => 'Lỗi tải danh sách đơn hàng';
+
+  @override
+  String get errorLoadOrderDetail => 'Lỗi tải chi tiết đơn hàng';
+
+  @override
+  String get errorSubmitReview => 'Không thể gửi đánh giá';
+
+  @override
+  String get errorCalcShippingFee => 'Không thể tính phí ship';
+
+  @override
+  String get errorConnectCalcShippingFee =>
+      'Không thể kết nối đến máy chủ để tính phí ship';
+
+  @override
+  String get errorCreateVnpayLink => 'Không thể tạo link thanh toán VNPay';
+
+  @override
+  String get errorCreatePaymentLink => 'Không thể tạo link thanh toán';
+
+  @override
+  String get errorConnectPayment =>
+      'Không thể kết nối đến máy chủ để thanh toán';
+
+  @override
+  String get errorVerifyTransaction => 'Không thể xác minh giao dịch';
+
+  @override
+  String get errorNoPaymentUrl => 'Backend không trả về URL thanh toán';
+
+  @override
+  String get paymentProcessing => 'Giao dịch đang được xử lý';
+
+  @override
+  String paymentFailedWithCode(String code) {
+    return 'Giao dịch thất bại (mã: $code)';
+  }
+
+  @override
+  String get paymentVnpayFailed => 'Thanh toán qua VNPAY không thành công.';
+
+  @override
+  String get deliveryFree => 'Miễn phí';
+
+  @override
+  String get addressPickTitle => 'Chọn địa chỉ';
+
+  @override
+  String get addressBuildingHint => 'Toà nhà, Số tầng (không bắt buộc)';
+
+  @override
+  String get addressGateHint => 'Cổng (không bắt buộc)';
+
+  @override
+  String get mapSearchError =>
+      'Không thể tìm kiếm lúc này, vui lòng kiểm tra kết nối mạng';
+
+  @override
+  String get mapGpsOff => 'Định vị (GPS) của máy đang tắt';
+
+  @override
+  String get mapEnableGps => 'Bật GPS';
+
+  @override
+  String get mapPermissionNeeded =>
+      'Bạn cần cho phép quyền vị trí để dùng tính năng này';
+
+  @override
+  String get mapPermissionDeniedBefore => 'Quyền vị trí đã bị từ chối trước đó';
+
+  @override
+  String get mapOpenSettings => 'Cài đặt';
+
+  @override
+  String get mapNoSignal => 'Không bắt được tín hiệu định vị, vui lòng thử lại';
+
+  @override
+  String get mapSearchPlace => 'Tìm vị trí';
+
+  @override
+  String get mapTypeAtLeast3Chars => 'Nhập ít nhất 3 ký tự để tìm địa điểm';
+
+  @override
+  String get mapNoPlaceFound => 'Không tìm thấy địa điểm phù hợp';
+
+  @override
+  String get mapPinnedLocation => 'Vị trí đã ghim';
+
+  @override
+  String get mapResolvingAddress => 'Đang xác định địa chỉ...';
+
+  @override
+  String get mapDragToPin => 'Kéo bản đồ để ghim vị trí giao hàng';
+
+  @override
+  String get mapConfirmLocation => 'Xác nhận vị trí này';
+
+  @override
+  String get homeDiscountedSection => 'Món đang giảm giá';
+
+  @override
+  String get homeFeaturedSection => 'Món nổi bật';
+
+  @override
+  String get homeCategoriesSection => 'Danh mục';
+
+  @override
+  String get homeShopsNearYou => 'Cửa hàng gần bạn';
+
+  @override
+  String get homeAllShops => 'Tất cả cửa hàng';
+
+  @override
+  String get homeNoShopNearby => 'Chưa có cửa hàng nào gần bạn';
+
+  @override
+  String get homeLocationUnknown => 'Chưa xác định được vị trí của bạn';
+
+  @override
+  String get homeLocationFallbackHint =>
+      'Đang hiển thị tất cả cửa hàng. Hãy bật định vị hoặc ghim vị trí cho địa chỉ giao hàng để xem đúng cửa hàng gần bạn.';
+
+  @override
+  String get homeUseCurrentLocation => 'Dùng vị trí hiện tại';
+
+  @override
+  String get homeLocationOffHint =>
+      'Định vị đang tắt. Bật định vị để tìm cửa hàng gần bạn.';
+
+  @override
+  String get homeLocationDeniedHint =>
+      'Bạn đã từ chối quyền vị trí. Cấp lại quyền trong Cài đặt ứng dụng.';
+
+  @override
+  String get homeLocationRequiredHint =>
+      'Cần quyền truy cập vị trí để tìm cửa hàng gần bạn.';
+
+  @override
+  String get homeLocationFailedHint =>
+      'Không lấy được vị trí. Kiểm tra tín hiệu GPS rồi thử lại.';
+
+  @override
+  String get homeOpenSettings => 'Mở cài đặt';
+
+  @override
+  String get filterNearMe => 'Gần tôi';
+
+  @override
+  String get filterBestSelling => 'Bán chạy';
+
+  @override
+  String get filterRating => 'Đánh giá';
+
+  @override
+  String get labelClosed => 'Đóng cửa';
+
+  @override
+  String get labelNew => 'Mới';
+
+  @override
+  String categorySearchHint(String category) {
+    return 'Tìm món trong $category';
+  }
+
+  @override
+  String get categoryEmptyNearby =>
+      'Không có món nào trong danh mục này gần bạn';
+
+  @override
+  String shopSearchHint(String shopName) {
+    return 'Tìm món tại $shopName';
+  }
+
+  @override
+  String get shopNoReviews => 'Chưa có đánh giá';
+
+  @override
+  String get shopViewCart => 'Xem giỏ hàng';
+
+  @override
+  String get shopBestSellers => 'Bán chạy nhất';
+
+  @override
+  String get shopNoProductFound => 'Không tìm thấy sản phẩm nào';
+
+  @override
+  String get shopTemporarilyClosed => 'Cửa hàng đang tạm đóng';
+
+  @override
+  String shopClosedWithHours(String openTime, String closeTime) {
+    return 'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được. Giờ mở cửa: $openTime - $closeTime.';
+  }
+
+  @override
+  String get shopClosedNoHours =>
+      'Bạn vẫn xem được thực đơn nhưng chưa đặt hàng được.';
+
+  @override
+  String shopClosedNamed(String shopName) {
+    return '$shopName đang tạm đóng cửa';
+  }
+
+  @override
+  String get cartClearOldTitle => 'Xoá giỏ hàng cũ?';
+
+  @override
+  String cartClearOldDescription(String oldShop, String newShop) {
+    return 'Giỏ hàng của bạn đang có món của $oldShop. Bạn có muốn xoá giỏ hàng cũ để đặt món $newShop không?';
+  }
+
+  @override
+  String get cartAnotherShop => 'một cửa hàng khác';
+
+  @override
+  String cartFromShop(String shopName) {
+    return 'từ $shopName';
+  }
+
+  @override
+  String get cartNewItems => 'mới';
+
+  @override
+  String get commonConfirm => 'Xác nhận';
+
+  @override
+  String get commonCancel => 'Huỷ';
+
+  @override
+  String get commonDelete => 'Xóa';
+
+  @override
+  String get commonAll => 'Tất cả';
+
+  @override
+  String get cartRemoveItemTitle => 'Xóa sản phẩm?';
+
+  @override
+  String get cartRemoveItemDescription =>
+      'Bạn có chắc muốn xóa khỏi giỏ hàng không?';
+
+  @override
+  String get checkoutConfirmOrder => 'Xác nhận đơn hàng';
+
+  @override
+  String get checkoutUndeliverableAddress =>
+      'Không thể giao hàng tới địa chỉ này. Vui lòng chọn địa chỉ khác.';
+
+  @override
+  String get reviewsPageTitle => 'Đánh giá sản phẩm';
+
+  @override
+  String get reviewsEmptyForFilter => 'Chưa có đánh giá nào ở mức này';
+
+  @override
+  String reviewsCount(String count) {
+    return '$count đánh giá';
+  }
+
+  @override
+  String reviewsViewAllWithRating(String rating) {
+    return '$rating · Xem tất cả bình luận';
+  }
+
+  @override
+  String get reviewsSelectProduct => 'Chọn sản phẩm cần đánh giá';
+
+  @override
+  String reviewsReviewedProgress(String reviewed, String total) {
+    return 'Đã đánh giá $reviewed/$total sản phẩm';
+  }
 }

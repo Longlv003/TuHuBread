@@ -25,8 +25,9 @@
   <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
     <div class="kpi-card">
       <div class="kpi-info">
-        <h4>Doanh thu (VND)</h4>
+        <h4>Doanh thu hôm nay</h4>
         <h2 id="revenueText"><%= stats.totalRevenue.toLocaleString('vi-VN') %>đ</h2>
+        <span class="kpi-trend neutral">Đơn đã hoàn thành &amp; đã thanh toán</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
     </div>
@@ -34,6 +35,7 @@
       <div class="kpi-info">
         <h4>Tổng số đơn</h4>
         <h2 id="totalOrdersText"><%= stats.totalOrdersCount %></h2>
+        <span class="kpi-trend neutral">Đặt trong hôm nay</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
     </div>
@@ -41,13 +43,15 @@
       <div class="kpi-info">
         <h4>Đơn chờ xử lý</h4>
         <h2 id="pendingText"><%= stats.pendingOrders %></h2>
+        <span class="kpi-trend neutral">Chờ xác nhận</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
     </div>
     <div class="kpi-card">
       <div class="kpi-info">
         <h4>Đang xử lý</h4>
-        <h2><%= stats.processingOrders %></h2>
+        <h2 id="processingText"><%= stats.processingOrders %></h2>
+        <span class="kpi-trend neutral">Đã xác nhận → đang giao</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-truck-fast"></i></div>
     </div>
@@ -55,30 +59,30 @@
       <div class="kpi-info">
         <h4>Đơn thành công</h4>
         <h2 id="completedText"><%= stats.completedOrders %></h2>
+        <span class="kpi-trend neutral">Hoàn thành hôm nay</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
     </div>
     <div class="kpi-card">
       <div class="kpi-info">
         <h4>Đơn đã huỷ</h4>
-        <h2><%= stats.cancelledOrders %></h2>
+        <h2 id="cancelledText"><%= stats.cancelledOrders %></h2>
+        <span class="kpi-trend neutral">Bị huỷ hôm nay</span>
       </div>
       <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
     </div>
   </div>
 
-  <!-- Xu hướng doanh thu 7 ngày gần nhất -->
-  <div class="section-card" style="margin-bottom: 30px;">
-    <div class="section-header"><h3>Doanh thu 7 ngày gần nhất</h3></div>
-    <div class="chart-container" style="height: 240px;">
-      <canvas id="trendChart"></canvas>
-    </div>
+  <!-- Cảnh báo cần xử lý -->
+  <div class="alert-grid" id="alertGrid">
+    <%- include('partials/dashboard_alerts', { alerts: stats.alerts }) %>
   </div>
 
-  <!-- Recent Orders -->
-  <div class="section-card">
+  <!-- Đơn hàng mới nhất -->
+  <div class="section-card" style="margin-bottom: 24px;">
     <div class="section-header">
-      <h3>Danh sách đơn hàng gần đây</h3>
+      <h3>Đơn hàng mới nhất</h3>
+      <a href="/shop/orders" class="section-link">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
     </div>
     <div class="table-container">
       <table>
@@ -125,6 +129,17 @@
     </div>
     <div id="dashboardPagination">
       <%- include('partials/pagination', { page: stats.page, totalPages: stats.totalPages, baseUrl: '/shop/dashboard' }) %>
+    </div>
+  </div>
+
+  <!-- Sản phẩm bán chạy hôm nay -->
+  <div class="section-card">
+    <div class="section-header">
+      <h3>Sản phẩm bán chạy hôm nay</h3>
+      <a href="/shop/reports" class="section-link">Báo cáo chi tiết <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="table-container" id="topProductsToday">
+      <%- include('partials/dashboard_top_products', { topProducts: stats.topProductsToday }) %>
     </div>
   </div>
 </div>
@@ -181,61 +196,22 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, 'text/html');
 
-      document.getElementById("revenueText").innerHTML = doc.getElementById("revenueText").innerHTML;
-      document.getElementById("totalOrdersText").innerHTML = doc.getElementById("totalOrdersText").innerHTML;
-      document.getElementById("pendingText").innerHTML = doc.getElementById("pendingText").innerHTML;
-      document.getElementById("completedText").innerHTML = doc.getElementById("completedText").innerHTML;
-      document.getElementById("ordersTableBody").innerHTML = doc.getElementById("ordersTableBody").innerHTML;
-      document.getElementById("dashboardPagination").innerHTML = doc.getElementById("dashboardPagination").innerHTML;
+      // Đồng bộ mọi khối phụ thuộc dữ liệu — thiếu ô nào thì ô đó đứng yên
+      // với số cũ cho tới lần tải lại trang, dễ khiến chủ shop hiểu nhầm.
+      const syncIds = [
+        "revenueText", "totalOrdersText", "pendingText", "processingText",
+        "completedText", "cancelledText",
+        "alertGrid", "ordersTableBody", "dashboardPagination", "topProductsToday",
+      ];
+      for (const id of syncIds) {
+        const fresh = doc.getElementById(id);
+        const current = document.getElementById(id);
+        if (fresh && current) current.innerHTML = fresh.innerHTML;
+      }
     } catch (err) {
       console.error("Failed to refresh dashboard:", err);
     }
   }
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-  const revenueTrend = <%- JSON.stringify(stats.revenueTrend) %>;
-
-  new Chart(document.getElementById("trendChart").getContext("2d"), {
-    type: "line",
-    data: {
-      // Nhãn dạng dd/MM cho dễ đọc hơn chuỗi ISO đầy đủ.
-      labels: revenueTrend.map(d => {
-        const [, m, day] = d.date.split("-");
-        return `${day}/${m}`;
-      }),
-      datasets: [{
-        label: "Doanh thu (đ)",
-        data: revenueTrend.map(d => d.revenue),
-        borderColor: "#E67E22",
-        backgroundColor: "rgba(230, 126, 34, 0.15)",
-        fill: true,
-        tension: 0.35,
-        pointRadius: 3,
-        pointBackgroundColor: "#D35400"
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const item = revenueTrend[ctx.dataIndex];
-              return ` ${item.revenue.toLocaleString("vi-VN")}đ · ${item.orders_count} đơn`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: "#7F8C8D" }, grid: { display: false } },
-        y: { beginAtZero: true, ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } }
-      }
-    }
-  });
 </script>
 
 <%- include('partials/footer') %>

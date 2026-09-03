@@ -324,19 +324,25 @@
   "notificationsMinutesAgo": "{count}m ago",
   "@notificationsMinutesAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "notificationsHoursAgo": "{count}h ago",
   "@notificationsHoursAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "notificationsDaysAgo": "{count}d ago",
   "@notificationsDaysAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "notificationsDeleteAllTooltip": "Delete all",
@@ -361,7 +367,9 @@
   "voucherMinOrder": "Min. order {amount}",
   "@voucherMinOrder": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "voucherUseNowButton": "Use now",
@@ -371,7 +379,9 @@
   "myVouchersExpiresOn": "Expires on {date}",
   "@myVouchersExpiresOn": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "changePasswordNotApplicable": "Change password is not available for accounts signed in with Google/Facebook",
@@ -448,5 +458,210 @@
   "onboardingDesc3": "Track your order in real time and get your bread hot and fresh at home.",
   "onboardingSkip": "Skip",
   "onboardingNext": "Next",
-  "onboardingStart": "Get started"
+  "onboardingStart": "Get started",
+  "errorServerConnection": "Server connection error",
+  "errorConnectServer": "Could not connect to the server",
+  "errorDataNotFound": "The requested data was not found",
+  "errorApiNotConfigured": "The API is not configured or does not exist",
+  "errorUnknown": "Unknown error",
+  "errorLoadAddresses": "Could not load the address list",
+  "errorLoadAddress": "Could not load the address",
+  "errorAddAddress": "Could not add the address",
+  "errorUpdateAddress": "Could not update the address",
+  "errorDeleteAddress": "Could not delete the address",
+  "errorLoadCart": "Could not load the cart",
+  "errorConnectLoadCart": "Could not reach the server to load the cart",
+  "errorAddToCart": "Could not add to the cart",
+  "errorConnectAddToCart": "Could not reach the server to add to the cart",
+  "errorClearCart": "Could not clear the cart",
+  "errorConnectClearCart": "Could not reach the server to clear the cart",
+  "errorUpdateQuantity": "Could not update the quantity",
+  "errorConnectUpdateQuantity": "Could not reach the server to update the quantity",
+  "errorRemoveFromCart": "Could not remove from the cart",
+  "errorConnectRemoveFromCart": "Could not reach the server to remove from the cart",
+  "errorClearCartRetry": "Could not clear the cart, please try again",
+  "errorLoadShops": "Could not load the shop list",
+  "errorLoadCategories": "Could not load the categories",
+  "errorLoadMenu": "Could not load the menu",
+  "errorLoadBestSellers": "Could not load the best sellers",
+  "errorLoadProductDetail": "Could not load the product details",
+  "errorNoVariant": "This product has no variant on sale yet",
+  "errorLoadVouchers": "Could not load the vouchers",
+  "errorLoadVoucherList": "Could not load the voucher list",
+  "errorLoadSavedVouchers": "Could not load your saved vouchers",
+  "errorSaveVoucher": "Could not save the voucher",
+  "errorSaveVoucherFailed": "Saving the voucher failed",
+  "errorConnectSaveVoucher": "Could not reach the server to save the voucher",
+  "errorApplyVoucher": "Could not apply the voucher code",
+  "errorLoadNotifications": "Could not load notifications",
+  "errorConnectLoadNotifications": "Could not reach the server to load notifications",
+  "errorLoadUnreadCount": "Could not load the unread notification count",
+  "errorMarkRead": "Could not mark as read",
+  "errorMarkAllRead": "Could not mark all as read",
+  "errorDeleteNotification": "Could not delete the notification",
+  "errorDeleteAllNotifications": "Could not delete all notifications",
+  "errorRegisterNotifications": "Could not register for notifications",
+  "errorUnregisterNotifications": "Could not unregister from notifications",
+  "notificationDefaultTitle": "New notification",
+  "errorPlaceOrder": "Could not place the order",
+  "errorConnectPlaceOrder": "Could not reach the server to place the order",
+  "errorLoadOrders": "Failed to load the order list",
+  "errorLoadOrderDetail": "Failed to load the order details",
+  "errorSubmitReview": "Could not submit the review",
+  "errorCalcShippingFee": "Could not calculate the delivery fee",
+  "errorConnectCalcShippingFee": "Could not reach the server to calculate the delivery fee",
+  "errorCreateVnpayLink": "Could not create the VNPay payment link",
+  "errorCreatePaymentLink": "Could not create the payment link",
+  "errorConnectPayment": "Could not reach the server to pay",
+  "errorVerifyTransaction": "Could not verify the transaction",
+  "errorNoPaymentUrl": "The backend did not return a payment URL",
+  "paymentProcessing": "The transaction is being processed",
+  "paymentFailedWithCode": "Transaction failed (code: {code})",
+  "@paymentFailedWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentVnpayFailed": "The VNPAY payment was not successful.",
+  "deliveryFree": "Free",
+  "addressPickTitle": "Pick an address",
+  "addressBuildingHint": "Building, floor (optional)",
+  "addressGateHint": "Gate (optional)",
+  "mapSearchError": "Search is unavailable right now, please check your connection",
+  "mapGpsOff": "Location (GPS) is turned off on this device",
+  "mapEnableGps": "Turn on GPS",
+  "mapPermissionNeeded": "You need to allow location access to use this feature",
+  "mapPermissionDeniedBefore": "Location permission was denied earlier",
+  "mapOpenSettings": "Settings",
+  "mapNoSignal": "Could not get a location signal, please try again",
+  "mapSearchPlace": "Search for a place",
+  "mapTypeAtLeast3Chars": "Type at least 3 characters to search for a place",
+  "mapNoPlaceFound": "No matching place found",
+  "mapPinnedLocation": "Pinned location",
+  "mapResolvingAddress": "Resolving the address...",
+  "mapDragToPin": "Drag the map to pin your delivery location",
+  "mapConfirmLocation": "Confirm this location",
+  "homeDiscountedSection": "Discounted items",
+  "homeFeaturedSection": "Featured items",
+  "homeCategoriesSection": "Categories",
+  "homeShopsNearYou": "Shops near you",
+  "homeAllShops": "All shops",
+  "homeNoShopNearby": "There are no shops near you yet",
+  "homeLocationUnknown": "Your location has not been determined yet",
+  "homeLocationFallbackHint": "Showing all shops. Turn on location or pin your delivery address to see the shops that are really near you.",
+  "homeUseCurrentLocation": "Use current location",
+  "homeLocationOffHint": "Location is off. Turn it on to find shops near you.",
+  "homeLocationDeniedHint": "You denied location access. Grant it again in the app settings.",
+  "homeLocationRequiredHint": "Location access is required to find shops near you.",
+  "homeLocationFailedHint": "Could not get your location. Check your GPS signal and try again.",
+  "homeOpenSettings": "Open settings",
+  "filterNearMe": "Near me",
+  "filterBestSelling": "Best selling",
+  "filterRating": "Rating",
+  "labelClosed": "Closed",
+  "labelNew": "New",
+  "categorySearchHint": "Search in {category}",
+  "@categorySearchHint": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryEmptyNearby": "There are no items in this category near you",
+  "shopSearchHint": "Search at {shopName}",
+  "@shopSearchHint": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "shopNoReviews": "No reviews yet",
+  "shopViewCart": "View cart",
+  "shopBestSellers": "Best sellers",
+  "shopNoProductFound": "No products found",
+  "shopTemporarilyClosed": "The shop is temporarily closed",
+  "shopClosedWithHours": "You can still browse the menu but cannot order yet. Opening hours: {openTime} - {closeTime}.",
+  "@shopClosedWithHours": {
+    "placeholders": {
+      "openTime": {
+        "type": "String"
+      },
+      "closeTime": {
+        "type": "String"
+      }
+    }
+  },
+  "shopClosedNoHours": "You can still browse the menu but cannot order yet.",
+  "shopClosedNamed": "{shopName} is temporarily closed",
+  "@shopClosedNamed": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartClearOldTitle": "Clear the old cart?",
+  "cartClearOldDescription": "Your cart contains items from {oldShop}. Do you want to clear it to order {newShop}?",
+  "@cartClearOldDescription": {
+    "placeholders": {
+      "oldShop": {
+        "type": "String"
+      },
+      "newShop": {
+        "type": "String"
+      }
+    }
+  },
+  "cartAnotherShop": "another shop",
+  "cartFromShop": "from {shopName}",
+  "@cartFromShop": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "cartNewItems": "new items",
+  "commonConfirm": "Confirm",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonAll": "All",
+  "cartRemoveItemTitle": "Remove item?",
+  "cartRemoveItemDescription": "Are you sure you want to remove it from the cart?",
+  "checkoutConfirmOrder": "Confirm order",
+  "checkoutUndeliverableAddress": "We cannot deliver to this address. Please choose another one.",
+  "reviewsPageTitle": "Product reviews",
+  "reviewsEmptyForFilter": "No reviews at this rating yet",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsViewAllWithRating": "{rating} · See all reviews",
+  "@reviewsViewAllWithRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsSelectProduct": "Choose a product to review",
+  "reviewsReviewedProgress": "Reviewed {reviewed}/{total} items",
+  "@reviewsReviewedProgress": {
+    "placeholders": {
+      "reviewed": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  }
 }

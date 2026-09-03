@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:tuhubread/blocs/auth/auth_cubit.dart';
+import 'package:tuhubread/blocs/auth/auth_state.dart';
 import 'package:tuhubread/blocs/splash/splash_cubit.dart';
 import 'package:tuhubread/blocs/splash/splash_state.dart';
 import 'package:tuhubread/di.dart';
@@ -55,15 +56,24 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           if (state is SplashLoaded) {
             final user = FirebaseAuth.instance.currentUser;
             if (user != null) {
-              user.getIdToken().then((token) {
-                if (token != null) {
-                  // Sync Firebase Token with Node.js backend
-                  context.read<AuthCubit>().verifyFirebaseToken(
-                        token,
-                        defaultLoginError: l10n.loginFailureDefault,
-                        networkErrorMsg: l10n.networkError,
-                        timeoutErrorMsg: l10n.connectionTimeoutError,
-                      );
+              final authCubit = context.read<AuthCubit>();
+              user.getIdToken().then((token) async {
+                if (token == null) {
+                  _goToLoginOrOnboarding();
+                  return;
+                }
+                // Sync Firebase Token with Node.js backend
+                await authCubit.verifyFirebaseToken(
+                  token,
+                  defaultLoginError: l10n.loginFailureDefault,
+                  networkErrorMsg: l10n.networkError,
+                  timeoutErrorMsg: l10n.connectionTimeoutError,
+                );
+                if (!mounted) return;
+                // Chỉ vào màn hình chính khi backend thực sự chấp nhận tài
+                // khoản — tài khoản bị khoá sẽ bị đẩy về màn đăng nhập thay vì
+                // vào được app rồi mới lỗi 403 ở từng API.
+                if (authCubit.state is AuthSuccess) {
                   Get.offAllNamed(Routes.homePage);
                 } else {
                   _goToLoginOrOnboarding();
@@ -123,12 +133,12 @@ class _LoadingContent extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFF39C12).withOpacity(0.15),
+              color: const Color(0xFFF39C12).withValues(alpha: 0.15),
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFE67E22), width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFD35400).withOpacity(0.18),
+                  color: const Color(0xFFD35400).withValues(alpha: 0.18),
                   blurRadius: 28,
                   offset: const Offset(0, 12),
                 ),

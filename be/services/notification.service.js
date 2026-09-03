@@ -4,6 +4,7 @@ const { notificationModel } = require("../models/notification.model");
 const { userDeviceModel } = require("../models/userDevice.model");
 const notificationRepository = require("../repositories/notification.repository");
 const userDeviceRepository = require("../repositories/userDevice.repository");
+const { requireText } = require("../utils/validate.util");
 const { userModel } = require("../models/user.model");
 const { orderModel } = require("../models/order.model");
 const fcmService = require("./fcm.service");
@@ -192,14 +193,23 @@ class NotificationService {
    * @param {string|null} [params.senderShopId]
    */
   async createAndSend({ title, body, type, target, shopId, senderType = "admin", senderShopId = null }) {
-    if (!title || !body || !type) {
-      throw new Error("Tiêu đề, nội dung và loại thông báo là bắt buộc");
+    const trimmedTitle = requireText(title, "Tiêu đề thông báo", { maxLength: 150 });
+    const trimmedBody = requireText(body, "Nội dung thông báo", { maxLength: 1000 });
+    if (!type) {
+      throw new Error("Loại thông báo là bắt buộc");
     }
     if (!["order", "voucher", "system"].includes(type)) {
       throw new Error("Loại thông báo không hợp lệ");
     }
 
-    const baseDoc = { title, body, type, sent_at: new Date(), sender_type: senderType, sender_shop_id: senderShopId };
+    const baseDoc = {
+      title: trimmedTitle,
+      body: trimmedBody,
+      type,
+      sent_at: new Date(),
+      sender_type: senderType,
+      sender_shop_id: senderShopId,
+    };
 
     let customerIds;
     if (target === "shop_customers") {
@@ -221,7 +231,7 @@ class NotificationService {
     const tokens = target === "shop_customers"
       ? (await Promise.all(customerIds.map((id) => userDeviceRepository.findActiveTokensByUserId(id)))).flat()
       : await userDeviceRepository.findAllActiveTokens();
-    const pushResult = await sendPushInBatches(tokens, title, body);
+    const pushResult = await sendPushInBatches(tokens, trimmedTitle, trimmedBody);
     return { recipientCount: customerIds.length, ...pushResult };
   }
 

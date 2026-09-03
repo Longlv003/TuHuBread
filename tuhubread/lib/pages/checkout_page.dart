@@ -273,7 +273,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE67E22).withOpacity(0.1),
+                                color: const Color(0xFFE67E22).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -383,7 +383,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     }
   }
 
-  Future<void> _placeOrder(BuildContext context) async {
+  Future<void> _placeOrder() async {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -407,7 +407,6 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     // ── Thanh toán VNPay ─────────────────────────────────────────────────────
     if (_selectedMethod.id == 'vnpay') {
       await _placeVnpayOrder(
-        context: context,
         l10n: l10n,
         noteText: noteText,
         voucherCode: voucherCode,
@@ -448,7 +447,6 @@ class _CheckoutContentState extends State<_CheckoutContent> {
   ///  3. WebView đóng → nhận VnPayResult với txnRef
   ///  4. PaymentCubit.verifyAfterWebView(txnRef) → kết quả cuối cùng
   Future<void> _placeVnpayOrder({
-    required BuildContext context,
     required AppLocalizations l10n,
     String? noteText,
     String? voucherCode,
@@ -472,7 +470,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
       // Lỗi khi tạo URL
       final msg = currentState is PaymentError
           ? currentState.message
-          : 'Không thể tạo link thanh toán';
+          : l10n.errorCreatePaymentLink;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -589,10 +587,10 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           size: 48,
         ),
         title: Text(l10n.paymentOrderFailed, textAlign: TextAlign.center),
-        content: const Text(
-          "Thanh toán qua VNPAY không thành công.",
+        content: Text(
+          l10n.paymentVnpayFailed,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 13, color: Color(0xFF7F8C8D)),
+          style: const TextStyle(fontSize: 13, color: Color(0xFF7F8C8D)),
         ),
         actions: [
           SizedBox(
@@ -709,11 +707,8 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                         (option) => CheckoutDeliveryOptionTile(
                           option: _deliveryFees == null
                               ? option
-                              : DeliveryOptionModel(
-                                  id: option.id,
-                                  label: option.label,
-                                  description: option.description,
-                                  fee: _deliveryFees!.feeFor(option.id),
+                              : option.copyWithFee(
+                                  _deliveryFees!.feeFor(option.id),
                                 ),
                           selected: option.id == _selectedDelivery.id,
                           l10n: l10n,
@@ -793,7 +788,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                 decoration: BoxDecoration(
                                   color: const Color(
                                     0xFFE67E22,
-                                  ).withOpacity(0.1),
+                                  ).withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -926,7 +921,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -1001,8 +996,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                           Expanded(
                             child: Text(
                               _deliveryFees?.blockMessage ??
-                                  'Không thể giao hàng tới địa chỉ này. '
-                                      'Vui lòng chọn địa chỉ khác.',
+                                  l10n.checkoutUndeliverableAddress,
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -1020,7 +1014,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                     child: ElevatedButton(
                       onPressed: (_isPlacingOrder || _isDeliveryBlocked)
                           ? null
-                          : () => _placeOrder(context),
+                          : () => _placeOrder(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE67E22),
                         foregroundColor: Colors.white,
@@ -1041,8 +1035,8 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              'Xác nhận đơn hàng',
+                          : Text(
+                              l10n.checkoutConfirmOrder,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,

@@ -28,7 +28,7 @@ class ReviewRepository {
   }
 
   async updateStatus(id, status) {
-    return reviewModel.findByIdAndUpdate(id, { status }, { new: true });
+    return reviewModel.findByIdAndUpdate(id, { status }, { new: true, runValidators: true });
   }
 
   /** Toàn bộ đánh giá của 1 đơn hàng (mỗi sản phẩm trong đơn có thể có 1 đánh giá riêng). */

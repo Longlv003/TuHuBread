@@ -111,7 +111,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                   onChanged: (v) => setState(() => _query = v),
                   style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Tìm món trong ${widget.category.categoryName}',
+                    hintText: l10n.categorySearchHint(widget.category.categoryName),
                     hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
                     prefixIcon: const Icon(Icons.search_rounded,
                         color: Color(0xFFE67E22), size: 20),
@@ -126,26 +126,26 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildSortTabs(),
+                _buildSortTabs(l10n),
               ],
             ),
           ),
           const Divider(height: 1, color: Color(0xFFF1EAE1)),
           Expanded(
             child: products.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32.0),
+                      padding: const EdgeInsets.all(32.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.search_off_rounded,
+                          const Icon(Icons.search_off_rounded,
                               size: 48, color: Color(0xFFBDC3C7)),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Text(
-                            'Không có món nào trong danh mục này gần bạn',
+                            l10n.categoryEmptyNearby,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 13),
+                            style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 13),
                           ),
                         ],
                       ),
@@ -185,11 +185,11 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
     );
   }
 
-  Widget _buildSortTabs() {
-    const labels = {
-      _ProductSort.nearby: 'Gần tôi',
-      _ProductSort.bestSelling: 'Bán chạy',
-      _ProductSort.rating: 'Đánh giá',
+  Widget _buildSortTabs(AppLocalizations l10n) {
+    final labels = {
+      _ProductSort.nearby: l10n.filterNearMe,
+      _ProductSort.bestSelling: l10n.filterBestSelling,
+      _ProductSort.rating: l10n.filterRating,
     };
 
     return Container(

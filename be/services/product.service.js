@@ -3,6 +3,11 @@ const productVariantRepository = require("../repositories/productVariant.reposit
 const productOptionRepository = require("../repositories/productOption.repository");
 const productBatchRepository = require("../repositories/productBatch.repository");
 const { toSlug } = require("../utils/slug.util");
+const {
+  parseNonNegativeNumber,
+  parseSalePrice,
+  optionalText,
+} = require("../utils/validate.util");
 
 class ProductService {
   async getProductsByShop(shopId) {
@@ -89,7 +94,11 @@ class ProductService {
       throw new Error("Tên sản phẩm không hợp lệ!");
     }
 
-    const parsedStock = stockQuantity ? parseInt(stockQuantity) : 0;
+    const parsedStock = parseNonNegativeNumber(stockQuantity, "Tồn kho", { integer: true });
+    const parsedSalePrice = parseSalePrice(salePrice, parsedPrice);
+    const parsedPrepTime = parseNonNegativeNumber(prepTimeMinutes, "Thời gian chuẩn bị", { integer: true });
+    const parsedDescription = optionalText(description, "Mô tả", 1000);
+    const parsedStorageNote = optionalText(storageNote, "Ghi chú bảo quản", 500);
     let expiredAtObj = null;
     if (parsedStock > 0 && expiredAt) {
       expiredAtObj = new Date(expiredAt);
@@ -106,12 +115,12 @@ class ProductService {
       global_category_id: globalCategoryId,
       product_name: productName.trim(),
       product_slug: slug,
-      description: description || null,
-      preparation_time_minutes: prepTimeMinutes ? parseInt(prepTimeMinutes) : 0,
+      description: parsedDescription,
+      preparation_time_minutes: parsedPrepTime,
       status: status || "active",
       is_featured: isFeatured === "on" || isFeatured === true,
       is_new: isNew === "on" || isNew === true,
-      storage_note: storageNote || null
+      storage_note: parsedStorageNote
     });
 
     const finalVariantName = variantName && variantName.trim() ? variantName.trim() : "Mặc định";
@@ -124,7 +133,7 @@ class ProductService {
         variant_slug: toSlug(finalVariantName) || "mac-dinh",
         image: variantImage || null,
         price: parsedPrice,
-        sale_price: salePrice ? parseFloat(salePrice) : null,
+        sale_price: parsedSalePrice,
         stock_quantity: parsedStock,
         status: "active"
       });
@@ -175,13 +184,19 @@ class ProductService {
       updateData.product_name = productName.trim();
       updateData.product_slug = slug;
     }
-    if (description !== undefined) updateData.description = description || null;
+    if (description !== undefined) updateData.description = optionalText(description, "Mô tả", 1000);
     if (globalCategoryId) updateData.global_category_id = globalCategoryId;
-    if (prepTimeMinutes !== undefined) updateData.preparation_time_minutes = parseInt(prepTimeMinutes) || 0;
+    if (prepTimeMinutes !== undefined) {
+      updateData.preparation_time_minutes = parseNonNegativeNumber(
+        prepTimeMinutes, "Thời gian chuẩn bị", { integer: true },
+      );
+    }
     if (status) updateData.status = status;
     if (isFeatured !== undefined) updateData.is_featured = isFeatured === "on" || isFeatured === true;
     if (isNew !== undefined) updateData.is_new = isNew === "on" || isNew === true;
-    if (storageNote !== undefined) updateData.storage_note = storageNote || null;
+    if (storageNote !== undefined) {
+      updateData.storage_note = optionalText(storageNote, "Ghi chú bảo quản", 500);
+    }
 
     return productRepository.update(productId, updateData);
   }

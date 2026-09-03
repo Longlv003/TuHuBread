@@ -45,6 +45,17 @@ exports.verifyFirebaseUser = async (req, res) => {
       }
     }
 
+    // Chặn ngay ở bước đăng nhập thay vì để app vào tới màn hình chính rồi mới
+    // ăn 403 ở từng API lẻ — như vậy người dùng bị khoá còn biết vì sao.
+    if (user.deleted_at) {
+      dataRes.msg = "Tài khoản không còn tồn tại";
+      return res.status(403).json(dataRes);
+    }
+    if (user.status === "blocked") {
+      dataRes.msg = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.";
+      return res.status(403).json(dataRes);
+    }
+
     dataRes.msg = "Verify success";
     dataRes.data = user;
 

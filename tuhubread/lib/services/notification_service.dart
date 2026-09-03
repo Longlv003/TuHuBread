@@ -7,6 +7,7 @@ import '../blocs/notification/notification_cubit.dart';
 import '../di.dart';
 import '../routes/routes.dart';
 import '../repositories/notification_repository.dart';
+import '../l10n/app_strings.dart';
 
 class NotificationService {
   final NotificationRepository repository;
@@ -37,7 +38,7 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _log.i('[NotificationService] Foreground message received: ${message.notification?.title}');
       
-      final title = message.notification?.title ?? 'Thông báo mới';
+      final title = message.notification?.title ?? AppStrings.current.notificationDefaultTitle;
       final body = message.notification?.body ?? '';
       final data = message.data;
       final orderId = data['orderId'] as String?;

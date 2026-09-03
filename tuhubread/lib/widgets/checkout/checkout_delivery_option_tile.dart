@@ -92,7 +92,7 @@ class CheckoutDeliveryOptionTile extends StatelessWidget {
             ),
             Text(
               option.fee == 0
-                  ? 'Miễn phí'
+                  ? l10n.deliveryFree
                   : CurrencyFormatter.formatVND(option.fee),
               style: TextStyle(
                 fontSize: 12,

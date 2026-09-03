@@ -6,6 +6,7 @@ import '../models/delivery_fee_preview.model.dart';
 import '../models/order_result.model.dart';
 import '../services/api_service.dart';
 import 'order_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -56,10 +57,10 @@ class OrderRepositoryImpl implements OrderRepository {
           OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể đặt hàng');
+      return Failure(res['msg'] ?? AppStrings.current.errorPlaceOrder);
     } catch (e, s) {
       _log.e('[createOrder] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để đặt hàng');
+      return Failure(AppStrings.current.errorConnectPlaceOrder);
     }
   }
 
@@ -83,10 +84,10 @@ class OrderRepositoryImpl implements OrderRepository {
           OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể tạo link thanh toán VNPay');
+      return Failure(res['msg'] ?? AppStrings.current.errorCreateVnpayLink);
     } catch (e, s) {
       _log.e('[createVnpayPayment] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để thanh toán');
+      return Failure(AppStrings.current.errorConnectPayment);
     }
   }
 
@@ -105,10 +106,10 @@ class OrderRepositoryImpl implements OrderRepository {
           DeliveryFeePreviewModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể tính phí ship');
+      return Failure(res['msg'] ?? AppStrings.current.errorCalcShippingFee);
     } catch (e, s) {
       _log.e('[previewDeliveryFee] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để tính phí ship');
+      return Failure(AppStrings.current.errorConnectCalcShippingFee);
     }
   }
 }

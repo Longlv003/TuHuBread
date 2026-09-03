@@ -3,6 +3,7 @@ import '../core/result.dart';
 import '../models/notification_list_result.model.dart';
 import 'notification_repository.dart';
 import '../services/api_service.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -25,10 +26,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
           NotificationListResult.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể tải thông báo');
+      return Failure(res['msg'] ?? AppStrings.current.errorLoadNotifications);
     } catch (e, s) {
       _log.e('[fetchMyNotifications] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để tải thông báo');
+      return Failure(AppStrings.current.errorConnectLoadNotifications);
     }
   }
 
@@ -40,10 +41,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
         final count = (res['data'] as Map<String, dynamic>)['count'] as num? ?? 0;
         return Success(count.toInt());
       }
-      return Failure(res['msg'] ?? 'Không thể tải số thông báo chưa đọc');
+      return Failure(res['msg'] ?? AppStrings.current.errorLoadUnreadCount);
     } catch (e, s) {
       _log.e('[fetchUnreadCount] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -57,10 +58,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['data'] != null || res['msg'] == 'OK') {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể đánh dấu đã đọc');
+      return Failure(res['msg'] ?? AppStrings.current.errorMarkRead);
     } catch (e, s) {
       _log.e('[markAsRead] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -74,10 +75,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['msg'] == 'OK' || res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể đánh dấu đã đọc tất cả');
+      return Failure(res['msg'] ?? AppStrings.current.errorMarkAllRead);
     } catch (e, s) {
       _log.e('[markAllAsRead] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -88,10 +89,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể xoá thông báo');
+      return Failure(res['msg'] ?? AppStrings.current.errorDeleteNotification);
     } catch (e, s) {
       _log.e('[deleteNotification] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -102,10 +103,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể xoá tất cả thông báo');
+      return Failure(res['msg'] ?? AppStrings.current.errorDeleteAllNotifications);
     } catch (e, s) {
       _log.e('[deleteAllNotifications] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -124,10 +125,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['success'] == true) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể đăng ký nhận thông báo');
+      return Failure(res['msg'] ?? AppStrings.current.errorRegisterNotifications);
     } catch (e, s) {
       _log.e('[registerDevice] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 
@@ -142,10 +143,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (res['success'] == true) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể huỷ đăng ký thông báo');
+      return Failure(res['msg'] ?? AppStrings.current.errorUnregisterNotifications);
     } catch (e, s) {
       _log.e('[unregisterDevice] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ');
+      return Failure(AppStrings.current.errorConnectServer);
     }
   }
 

@@ -1,6 +1,22 @@
 const { auth } = require("../configs/firebase.config");
 const accountRepository = require("../repositories/account.repository");
 const shopRepository = require("../repositories/shop.repository");
+const { assertValidEmail, normalizePhone, requireText } = require("../utils/validate.util");
+
+/**
+ * Chặn tài khoản đã bị admin khoá / xoá mềm ở mọi cửa vào của portal web.
+ * Firebase vẫn coi session cookie là hợp lệ sau khi admin khoá tài khoản trong
+ * MongoDB, nên nếu không kiểm tra ở đây thì chủ shop bị khoá vẫn vào được
+ * dashboard cho tới khi cookie hết hạn (5 ngày).
+ */
+function assertAccountUsable(account) {
+  if (account.deleted_at) {
+    throw new Error("Tài khoản không còn tồn tại");
+  }
+  if (account.status === "blocked") {
+    throw new Error("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+  }
+}
 
 class AuthService {
   /**
@@ -21,6 +37,7 @@ class AuthService {
     if (!account) {
       throw new Error("Account is not registered in our database.");
     }
+    assertAccountUsable(account);
 
     if (account.role !== "shop_owner" && account.role !== "admin") {
       throw new Error("Access denied. Only shop owners can access this portal.");
@@ -48,6 +65,7 @@ class AuthService {
     if (!account) {
       throw new Error("Account is not registered in our database.");
     }
+    assertAccountUsable(account);
 
     if (account.role !== "admin") {
       throw new Error("Access denied. Only system administrators can access this portal.");
@@ -65,19 +83,23 @@ class AuthService {
 
     // Server-side validation
     if (!shopName || !ownerName || !email || !password || !phone || !address) {
-      throw new Error("All fields are required");
+      throw new Error("Vui lòng điền đầy đủ thông tin");
     }
 
-    if (!email.includes("@")) {
-      throw new Error("Invalid email format");
-    }
+    const trimmedShopName = requireText(shopName, "Tên cửa hàng", { maxLength: 120 });
+    const trimmedOwnerName = requireText(ownerName, "Tên chủ cửa hàng", { maxLength: 120 });
+    const trimmedAddress = requireText(address, "Địa chỉ", { maxLength: 255 });
+    const validEmail = assertValidEmail(email);
+    // Chuẩn hoá luôn để số lưu trong DB thống nhất, không lẫn "0912 345 678"
+    // với "0912345678" khiến tra cứu/gọi điện bị lệch.
+    const normalizedPhone = normalizePhone(phone);
 
     if (password.length < 6) {
-      throw new Error("Password must be at least 6 characters");
+      throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
     }
 
     // Check if account or shop already exists
-    const existingAccount = await accountRepository.findByEmail(email);
+    const existingAccount = await accountRepository.findByEmail(validEmail);
     if (existingAccount) {
       throw new Error("An account with this email is already registered");
     }
@@ -86,10 +108,10 @@ class AuthService {
     let firebaseUser;
     try {
       firebaseUser = await auth.createUser({
-        email: email,
+        email: validEmail,
         password: password,
-        displayName: ownerName,
-        phoneNumber: phone.startsWith("+") ? phone : undefined // Firebase requires E.164 format
+        displayName: trimmedOwnerName,
+        phoneNumber: normalizedPhone.startsWith("+") ? normalizedPhone : undefined // Firebase requires E.164 format
       });
     } catch (err) {
       throw new Error("Firebase user creation failed: " + err.message);
@@ -103,23 +125,23 @@ class AuthService {
       // 2. Create User Account in MongoDB
       newAccount = await accountRepository.create({
         firebase_uid: firebaseUser.uid,
-        full_name: ownerName,
-        email: email,
+        full_name: trimmedOwnerName,
+        email: validEmail,
         role: "shop_owner",
         status: "active"
       });
 
       // 3. Create Shop in MongoDB
-      const shopSlug = shopName.toLowerCase()
+      const shopSlug = trimmedShopName.toLowerCase()
         .replace(/ /g, "-")
         .replace(/[^\w-]+/g, "");
 
       const newShop = await shopRepository.create({
         owner_user_id: newAccount._id,
-        shop_name: shopName,
+        shop_name: trimmedShopName,
         shop_slug: `${shopSlug}-${Date.now().toString().slice(-4)}`,
-        phone_number: phone,
-        address: address,
+        phone_number: normalizedPhone,
+        address: trimmedAddress,
         location: {
           type: "Point",
           coordinates: [
@@ -177,6 +199,7 @@ class AuthService {
     if (!account) {
       throw new Error("Account not found");
     }
+    assertAccountUsable(account);
     const shop = await shopRepository.findByOwnerId(account._id);
     return { account, shop, decodedClaims };
   }

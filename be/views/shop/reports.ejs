@@ -71,30 +71,6 @@
     </div>
   </div>
 
-  <div class="report-split">
-    <div class="section-card">
-      <div class="section-header"><h3>Doanh thu theo hình thức thanh toán</h3></div>
-      <% if (report.paymentMethods.length === 0) { %>
-        <div class="empty-state">
-          <div class="empty-state-icon"><i class="fa-solid fa-wallet"></i></div>
-          <div class="empty-state-title">Chưa có dữ liệu</div>
-          <div class="empty-state-desc">Khi có đơn hoàn thành, tỷ lệ tiền mặt / VNPay sẽ hiện ở đây.</div>
-        </div>
-      <% } else { %>
-        <div class="chart-container" style="height: 260px;">
-          <canvas id="paymentChart"></canvas>
-        </div>
-      <% } %>
-    </div>
-
-    <div class="section-card">
-      <div class="section-header"><h3>Khung giờ đông khách</h3></div>
-      <div class="chart-container" style="height: 260px;">
-        <canvas id="hourlyChart"></canvas>
-      </div>
-    </div>
-  </div>
-
   <div class="section-card" style="margin: 24px 0;">
     <div class="section-header"><h3>Đơn hàng theo trạng thái</h3></div>
     <div class="status-stat-grid">
@@ -169,70 +145,6 @@
       scales: {
         x: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } },
         y: { ticks: { color: "#7F8C8D" }, grid: { color: "rgba(44,62,80,0.06)" } }
-      }
-    }
-  });
-
-  // ─────────── Doanh thu theo hình thức thanh toán ───────────
-  const paymentMethods = <%- JSON.stringify(report.paymentMethods) %>;
-  const PAYMENT_LABELS = { cash: "Tiền mặt", vnpay: "VNPay", momo: "MoMo", zalopay: "ZaloPay", bank: "Chuyển khoản" };
-
-  const paymentCanvas = document.getElementById("paymentChart");
-  if (paymentCanvas && paymentMethods.length > 0) {
-    new Chart(paymentCanvas.getContext("2d"), {
-      type: "doughnut",
-      data: {
-        labels: paymentMethods.map(p => PAYMENT_LABELS[p._id] || p._id),
-        datasets: [{
-          data: paymentMethods.map(p => p.revenue),
-          backgroundColor: ["#E67E22", "#2980B9", "#27AE60", "#8E44AD", "#F1C40F"],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "62%",
-        plugins: {
-          legend: { position: "bottom", labels: { color: "#2C3E50", padding: 14, boxWidth: 12 } },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const item = paymentMethods[ctx.dataIndex];
-                return ` ${ctx.label}: ${item.revenue.toLocaleString("vi-VN")}đ (${item.orders_count} đơn)`;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  // ─────────── Khung giờ đông khách ───────────
-  const hourly = <%- JSON.stringify(report.hourly) %>;
-  const maxHourOrders = Math.max(...hourly.map(h => h.orders_count));
-
-  new Chart(document.getElementById("hourlyChart").getContext("2d"), {
-    type: "bar",
-    data: {
-      labels: hourly.map(h => `${h.hour}h`),
-      datasets: [{
-        label: "Số đơn",
-        data: hourly.map(h => h.orders_count),
-        // Tô đậm đúng (các) khung giờ cao điểm để nhìn phát thấy ngay.
-        backgroundColor: hourly.map(h =>
-          h.orders_count > 0 && h.orders_count === maxHourOrders ? "#D35400" : "#F0B27A"
-        ),
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: "#7F8C8D", maxRotation: 0, autoSkipPadding: 8 }, grid: { display: false } },
-        y: { beginAtZero: true, ticks: { color: "#7F8C8D", precision: 0 }, grid: { color: "rgba(44,62,80,0.06)" } }
       }
     }
   });

@@ -33,11 +33,11 @@ class GlobalCategoryRepository {
   }
 
   async update(id, updateData) {
-    return globalCategoryModel.findByIdAndUpdate(id, updateData, { new: true });
+    return globalCategoryModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
   }
 
   async softDelete(id) {
-    return globalCategoryModel.findByIdAndUpdate(id, { deleted_at: new Date(), status: "inactive" }, { new: true });
+    return globalCategoryModel.findByIdAndUpdate(id, { deleted_at: new Date(), status: "inactive" }, { new: true, runValidators: true });
   }
 }
 

@@ -1,4 +1,10 @@
 const voucherRepository = require("../repositories/voucher.repository");
+const {
+  parseNonNegativeNumber,
+  parseOptionalPositiveInt,
+  parseRequiredDate,
+} = require("../utils/validate.util");
+
 const notificationService = require("./notification.service");
 
 function buildVoucherNotificationBody(voucher) {
@@ -67,8 +73,8 @@ class VoucherService {
       throw new Error("Loại giảm giá không hợp lệ");
     }
 
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
+    const startDateObj = parseRequiredDate(startDate, "Ngày bắt đầu");
+    const endDateObj = parseRequiredDate(endDate, "Ngày kết thúc");
     if (endDateObj <= startDateObj) {
       throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
     }
@@ -85,10 +91,10 @@ class VoucherService {
       voucher_type: "shop",
       discount_type: discountType,
       discount_value: parsedDiscountValue,
-      min_order_amount: minOrderAmount ? parseFloat(minOrderAmount) : 0,
-      max_discount_amount: maxDiscountAmount ? parseFloat(maxDiscountAmount) : null,
-      claim_limit: claimLimit ? parseInt(claimLimit) : null,
-      usage_limit: usageLimit ? parseInt(usageLimit) : null,
+      min_order_amount: parseNonNegativeNumber(minOrderAmount, "Đơn tối thiểu"),
+      max_discount_amount: parseNonNegativeNumber(maxDiscountAmount, "Giảm tối đa", { fallback: null }),
+      claim_limit: parseOptionalPositiveInt(claimLimit, "Giới hạn lượt lưu"),
+      usage_limit: parseOptionalPositiveInt(usageLimit, "Giới hạn lượt dùng"),
       start_date: startDateObj,
       end_date: endDateObj,
       status: "active"
@@ -134,12 +140,20 @@ class VoucherService {
       updateData.discount_value = parsed;
     }
 
-    if (minOrderAmount !== undefined) updateData.min_order_amount = minOrderAmount ? parseFloat(minOrderAmount) : 0;
-    if (maxDiscountAmount !== undefined) updateData.max_discount_amount = maxDiscountAmount ? parseFloat(maxDiscountAmount) : null;
-    if (claimLimit !== undefined) updateData.claim_limit = claimLimit ? parseInt(claimLimit) : null;
-    if (usageLimit !== undefined) updateData.usage_limit = usageLimit ? parseInt(usageLimit) : null;
-    if (startDate) updateData.start_date = new Date(startDate);
-    if (endDate) updateData.end_date = new Date(endDate);
+    if (minOrderAmount !== undefined) {
+      updateData.min_order_amount = parseNonNegativeNumber(minOrderAmount, "Đơn tối thiểu");
+    }
+    if (maxDiscountAmount !== undefined) {
+      updateData.max_discount_amount = parseNonNegativeNumber(maxDiscountAmount, "Giảm tối đa", { fallback: null });
+    }
+    if (claimLimit !== undefined) {
+      updateData.claim_limit = parseOptionalPositiveInt(claimLimit, "Giới hạn lượt lưu");
+    }
+    if (usageLimit !== undefined) {
+      updateData.usage_limit = parseOptionalPositiveInt(usageLimit, "Giới hạn lượt dùng");
+    }
+    if (startDate) updateData.start_date = parseRequiredDate(startDate, "Ngày bắt đầu");
+    if (endDate) updateData.end_date = parseRequiredDate(endDate, "Ngày kết thúc");
     if (status) updateData.status = status;
 
     if (updateData.start_date && updateData.end_date && updateData.end_date <= updateData.start_date) {
@@ -200,8 +214,8 @@ class VoucherService {
       throw new Error("Loại giảm giá không hợp lệ");
     }
 
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
+    const startDateObj = parseRequiredDate(startDate, "Ngày bắt đầu");
+    const endDateObj = parseRequiredDate(endDate, "Ngày kết thúc");
     if (endDateObj <= startDateObj) {
       throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
     }
@@ -218,10 +232,10 @@ class VoucherService {
       voucher_type: "platform",
       discount_type: discountType,
       discount_value: parsedDiscountValue,
-      min_order_amount: minOrderAmount ? parseFloat(minOrderAmount) : 0,
-      max_discount_amount: maxDiscountAmount ? parseFloat(maxDiscountAmount) : null,
-      claim_limit: claimLimit ? parseInt(claimLimit) : null,
-      usage_limit: usageLimit ? parseInt(usageLimit) : null,
+      min_order_amount: parseNonNegativeNumber(minOrderAmount, "Đơn tối thiểu"),
+      max_discount_amount: parseNonNegativeNumber(maxDiscountAmount, "Giảm tối đa", { fallback: null }),
+      claim_limit: parseOptionalPositiveInt(claimLimit, "Giới hạn lượt lưu"),
+      usage_limit: parseOptionalPositiveInt(usageLimit, "Giới hạn lượt dùng"),
       start_date: startDateObj,
       end_date: endDateObj,
       status: "active"
@@ -267,12 +281,20 @@ class VoucherService {
       updateData.discount_value = parsed;
     }
 
-    if (minOrderAmount !== undefined) updateData.min_order_amount = minOrderAmount ? parseFloat(minOrderAmount) : 0;
-    if (maxDiscountAmount !== undefined) updateData.max_discount_amount = maxDiscountAmount ? parseFloat(maxDiscountAmount) : null;
-    if (claimLimit !== undefined) updateData.claim_limit = claimLimit ? parseInt(claimLimit) : null;
-    if (usageLimit !== undefined) updateData.usage_limit = usageLimit ? parseInt(usageLimit) : null;
-    if (startDate) updateData.start_date = new Date(startDate);
-    if (endDate) updateData.end_date = new Date(endDate);
+    if (minOrderAmount !== undefined) {
+      updateData.min_order_amount = parseNonNegativeNumber(minOrderAmount, "Đơn tối thiểu");
+    }
+    if (maxDiscountAmount !== undefined) {
+      updateData.max_discount_amount = parseNonNegativeNumber(maxDiscountAmount, "Giảm tối đa", { fallback: null });
+    }
+    if (claimLimit !== undefined) {
+      updateData.claim_limit = parseOptionalPositiveInt(claimLimit, "Giới hạn lượt lưu");
+    }
+    if (usageLimit !== undefined) {
+      updateData.usage_limit = parseOptionalPositiveInt(usageLimit, "Giới hạn lượt dùng");
+    }
+    if (startDate) updateData.start_date = parseRequiredDate(startDate, "Ngày bắt đầu");
+    if (endDate) updateData.end_date = parseRequiredDate(endDate, "Ngày kết thúc");
     if (status) updateData.status = status;
 
     if (updateData.start_date && updateData.end_date && updateData.end_date <= updateData.start_date) {

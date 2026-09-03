@@ -8,6 +8,7 @@ import '../models/shop.model.dart';
 import '../models/voucher.model.dart';
 import '../services/api_service.dart';
 import 'home_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -50,7 +51,7 @@ class HomeRepositoryImpl implements HomeRepository {
       return Success(shops);
     } catch (e, s) {
       _log.e('[fetchShops] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải danh sách cửa hàng');
+      return Failure(AppStrings.current.errorLoadShops);
     }
   }
 
@@ -68,7 +69,7 @@ class HomeRepositoryImpl implements HomeRepository {
       return Success(cats);
     } catch (e, s) {
       _log.e('[fetchCategories] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải danh mục');
+      return Failure(AppStrings.current.errorLoadCategories);
     }
   }
 
@@ -86,7 +87,7 @@ class HomeRepositoryImpl implements HomeRepository {
       return Success(products);
     } catch (e, s) {
       _log.e('[fetchProducts] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải thực đơn');
+      return Failure(AppStrings.current.errorLoadMenu);
     }
   }
 
@@ -104,7 +105,7 @@ class HomeRepositoryImpl implements HomeRepository {
       return Success(products);
     } catch (e, s) {
       _log.e('[fetchBestSellers] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải sản phẩm bán chạy');
+      return Failure(AppStrings.current.errorLoadBestSellers);
     }
   }
 
@@ -122,7 +123,7 @@ class HomeRepositoryImpl implements HomeRepository {
       return Success(vouchers);
     } catch (e, s) {
       _log.e('[fetchActiveVouchers] Failed', error: e, stackTrace: s);
-      return Failure('Không thể tải voucher');
+      return Failure(AppStrings.current.errorLoadVouchers);
     }
   }
 
@@ -133,10 +134,10 @@ class HomeRepositoryImpl implements HomeRepository {
       if (res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Lưu voucher thất bại');
+      return Failure(res['msg'] ?? AppStrings.current.errorSaveVoucherFailed);
     } catch (e, s) {
       _log.e('[saveVoucher] Failed', error: e, stackTrace: s);
-      return Failure('Không thể kết nối đến máy chủ để lưu voucher');
+      return Failure(AppStrings.current.errorConnectSaveVoucher);
     }
   }
 
@@ -150,11 +151,11 @@ class HomeRepositoryImpl implements HomeRepository {
         );
         return Success(detail);
       }
-      final msg = res['msg']?.toString() ?? 'Không thể tải chi tiết sản phẩm';
+      final msg = res['msg']?.toString() ?? AppStrings.current.errorLoadProductDetail;
       return Failure(msg);
     } catch (e, s) {
       _log.e('[fetchProductDetail] Failed', error: e, stackTrace: s);
-      return const Failure('Lỗi kết nối máy chủ');
+      return Failure(AppStrings.current.errorServerConnection);
     }
   }
 }

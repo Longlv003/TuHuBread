@@ -1112,4 +1112,430 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStart => 'Get started';
+
+  @override
+  String get errorServerConnection => 'Server connection error';
+
+  @override
+  String get errorConnectServer => 'Could not connect to the server';
+
+  @override
+  String get errorDataNotFound => 'The requested data was not found';
+
+  @override
+  String get errorApiNotConfigured =>
+      'The API is not configured or does not exist';
+
+  @override
+  String get errorUnknown => 'Unknown error';
+
+  @override
+  String get errorLoadAddresses => 'Could not load the address list';
+
+  @override
+  String get errorLoadAddress => 'Could not load the address';
+
+  @override
+  String get errorAddAddress => 'Could not add the address';
+
+  @override
+  String get errorUpdateAddress => 'Could not update the address';
+
+  @override
+  String get errorDeleteAddress => 'Could not delete the address';
+
+  @override
+  String get errorLoadCart => 'Could not load the cart';
+
+  @override
+  String get errorConnectLoadCart =>
+      'Could not reach the server to load the cart';
+
+  @override
+  String get errorAddToCart => 'Could not add to the cart';
+
+  @override
+  String get errorConnectAddToCart =>
+      'Could not reach the server to add to the cart';
+
+  @override
+  String get errorClearCart => 'Could not clear the cart';
+
+  @override
+  String get errorConnectClearCart =>
+      'Could not reach the server to clear the cart';
+
+  @override
+  String get errorUpdateQuantity => 'Could not update the quantity';
+
+  @override
+  String get errorConnectUpdateQuantity =>
+      'Could not reach the server to update the quantity';
+
+  @override
+  String get errorRemoveFromCart => 'Could not remove from the cart';
+
+  @override
+  String get errorConnectRemoveFromCart =>
+      'Could not reach the server to remove from the cart';
+
+  @override
+  String get errorClearCartRetry =>
+      'Could not clear the cart, please try again';
+
+  @override
+  String get errorLoadShops => 'Could not load the shop list';
+
+  @override
+  String get errorLoadCategories => 'Could not load the categories';
+
+  @override
+  String get errorLoadMenu => 'Could not load the menu';
+
+  @override
+  String get errorLoadBestSellers => 'Could not load the best sellers';
+
+  @override
+  String get errorLoadProductDetail => 'Could not load the product details';
+
+  @override
+  String get errorNoVariant => 'This product has no variant on sale yet';
+
+  @override
+  String get errorLoadVouchers => 'Could not load the vouchers';
+
+  @override
+  String get errorLoadVoucherList => 'Could not load the voucher list';
+
+  @override
+  String get errorLoadSavedVouchers => 'Could not load your saved vouchers';
+
+  @override
+  String get errorSaveVoucher => 'Could not save the voucher';
+
+  @override
+  String get errorSaveVoucherFailed => 'Saving the voucher failed';
+
+  @override
+  String get errorConnectSaveVoucher =>
+      'Could not reach the server to save the voucher';
+
+  @override
+  String get errorApplyVoucher => 'Could not apply the voucher code';
+
+  @override
+  String get errorLoadNotifications => 'Could not load notifications';
+
+  @override
+  String get errorConnectLoadNotifications =>
+      'Could not reach the server to load notifications';
+
+  @override
+  String get errorLoadUnreadCount =>
+      'Could not load the unread notification count';
+
+  @override
+  String get errorMarkRead => 'Could not mark as read';
+
+  @override
+  String get errorMarkAllRead => 'Could not mark all as read';
+
+  @override
+  String get errorDeleteNotification => 'Could not delete the notification';
+
+  @override
+  String get errorDeleteAllNotifications =>
+      'Could not delete all notifications';
+
+  @override
+  String get errorRegisterNotifications =>
+      'Could not register for notifications';
+
+  @override
+  String get errorUnregisterNotifications =>
+      'Could not unregister from notifications';
+
+  @override
+  String get notificationDefaultTitle => 'New notification';
+
+  @override
+  String get errorPlaceOrder => 'Could not place the order';
+
+  @override
+  String get errorConnectPlaceOrder =>
+      'Could not reach the server to place the order';
+
+  @override
+  String get errorLoadOrders => 'Failed to load the order list';
+
+  @override
+  String get errorLoadOrderDetail => 'Failed to load the order details';
+
+  @override
+  String get errorSubmitReview => 'Could not submit the review';
+
+  @override
+  String get errorCalcShippingFee => 'Could not calculate the delivery fee';
+
+  @override
+  String get errorConnectCalcShippingFee =>
+      'Could not reach the server to calculate the delivery fee';
+
+  @override
+  String get errorCreateVnpayLink => 'Could not create the VNPay payment link';
+
+  @override
+  String get errorCreatePaymentLink => 'Could not create the payment link';
+
+  @override
+  String get errorConnectPayment => 'Could not reach the server to pay';
+
+  @override
+  String get errorVerifyTransaction => 'Could not verify the transaction';
+
+  @override
+  String get errorNoPaymentUrl => 'The backend did not return a payment URL';
+
+  @override
+  String get paymentProcessing => 'The transaction is being processed';
+
+  @override
+  String paymentFailedWithCode(String code) {
+    return 'Transaction failed (code: $code)';
+  }
+
+  @override
+  String get paymentVnpayFailed => 'The VNPAY payment was not successful.';
+
+  @override
+  String get deliveryFree => 'Free';
+
+  @override
+  String get addressPickTitle => 'Pick an address';
+
+  @override
+  String get addressBuildingHint => 'Building, floor (optional)';
+
+  @override
+  String get addressGateHint => 'Gate (optional)';
+
+  @override
+  String get mapSearchError =>
+      'Search is unavailable right now, please check your connection';
+
+  @override
+  String get mapGpsOff => 'Location (GPS) is turned off on this device';
+
+  @override
+  String get mapEnableGps => 'Turn on GPS';
+
+  @override
+  String get mapPermissionNeeded =>
+      'You need to allow location access to use this feature';
+
+  @override
+  String get mapPermissionDeniedBefore =>
+      'Location permission was denied earlier';
+
+  @override
+  String get mapOpenSettings => 'Settings';
+
+  @override
+  String get mapNoSignal => 'Could not get a location signal, please try again';
+
+  @override
+  String get mapSearchPlace => 'Search for a place';
+
+  @override
+  String get mapTypeAtLeast3Chars =>
+      'Type at least 3 characters to search for a place';
+
+  @override
+  String get mapNoPlaceFound => 'No matching place found';
+
+  @override
+  String get mapPinnedLocation => 'Pinned location';
+
+  @override
+  String get mapResolvingAddress => 'Resolving the address...';
+
+  @override
+  String get mapDragToPin => 'Drag the map to pin your delivery location';
+
+  @override
+  String get mapConfirmLocation => 'Confirm this location';
+
+  @override
+  String get homeDiscountedSection => 'Discounted items';
+
+  @override
+  String get homeFeaturedSection => 'Featured items';
+
+  @override
+  String get homeCategoriesSection => 'Categories';
+
+  @override
+  String get homeShopsNearYou => 'Shops near you';
+
+  @override
+  String get homeAllShops => 'All shops';
+
+  @override
+  String get homeNoShopNearby => 'There are no shops near you yet';
+
+  @override
+  String get homeLocationUnknown => 'Your location has not been determined yet';
+
+  @override
+  String get homeLocationFallbackHint =>
+      'Showing all shops. Turn on location or pin your delivery address to see the shops that are really near you.';
+
+  @override
+  String get homeUseCurrentLocation => 'Use current location';
+
+  @override
+  String get homeLocationOffHint =>
+      'Location is off. Turn it on to find shops near you.';
+
+  @override
+  String get homeLocationDeniedHint =>
+      'You denied location access. Grant it again in the app settings.';
+
+  @override
+  String get homeLocationRequiredHint =>
+      'Location access is required to find shops near you.';
+
+  @override
+  String get homeLocationFailedHint =>
+      'Could not get your location. Check your GPS signal and try again.';
+
+  @override
+  String get homeOpenSettings => 'Open settings';
+
+  @override
+  String get filterNearMe => 'Near me';
+
+  @override
+  String get filterBestSelling => 'Best selling';
+
+  @override
+  String get filterRating => 'Rating';
+
+  @override
+  String get labelClosed => 'Closed';
+
+  @override
+  String get labelNew => 'New';
+
+  @override
+  String categorySearchHint(String category) {
+    return 'Search in $category';
+  }
+
+  @override
+  String get categoryEmptyNearby =>
+      'There are no items in this category near you';
+
+  @override
+  String shopSearchHint(String shopName) {
+    return 'Search at $shopName';
+  }
+
+  @override
+  String get shopNoReviews => 'No reviews yet';
+
+  @override
+  String get shopViewCart => 'View cart';
+
+  @override
+  String get shopBestSellers => 'Best sellers';
+
+  @override
+  String get shopNoProductFound => 'No products found';
+
+  @override
+  String get shopTemporarilyClosed => 'The shop is temporarily closed';
+
+  @override
+  String shopClosedWithHours(String openTime, String closeTime) {
+    return 'You can still browse the menu but cannot order yet. Opening hours: $openTime - $closeTime.';
+  }
+
+  @override
+  String get shopClosedNoHours =>
+      'You can still browse the menu but cannot order yet.';
+
+  @override
+  String shopClosedNamed(String shopName) {
+    return '$shopName is temporarily closed';
+  }
+
+  @override
+  String get cartClearOldTitle => 'Clear the old cart?';
+
+  @override
+  String cartClearOldDescription(String oldShop, String newShop) {
+    return 'Your cart contains items from $oldShop. Do you want to clear it to order $newShop?';
+  }
+
+  @override
+  String get cartAnotherShop => 'another shop';
+
+  @override
+  String cartFromShop(String shopName) {
+    return 'from $shopName';
+  }
+
+  @override
+  String get cartNewItems => 'new items';
+
+  @override
+  String get commonConfirm => 'Confirm';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get commonAll => 'All';
+
+  @override
+  String get cartRemoveItemTitle => 'Remove item?';
+
+  @override
+  String get cartRemoveItemDescription =>
+      'Are you sure you want to remove it from the cart?';
+
+  @override
+  String get checkoutConfirmOrder => 'Confirm order';
+
+  @override
+  String get checkoutUndeliverableAddress =>
+      'We cannot deliver to this address. Please choose another one.';
+
+  @override
+  String get reviewsPageTitle => 'Product reviews';
+
+  @override
+  String get reviewsEmptyForFilter => 'No reviews at this rating yet';
+
+  @override
+  String reviewsCount(String count) {
+    return '$count reviews';
+  }
+
+  @override
+  String reviewsViewAllWithRating(String rating) {
+    return '$rating · See all reviews';
+  }
+
+  @override
+  String get reviewsSelectProduct => 'Choose a product to review';
+
+  @override
+  String reviewsReviewedProgress(String reviewed, String total) {
+    return 'Reviewed $reviewed/$total items';
+  }
 }

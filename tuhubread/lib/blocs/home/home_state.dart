@@ -26,7 +26,7 @@ class HomeLoaded extends HomeState {
   final List<ProductModel> bestSellers;
   final List<VoucherModel> vouchers;
 
-  /// Map<sectionKey, errorMessage> — section nào fail thì có entry ở đây.
+  /// `Map<sectionKey, errorMessage>` — section nào fail thì có entry ở đây.
   /// UI có thể dùng để hiện banner "Không tải được [section]" thay vì crash.
   final Map<String, String> sectionErrors;
 

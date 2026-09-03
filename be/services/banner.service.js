@@ -1,4 +1,22 @@
 const bannerRepository = require("../repositories/banner.repository");
+const {
+  assertHttpUrl,
+  parseNonNegativeNumber,
+  parseOptionalDate,
+  requireText,
+} = require("../utils/validate.util");
+
+/** Banner chỉ hiện trong khoảng thời gian đặt trước, nên ngày kết thúc trước
+ * ngày bắt đầu là banner không bao giờ xuất hiện — rất khó lần ra nguyên nhân
+ * nếu để lọt. */
+function assertDateRange(startDate, endDate) {
+  const start = parseOptionalDate(startDate, "Ngày bắt đầu");
+  const end = parseOptionalDate(endDate, "Ngày kết thúc");
+  if (start && end && end <= start) {
+    throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
+  }
+  return { start, end };
+}
 
 class BannerService {
   async getAllBanners() {
@@ -23,24 +41,27 @@ class BannerService {
   async addBanner(data) {
     const { title, image, linkUrl, sortOrder, status, startDate, endDate } = data;
 
-    if (!title || !image) {
-      throw new Error("Tiêu đề và ảnh banner là bắt buộc");
+    if (!image) {
+      throw new Error("Ảnh banner là bắt buộc");
     }
+    const trimmedTitle = requireText(title, "Tiêu đề", { maxLength: 150 });
+    const validLinkUrl = assertHttpUrl(linkUrl, "Đường dẫn banner");
+    const { start, end } = assertDateRange(startDate, endDate);
 
-    let parsedSortOrder = sortOrder ? parseInt(sortOrder) : 0;
+    let parsedSortOrder = parseNonNegativeNumber(sortOrder, "Thứ tự hiển thị", { integer: true });
     if (parsedSortOrder === 0) {
       const maxSort = await bannerRepository.getMaxSortOrder();
       parsedSortOrder = maxSort + 1;
     }
 
     return bannerRepository.create({
-      title: title.trim(),
+      title: trimmedTitle,
       image,
-      link_url: linkUrl || null,
+      link_url: validLinkUrl,
       sort_order: parsedSortOrder,
       status: status || "active",
-      start_date: startDate ? new Date(startDate) : null,
-      end_date: endDate ? new Date(endDate) : null
+      start_date: start,
+      end_date: end
     });
   }
 
@@ -53,13 +74,23 @@ class BannerService {
     const { title, image, linkUrl, sortOrder, status, startDate, endDate } = data;
     const updateData = {};
 
-    if (title) updateData.title = title.trim();
+    if (title !== undefined) updateData.title = requireText(title, "Tiêu đề", { maxLength: 150 });
     if (image) updateData.image = image;
-    if (linkUrl !== undefined) updateData.link_url = linkUrl || null;
-    if (sortOrder !== undefined) updateData.sort_order = parseInt(sortOrder) || 0;
+    if (linkUrl !== undefined) updateData.link_url = assertHttpUrl(linkUrl, "Đường dẫn banner");
+    if (sortOrder !== undefined) {
+      updateData.sort_order = parseNonNegativeNumber(sortOrder, "Thứ tự hiển thị", { integer: true });
+    }
     if (status) updateData.status = status;
-    if (startDate !== undefined) updateData.start_date = startDate ? new Date(startDate) : null;
-    if (endDate !== undefined) updateData.end_date = endDate ? new Date(endDate) : null;
+    if (startDate !== undefined) updateData.start_date = parseOptionalDate(startDate, "Ngày bắt đầu");
+    if (endDate !== undefined) updateData.end_date = parseOptionalDate(endDate, "Ngày kết thúc");
+
+    // So với giá trị đang lưu khi lần sửa này chỉ đổi một trong hai mốc, nếu
+    // không thì sửa mỗi ngày kết thúc sẽ không có gì để đối chiếu.
+    const finalStart = updateData.start_date !== undefined ? updateData.start_date : existing.start_date;
+    const finalEnd = updateData.end_date !== undefined ? updateData.end_date : existing.end_date;
+    if (finalStart && finalEnd && finalEnd <= finalStart) {
+      throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
+    }
 
     return bannerRepository.update(id, updateData);
   }

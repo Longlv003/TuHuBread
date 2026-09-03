@@ -41,7 +41,7 @@ class NotificationRepository {
   }
 
   async markRead(id) {
-    return notificationModel.findByIdAndUpdate(id, { is_read: true }, { new: true });
+    return notificationModel.findByIdAndUpdate(id, { is_read: true }, { new: true, runValidators: true });
   }
 
   async markAllReadForUser(userId) {
@@ -64,7 +64,7 @@ class NotificationRepository {
     return notificationModel.findOneAndUpdate(
       { _id: id, user_id: userId },
       { deleted_at: new Date() },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 

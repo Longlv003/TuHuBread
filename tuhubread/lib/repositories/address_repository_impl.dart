@@ -4,6 +4,7 @@ import '../core/result.dart';
 import '../models/address.model.dart';
 import '../services/api_service.dart';
 import 'address_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -27,7 +28,7 @@ class AddressRepositoryImpl implements AddressRepository {
       return Success(addresses);
     } catch (e, s) {
       _log.e('[fetchMyAddresses] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể tải danh sách địa chỉ');
+      return Failure(AppStrings.current.errorLoadAddresses);
     }
   }
 
@@ -48,8 +49,8 @@ class AddressRepositoryImpl implements AddressRepository {
         'address_detail': addressDetail,
         'is_default': isDefault,
         'label': label,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
       });
 
       if (res['data'] != null) {
@@ -57,10 +58,10 @@ class AddressRepositoryImpl implements AddressRepository {
           AddressModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể thêm địa chỉ');
+      return Failure(res['msg'] ?? AppStrings.current.errorAddAddress);
     } catch (e, s) {
       _log.e('[createAddress] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể thêm địa chỉ');
+      return Failure(AppStrings.current.errorAddAddress);
     }
   }
 
@@ -77,13 +78,13 @@ class AddressRepositoryImpl implements AddressRepository {
   }) async {
     try {
       final res = await apiService.put('/api/addresses/$id', {
-        if (receiverName != null) 'receiver_name': receiverName,
-        if (receiverPhone != null) 'receiver_phone': receiverPhone,
-        if (addressDetail != null) 'address_detail': addressDetail,
-        if (isDefault != null) 'is_default': isDefault,
-        if (label != null) 'label': label,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        'receiver_name': ?receiverName,
+        'receiver_phone': ?receiverPhone,
+        'address_detail': ?addressDetail,
+        'is_default': ?isDefault,
+        'label': ?label,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
       });
 
       if (res['data'] != null) {
@@ -91,10 +92,10 @@ class AddressRepositoryImpl implements AddressRepository {
           AddressModel.fromJson(res['data'] as Map<String, dynamic>),
         );
       }
-      return Failure(res['msg'] ?? 'Không thể cập nhật địa chỉ');
+      return Failure(res['msg'] ?? AppStrings.current.errorUpdateAddress);
     } catch (e, s) {
       _log.e('[updateAddress] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể cập nhật địa chỉ');
+      return Failure(AppStrings.current.errorUpdateAddress);
     }
   }
 
@@ -105,10 +106,10 @@ class AddressRepositoryImpl implements AddressRepository {
       if (res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể xóa địa chỉ');
+      return Failure(res['msg'] ?? AppStrings.current.errorDeleteAddress);
     } catch (e, s) {
       _log.e('[deleteAddress] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể xóa địa chỉ');
+      return Failure(AppStrings.current.errorDeleteAddress);
     }
   }
 }

@@ -122,7 +122,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1).withOpacity(0.5),
+                  color: isSelected ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1),
@@ -333,7 +333,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   decoration: BoxDecoration(
-                                                    color: color.withOpacity(0.1),
+                                                    color: color.withValues(alpha: 0.1),
                                                     borderRadius: BorderRadius.circular(20),
                                                   ),
                                                   child: Text(
@@ -460,7 +460,10 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
           const SizedBox(width: 6),
           Text(
             order.itemsCount > 1
-                ? 'Đã đánh giá ${order.reviewedCount}/${order.itemsCount} sản phẩm'
+                ? l10n.reviewsReviewedProgress(
+                    '${order.reviewedCount}',
+                    '${order.itemsCount}',
+                  )
                 : l10n.historyReviewedLabel,
             style: const TextStyle(fontSize: 12, color: Color(0xFFBDC3C7), fontWeight: FontWeight.w600),
           ),
@@ -551,6 +554,7 @@ class _ProductPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Container(
         decoration: const BoxDecoration(
@@ -573,8 +577,8 @@ class _ProductPickerSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'Chọn sản phẩm cần đánh giá',
+            Text(
+              l10n.reviewsSelectProduct,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
             ),

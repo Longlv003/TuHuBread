@@ -5,6 +5,7 @@ import '../../core/result.dart';
 import '../../models/address.model.dart';
 import '../../repositories/address_repository.dart';
 import 'address_state.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -22,7 +23,7 @@ class AddressCubit extends Cubit<AddressState> {
       emit(AddressLoaded(res.data));
     } else {
       _log.e('[loadMyAddresses] Failed: ${res.errorOrNull}');
-      emit(AddressFailure(res.errorOrNull ?? 'Không thể tải địa chỉ'));
+      emit(AddressFailure(res.errorOrNull ?? AppStrings.current.errorLoadAddress));
     }
   }
 

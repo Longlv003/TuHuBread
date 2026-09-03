@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../../models/order.model.dart';
 import '../../models/order_item.model.dart';
 import 'order_state.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 class OrderCubit extends Cubit<OrderState> {
   final ApiService apiService;
@@ -21,7 +22,7 @@ class OrderCubit extends Cubit<OrderState> {
         final orders = data.map((e) => OrderModel.fromJson(e as Map<String, dynamic>)).toList();
         emit(OrderLoaded(orders));
       } else {
-        emit(OrderFailure(res['msg'] ?? 'Lỗi tải danh sách đơn hàng'));
+        emit(OrderFailure(res['msg'] ?? AppStrings.current.errorLoadOrders));
       }
     } catch (e) {
       emit(OrderFailure(e.toString()));
@@ -43,7 +44,7 @@ class OrderCubit extends Cubit<OrderState> {
 
         emit(OrderDetailLoaded(order: order, items: items));
       } else {
-        emit(OrderFailure(res['msg'] ?? 'Lỗi tải chi tiết đơn hàng'));
+        emit(OrderFailure(res['msg'] ?? AppStrings.current.errorLoadOrderDetail));
       }
     } catch (e) {
       emit(OrderFailure(e.toString()));
@@ -98,7 +99,7 @@ class OrderCubit extends Cubit<OrderState> {
       });
       final res = await apiService.post('/api/orders/$orderId/review', formData);
       if (res['data'] == null) {
-        return Failure(res['msg'] ?? 'Không thể gửi đánh giá');
+        return Failure(res['msg'] ?? AppStrings.current.errorSubmitReview);
       }
 
       final currentState = state;

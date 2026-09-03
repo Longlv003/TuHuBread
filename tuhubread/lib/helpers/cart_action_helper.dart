@@ -6,6 +6,7 @@ import '../blocs/product_detail/product_detail_cubit.dart';
 import '../blocs/product_detail/product_detail_state.dart';
 import '../core/result.dart';
 import '../di.dart';
+import '../l10n/app_localizations.dart';
 import '../models/cart_item.model.dart';
 import '../models/product_detail.model.dart';
 import '../models/product_variant.model.dart';
@@ -91,7 +92,11 @@ class CartActionHelper {
 
     final detail = (res as Success<ProductDetailModel>).data;
     if (detail.variants.isEmpty) {
-      _showSnackBar(context, false, 'Sản phẩm chưa có phiên bản bán ra');
+      _showSnackBar(
+        context,
+        false,
+        AppLocalizations.of(context)!.errorNoVariant,
+      );
       return;
     }
 
@@ -164,15 +169,17 @@ class CartActionHelper {
     if (items.first.shopId == shopId) return false;
 
     final oldShopName = items.first.shopName;
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await AppConfirmDialog.show(
       context,
       type: ConfirmDialogType.warning,
-      title: "Xoá giỏ hàng cũ?",
-      description:
-          "Giỏ hàng của bạn đang có món của${oldShopName != null ? ' $oldShopName' : ' một cửa hàng khác'}."
-          " Bạn có muốn xoá giỏ hàng cũ để đặt món${shopName != null ? ' từ $shopName' : ' mới'} không?",
-      confirmTitle: "Xoá",
-      cancelTitle: "Hủy",
+      title: l10n.cartClearOldTitle,
+      description: l10n.cartClearOldDescription(
+        oldShopName ?? l10n.cartAnotherShop,
+        shopName != null ? l10n.cartFromShop(shopName) : l10n.cartNewItems,
+      ),
+      confirmTitle: l10n.commonDelete,
+      cancelTitle: l10n.commonCancel,
     );
     if (confirmed != true) return null;
     if (!context.mounted) return null;

@@ -26,7 +26,6 @@ router.get("/products/best-sellers", prodCtrl.getBestSellers);
 router.get("/products/featured", prodCtrl.getFeaturedProducts);
 router.get("/products/:id", prodCtrl.getProductDetail);
 router.get("/products", prodCtrl.getProducts);
-router.get("/products/:id", prodCtrl.getProductDetail);
 
 const { firebaseAuth, optionalAuth } = require("../middlewares/auth.middlewares");
 const { uploadAvatar } = require("../middlewares/upload.middlewares");

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuhubread/l10n/app_localizations.dart';
 
 /// Kiểu màu cho nút xác nhận.
 enum ConfirmDialogType {
@@ -27,10 +28,10 @@ enum ConfirmDialogType {
 ///   context,
 ///   type: ConfirmDialogType.danger,
 ///   image: Image.asset('assets/images/robot.png', height: 180),
-///   title: 'Xóa sản phẩm?',
-///   description: 'Bạn có chắc muốn xóa khỏi giỏ hàng không?',
-///   confirmTitle: 'Xóa',
-///   cancelTitle: 'Huỷ',
+///   title: l10n.cartRemoveItemTitle,
+///   description: l10n.cartRemoveItemDescription,
+///   confirmTitle: l10n.commonDelete,
+///   cancelTitle: l10n.commonCancel,
 ///   onConfirm: () { /* xử lý */ },
 /// );
 /// ```
@@ -38,8 +39,11 @@ class AppConfirmDialog extends StatelessWidget {
   final ConfirmDialogType type;
   final String title;
   final String description;
-  final String confirmTitle;
-  final String cancelTitle;
+  /// Để null thì dùng nhãn mặc định đã dịch ("Xác nhận" / "Confirm").
+  final String? confirmTitle;
+
+  /// Để null thì dùng nhãn mặc định đã dịch; chuỗi rỗng thì ẩn hẳn nút Huỷ.
+  final String? cancelTitle;
 
   /// Widget ảnh — Image.asset, Image.network, Lottie... Tuỳ ý.
   /// Nếu null thì card không có khoảng trống phía trên.
@@ -53,8 +57,8 @@ class AppConfirmDialog extends StatelessWidget {
     required this.type,
     required this.title,
     required this.description,
-    this.confirmTitle = 'Xác nhận',
-    this.cancelTitle = 'Huỷ',
+    this.confirmTitle,
+    this.cancelTitle,
     this.image,
     this.onConfirm,
   });
@@ -75,14 +79,14 @@ class AppConfirmDialog extends StatelessWidget {
     required ConfirmDialogType type,
     required String title,
     required String description,
-    String confirmTitle = 'Xác nhận',
-    String cancelTitle = 'Huỷ',
+    String? confirmTitle,
+    String? cancelTitle,
     Widget? image,
     VoidCallback? onConfirm,
   }) {
     return showDialog<bool>(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       builder: (_) => AppConfirmDialog(
         type: type,
         title: title,
@@ -99,7 +103,10 @@ class AppConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasImage = image != null;
+    final cancelLabel = cancelTitle ?? l10n.commonCancel;
+    final confirmLabel = confirmTitle ?? l10n.commonConfirm;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -131,7 +138,7 @@ class AppConfirmDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
@@ -172,10 +179,10 @@ class AppConfirmDialog extends StatelessWidget {
               Row(
                 children: [
                   // Huỷ: outline (only show if not empty)
-                  if (cancelTitle.isNotEmpty) ...[
+                  if (cancelLabel.isNotEmpty) ...[
                     Expanded(
                       child: _OutlineBtn(
-                        label: cancelTitle,
+                        label: cancelLabel,
                         onTap: () => Navigator.of(context).pop(false),
                       ),
                     ),
@@ -184,7 +191,7 @@ class AppConfirmDialog extends StatelessWidget {
                   // Xác nhận: gradient filled
                   Expanded(
                     child: _GradientBtn(
-                      label: confirmTitle,
+                      label: confirmLabel,
                       color: _confirmColor,
                       onTap: () {
                         Navigator.of(context).pop(true);
@@ -262,7 +269,7 @@ class _GradientBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.35),
+              color: color.withValues(alpha: 0.35),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

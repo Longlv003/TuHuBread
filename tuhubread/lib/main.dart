@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tuhubread/di.dart';
 import 'package:tuhubread/firebase_options.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 import 'package:tuhubread/services/notification_service.dart';
 import 'package:tuhubread/utils/locale_prefs.dart';
 
@@ -50,5 +51,9 @@ Future<void> main() async {
   }
 
   final savedLocale = await LocalePrefs.getSavedLocale();
+  // Đồng bộ ngôn ngữ cho các lớp không có BuildContext (repository/cubit/service)
+  // trước khi dựng app, nếu không chúng sẽ trả thông báo lỗi bằng tiếng Việt
+  // mặc định dù người dùng đã chọn tiếng Anh từ lần mở app trước.
+  AppStrings.setLocale(savedLocale ?? const Locale('vi'));
   runApp(App(initialLocale: savedLocale));
 }

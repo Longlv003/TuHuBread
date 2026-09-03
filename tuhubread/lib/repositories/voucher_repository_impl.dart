@@ -5,6 +5,7 @@ import '../models/voucher.model.dart';
 import '../models/voucher_save.model.dart';
 import '../services/api_service.dart';
 import 'voucher_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -28,7 +29,7 @@ class VoucherRepositoryImpl implements VoucherRepository {
       return Success(saves);
     } catch (e, s) {
       _log.e('[fetchSavedVouchers] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể tải danh sách voucher đã lưu');
+      return Failure(AppStrings.current.errorLoadSavedVouchers);
     }
   }
 
@@ -45,7 +46,7 @@ class VoucherRepositoryImpl implements VoucherRepository {
       return Success(vouchers);
     } catch (e, s) {
       _log.e('[fetchAvailableVouchers] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể tải danh sách voucher');
+      return Failure(AppStrings.current.errorLoadVoucherList);
     }
   }
 
@@ -56,10 +57,10 @@ class VoucherRepositoryImpl implements VoucherRepository {
       if (res['data'] != null) {
         return Success(VoucherSaveModel.fromJson(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể áp dụng mã voucher');
+      return Failure(res['msg'] ?? AppStrings.current.errorApplyVoucher);
     } catch (e, s) {
       _log.e('[redeemByCode] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể áp dụng mã voucher');
+      return Failure(AppStrings.current.errorApplyVoucher);
     }
   }
 
@@ -70,10 +71,10 @@ class VoucherRepositoryImpl implements VoucherRepository {
       if (res['data'] != null) {
         return const Success(true);
       }
-      return Failure(res['msg'] ?? 'Không thể lưu voucher');
+      return Failure(res['msg'] ?? AppStrings.current.errorSaveVoucher);
     } catch (e, s) {
       _log.e('[saveVoucher] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể lưu voucher');
+      return Failure(AppStrings.current.errorSaveVoucher);
     }
   }
 }

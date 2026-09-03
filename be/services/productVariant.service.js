@@ -2,6 +2,7 @@ const productRepository = require("../repositories/product.repository");
 const productVariantRepository = require("../repositories/productVariant.repository");
 const productBatchRepository = require("../repositories/productBatch.repository");
 const { toSlug } = require("../utils/slug.util");
+const { parseNonNegativeNumber, parseSalePrice } = require("../utils/validate.util");
 
 class ProductVariantService {
   /**
@@ -38,7 +39,8 @@ class ProductVariantService {
       throw new Error("Giá biến thể phải lớn hơn 0");
     }
 
-    const parsedStock = stockQuantity ? parseInt(stockQuantity) : 0;
+    const parsedStock = parseNonNegativeNumber(stockQuantity, "Tồn kho", { integer: true });
+    const parsedSalePrice = parseSalePrice(salePrice, parsedPrice);
     let expiredAtObj = null;
     if (parsedStock > 0 && expiredAt) {
       expiredAtObj = new Date(expiredAt);
@@ -56,7 +58,7 @@ class ProductVariantService {
       variant_slug: uniqueSlug,
       image: image || null,
       price: parsedPrice,
-      sale_price: salePrice ? parseFloat(salePrice) : null,
+      sale_price: parsedSalePrice,
       stock_quantity: parsedStock,
       status: status || "active"
     });
@@ -107,11 +109,14 @@ class ProductVariantService {
       }
       updateData.price = parsedPrice;
     }
-    if (salePrice !== undefined) updateData.sale_price = salePrice ? parseFloat(salePrice) : null;
+    if (salePrice !== undefined) {
+      const comparePrice = updateData.price !== undefined ? updateData.price : variant.price;
+      updateData.sale_price = parseSalePrice(salePrice, comparePrice);
+    }
 
     let parsedStock;
     if (stockQuantity !== undefined) {
-      parsedStock = parseInt(stockQuantity) || 0;
+      parsedStock = parseNonNegativeNumber(stockQuantity, "Tồn kho", { integer: true });
       updateData.stock_quantity = parsedStock;
     }
     if (status) updateData.status = status;

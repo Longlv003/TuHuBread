@@ -19,7 +19,7 @@ class AccountRepository {
   }
 
   async update(id, updateData) {
-    return userModel.findByIdAndUpdate(id, updateData, { new: true });
+    return userModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
   }
 
   async deleteById(id) {

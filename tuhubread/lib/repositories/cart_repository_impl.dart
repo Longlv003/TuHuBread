@@ -4,6 +4,7 @@ import '../core/result.dart';
 import '../models/cart_item.model.dart';
 import '../services/api_service.dart';
 import 'cart_repository.dart';
+import '../l10n/app_strings.dart';
 
 final _log = Logger(
   printer: PrettyPrinter(methodCount: 1, colors: true, printEmojis: true),
@@ -28,10 +29,10 @@ class CartRepositoryImpl implements CartRepository {
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể tải giỏ hàng');
+      return Failure(res['msg'] ?? AppStrings.current.errorLoadCart);
     } catch (e, s) {
       _log.e('[getCart] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để tải giỏ hàng');
+      return Failure(AppStrings.current.errorConnectLoadCart);
     }
   }
 
@@ -56,10 +57,10 @@ class CartRepositoryImpl implements CartRepository {
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể thêm vào giỏ hàng');
+      return Failure(res['msg'] ?? AppStrings.current.errorAddToCart);
     } catch (e, s) {
       _log.e('[addToCart] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để thêm vào giỏ hàng');
+      return Failure(AppStrings.current.errorConnectAddToCart);
     }
   }
 
@@ -70,10 +71,10 @@ class CartRepositoryImpl implements CartRepository {
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể xoá giỏ hàng');
+      return Failure(res['msg'] ?? AppStrings.current.errorClearCart);
     } catch (e, s) {
       _log.e('[clearCart] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để xoá giỏ hàng');
+      return Failure(AppStrings.current.errorConnectClearCart);
     }
   }
 
@@ -91,10 +92,10 @@ class CartRepositoryImpl implements CartRepository {
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể cập nhật số lượng');
+      return Failure(res['msg'] ?? AppStrings.current.errorUpdateQuantity);
     } catch (e, s) {
       _log.e('[updateCartItem] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để cập nhật số lượng');
+      return Failure(AppStrings.current.errorConnectUpdateQuantity);
     }
   }
 
@@ -105,10 +106,10 @@ class CartRepositoryImpl implements CartRepository {
       if (res['data'] != null) {
         return Success(_parseCartItems(res['data'] as Map<String, dynamic>));
       }
-      return Failure(res['msg'] ?? 'Không thể xóa khỏi giỏ hàng');
+      return Failure(res['msg'] ?? AppStrings.current.errorRemoveFromCart);
     } catch (e, s) {
       _log.e('[deleteCartItem] Failed', error: e, stackTrace: s);
-      return const Failure('Không thể kết nối đến máy chủ để xóa khỏi giỏ hàng');
+      return Failure(AppStrings.current.errorConnectRemoveFromCart);
     }
   }
 }

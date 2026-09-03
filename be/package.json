@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "seed:vouchers": "node scripts/seed_vouchers.js"
+    "seed:vouchers": "node scripts/seed_vouchers.js",
+    "recalc:ratings": "node scripts/recalc_shop_ratings.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie": "^0.7.2",
     "cookie-parser": "~1.4.4",
-    "cors": "^2.8.6",
     "debug": "~2.6.9",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",

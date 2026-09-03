@@ -6,6 +6,7 @@ import '../../core/result.dart';
 import '../../models/cart_item.model.dart';
 import '../../repositories/payment_repository.dart';
 import 'payment_state.dart';
+import 'package:tuhubread/l10n/app_strings.dart';
 
 /// PaymentCubit quản lý toàn bộ luồng thanh toán VNPay:
 ///  1. [initiateVnpayPayment] → gọi backend tạo PaymentSession + URL
@@ -49,7 +50,7 @@ class PaymentCubit extends Cubit<PaymentState> {
           );
         } else {
           emit(
-            const PaymentError(message: 'Backend không trả về URL thanh toán'),
+            PaymentError(message: AppStrings.current.errorNoPaymentUrl),
           );
         }
       case Failure<OrderResultModel>(:final message):
@@ -74,8 +75,10 @@ class PaymentCubit extends Cubit<PaymentState> {
           emit(
             PaymentFailed(
               reason: data.isFailed
-                  ? 'Giao dịch thất bại (mã: ${data.vnpResponseCode ?? "?"})'
-                  : 'Giao dịch đang được xử lý',
+                  ? AppStrings.current.paymentFailedWithCode(
+                      data.vnpResponseCode ?? '?',
+                    )
+                  : AppStrings.current.paymentProcessing,
             ),
           );
         }

@@ -203,7 +203,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        _pickedAddress ?? 'Chọn địa chỉ',
+                        _pickedAddress ?? l10n.addressPickTitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -221,12 +221,12 @@ class _AddressFormPageState extends State<AddressFormPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _buildingController,
-              decoration: _decoration('Toà nhà, Số tầng (không bắt buộc)'),
+              decoration: _decoration(l10n.addressBuildingHint),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _gateController,
-              decoration: _decoration('Cổng (không bắt buộc)'),
+              decoration: _decoration(l10n.addressGateHint),
             ),
             const SizedBox(height: 16),
             Wrap(

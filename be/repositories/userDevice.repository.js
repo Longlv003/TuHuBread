@@ -37,7 +37,7 @@ class UserDeviceRepository {
     return userDeviceModel.findOneAndUpdate(
       { fcm_token: fcmToken },
       { is_active: false },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 }

@@ -1,6 +1,9 @@
+const mongoose = require("mongoose");
 const reviewRepository = require("../repositories/review.repository");
+const { reviewModel } = require("../models/review.model");
 const { orderModel } = require("../models/order.model");
 const { orderDetailModel } = require("../models/orderDetail.model");
+const { shopModel } = require("../models/shop.model");
 
 class ReviewService {
   /**
@@ -37,7 +40,7 @@ class ReviewService {
       throw new Error("Sản phẩm này trong đơn hàng đã được đánh giá rồi");
     }
 
-    return reviewRepository.create({
+    const review = await reviewRepository.create({
       user_id: userId,
       shop_id: order.shop_id,
       product_id: productId,
@@ -45,6 +48,41 @@ class ReviewService {
       rating: parsedRating,
       comment: comment && comment.trim() ? comment.trim() : null,
       images: Array.isArray(images) ? images : [],
+    });
+
+    await this.recalculateShopRating(order.shop_id);
+
+    return review;
+  }
+
+  /**
+   * Tính lại rating_average / total_reviews của cửa hàng từ các đánh giá đang
+   * hiển thị.
+   *
+   * Hai trường này được lưu sẵn trong shopModel (thay vì tính động như rating
+   * sản phẩm) nhưng trước đây không có chỗ nào cập nhật, nên luôn đứng yên ở 0
+   * và app hiển thị "Chưa có đánh giá" kể cả khi khách đã đánh giá.
+   *
+   * Chỉ đếm review "visible": khi chủ shop ẩn 1 đánh giá thì nó cũng phải biến
+   * mất khỏi điểm trung bình, nếu không việc ẩn chỉ có tác dụng nửa vời.
+   * @param {string|import('mongoose').Types.ObjectId} shopId
+   */
+  async recalculateShopRating(shopId) {
+    const [stats] = await reviewModel.aggregate([
+      {
+        $match: {
+          shop_id: new mongoose.Types.ObjectId(String(shopId)),
+          status: "visible",
+          deleted_at: null,
+        },
+      },
+      { $group: { _id: null, average: { $avg: "$rating" }, total: { $sum: 1 } } },
+    ]);
+
+    await shopModel.findByIdAndUpdate(shopId, {
+      // Làm tròn 1 chữ số thập phân cho khớp cách hiển thị ở app (vd. 4.7).
+      rating_average: stats ? Math.round(stats.average * 10) / 10 : 0,
+      total_reviews: stats ? stats.total : 0,
     });
   }
 
@@ -74,7 +112,11 @@ class ReviewService {
     }
 
     const newStatus = review.status === "visible" ? "hidden" : "visible";
-    return reviewRepository.updateStatus(reviewId, newStatus);
+    const updated = await reviewRepository.updateStatus(reviewId, newStatus);
+
+    await this.recalculateShopRating(review.shop_id);
+
+    return updated;
   }
 }
 

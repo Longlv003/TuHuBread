@@ -58,6 +58,10 @@ const orderSchema = new db.mongoose.Schema(
     delivery_fee: { type: Number, required: true, default: 0 },
     total_amount: { type: Number, required: true },
     note: { type: String, default: null },
+    // Mốc thời gian đã hoàn tồn kho về cho các variant của đơn này (chỉ áp
+    // dụng khi đơn bị huỷ). Dùng làm cờ chống hoàn kho 2 lần nếu luồng huỷ bị
+    // gọi lặp hoặc 2 luồng (khách tự huỷ / shop huỷ) chạy đồng thời.
+    stock_restored_at: { type: Date, default: null },
     deleted_at: { type: Date, default: null },
   },
   { collection: "orders", timestamps: true },

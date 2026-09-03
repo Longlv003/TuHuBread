@@ -6,6 +6,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../di.dart';
+import '../l10n/app_localizations.dart';
 import '../services/location_service.dart';
 
 /// Kết quả trả về khi khách chọn xong vị trí trên bản đồ.
@@ -244,7 +245,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
       setState(() {
         _isSearching = false;
         _searchResults = [];
-        _searchErrorMessage = 'Không thể tìm kiếm lúc này, vui lòng kiểm tra kết nối mạng';
+        _searchErrorMessage = AppLocalizations.of(context)!.mapSearchError;
       });
     }
   }
@@ -266,27 +267,28 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
       );
     } on LocationException catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       final String message;
       SnackBarAction? action;
       switch (e.reason) {
         case LocationFailureReason.serviceDisabled:
-          message = 'Định vị (GPS) của máy đang tắt';
+          message = l10n.mapGpsOff;
           action = SnackBarAction(
-            label: 'Bật GPS',
+            label: l10n.mapEnableGps,
             textColor: Colors.white,
             onPressed: () => Geolocator.openLocationSettings(),
           );
         case LocationFailureReason.permissionDenied:
-          message = 'Bạn cần cho phép quyền vị trí để dùng tính năng này';
+          message = l10n.mapPermissionNeeded;
         case LocationFailureReason.permissionDeniedForever:
-          message = 'Quyền vị trí đã bị từ chối trước đó';
+          message = l10n.mapPermissionDeniedBefore;
           action = SnackBarAction(
-            label: 'Cài đặt',
+            label: l10n.mapOpenSettings,
             textColor: Colors.white,
             onPressed: () => Geolocator.openAppSettings(),
           );
         case LocationFailureReason.timeout:
-          message = 'Không bắt được tín hiệu định vị, vui lòng thử lại';
+          message = l10n.mapNoSignal;
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -318,13 +320,14 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF7),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Chọn địa chỉ',
+        title: Text(
+          l10n.addressPickTitle,
           style: TextStyle(color: Color(0xFF2C3E50), fontWeight: FontWeight.bold, fontSize: 16),
         ),
         leading: IconButton(
@@ -340,7 +343,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
-                hintText: 'Tìm vị trí',
+                hintText: l10n.mapSearchPlace,
                 hintStyle: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
                 prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF7F8C8D)),
                 suffixIcon: _searchController.text.isEmpty
@@ -400,7 +403,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
                       Icons.location_on_rounded,
                       color: const Color(0xFFE67E22),
                       size: 40,
-                      shadows: [Shadow(color: Colors.black.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))],
+                      shadows: [Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
                     ),
                   ),
                 ),
@@ -425,7 +428,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
                         ],
                       ),
                     ),
-                    Expanded(child: _buildCurrentPinPanel()),
+                    Expanded(child: _buildCurrentPinPanel(l10n)),
                   ],
                 ),
                 // Đang gõ tìm kiếm -> phủ kín danh sách gợi ý lên trên, che
@@ -435,7 +438,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
                   Positioned.fill(
                     child: Container(
                       color: const Color(0xFFFDFBF7),
-                      child: _buildSearchResultsList(),
+                      child: _buildSearchResultsList(l10n),
                     ),
                   ),
               ],
@@ -446,7 +449,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
     );
   }
 
-  Widget _buildSearchResultsList() {
+  Widget _buildSearchResultsList(AppLocalizations l10n) {
     if (_isSearching) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFFE67E22)));
     }
@@ -463,23 +466,23 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
       );
     }
     if (_searchController.text.trim().length < 3) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24.0),
           child: Text(
-            'Nhập ít nhất 3 ký tự để tìm địa điểm',
-            style: TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
+            l10n.mapTypeAtLeast3Chars,
+            style: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
           ),
         ),
       );
     }
     if (_searchResults.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24.0),
           child: Text(
-            'Không tìm thấy địa điểm phù hợp',
-            style: TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
+            l10n.mapNoPlaceFound,
+            style: const TextStyle(color: Color(0xFFBDC3C7), fontSize: 13),
           ),
         ),
       );
@@ -505,12 +508,12 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
     );
   }
 
-  Widget _buildCurrentPinPanel() {
+  Widget _buildCurrentPinPanel(AppLocalizations l10n) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       children: [
-        const Text(
-          'Vị trí đã ghim',
+        Text(
+          l10n.mapPinnedLocation,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF7F8C8D)),
         ),
         const SizedBox(height: 8),
@@ -528,12 +531,12 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: _isResolvingAddress
-                    ? const Text(
-                        'Đang xác định địa chỉ...',
-                        style: TextStyle(fontSize: 13, color: Color(0xFF7F8C8D)),
+                    ? Text(
+                        l10n.mapResolvingAddress,
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF7F8C8D)),
                       )
                     : Text(
-                        _centerDisplayName ?? 'Kéo bản đồ để ghim vị trí giao hàng',
+                        _centerDisplayName ?? l10n.mapDragToPin,
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2C3E50)),
                       ),
               ),
@@ -552,7 +555,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
-            child: const Text('Xác nhận vị trí này', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(l10n.mapConfirmLocation, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
       ],
