@@ -65,33 +65,6 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
-  Future<Result<OrderResultModel>> createVnpayPayment({
-    required String addressId,
-    required String deliveryOption,
-    String? note,
-    String? voucherCode,
-  }) async {
-    try {
-      final res = await apiService.post('/api/payments/vnpay', {
-        'address_id': addressId,
-        'delivery_option': deliveryOption,
-        'note': note,
-        'voucher_code': voucherCode,
-      });
-
-      if (res['data'] != null) {
-        return Success(
-          OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
-        );
-      }
-      return Failure(res['msg'] ?? AppStrings.current.errorCreateVnpayLink);
-    } catch (e, s) {
-      _log.e('[createVnpayPayment] Failed', error: e, stackTrace: s);
-      return Failure(AppStrings.current.errorConnectPayment);
-    }
-  }
-
-  @override
   Future<Result<DeliveryFeePreviewModel>> previewDeliveryFee({
     required String shopId,
     required String addressId,

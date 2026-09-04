@@ -40,6 +40,10 @@ class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
   void _handleUrl(String url) {
     if (_hasHandled) return;
 
+    // TODO(debug): log tạm để chẩn đoán vì sao return URL đôi khi không tới
+    // được backend — xoá khi đã xác nhận ổn định.
+    debugPrint('[VnPayWebView] navigating: $url');
+
     final isReturnUrl =
         url.contains('/payment/vnpay-return') ||
         url.contains('/payments/vnpay/return');
@@ -51,9 +55,13 @@ class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
 
     // Chỉ xử lý khi có `vnp_ResponseCode` — tránh bắt nhầm khi URL chứa
     // `vnp_ReturnUrl` như một tham số (VNPAY embed returnUrl vào payment URL)
-    if (!uri.queryParameters.containsKey('vnp_ResponseCode')) return;
+    if (!uri.queryParameters.containsKey('vnp_ResponseCode')) {
+      debugPrint('[VnPayWebView] matched return path but missing vnp_ResponseCode, ignoring');
+      return;
+    }
 
     _hasHandled = true;
+    debugPrint('[VnPayWebView] return URL confirmed, closing WebView');
 
     final responseCode = uri.queryParameters['vnp_ResponseCode'];
     final txnRef = uri.queryParameters['vnp_TxnRef'];
@@ -116,9 +124,30 @@ class _VnPayPaymentPageState extends State<VnPayPaymentPage> {
                 onReceivedError: (controller, request, error) {
                   debugPrint('[VnPayWebView] Error: ${error.description} for ${request.url}');
                 },
+                // Renderer WebView (Chromium) có thể crash giữa chừng trên 1 số máy ảo/
+                // thiết bị cũ khi tải trang cổng thanh toán nặng — WebView lúc này đã
+                // "chết" hẳn, không thể tiếp tục dùng. Phải đóng ngay và coi như thất bại
+                // (an toàn hơn là để app treo) — CheckoutPage sẽ hiện dialog thất bại,
+                // khách có thể bắt đầu lại giao dịch từ đầu.
+                onRenderProcessGone: (controller, detail) {
+                  debugPrint('[VnPayWebView] Renderer process gone: $detail');
+                  if (_hasHandled) return;
+                  _hasHandled = true;
+                  if (mounted) {
+                    Navigator.of(context).pop(
+                      const VnPayResult(isSuccess: false),
+                    );
+                  }
+                },
+                // CHỦ Ý: không gọi _handleUrl() ở đây và pop ngay — nếu redirect về
+                // return URL là do JS phía VNPAY gọi (window.location.href) chứ không
+                // phải server trả HTTP redirect, shouldOverrideUrlLoading sẽ bắt được
+                // TRƯỚC KHI request thật sự được gửi đi. Pop/dispose WebView ngay lúc
+                // này có thể huỷ luôn request đó — khiến app đọc được đúng vnp_TxnRef
+                // từ URL nhưng backend KHÔNG BAO GIỜ nhận được /payment/vnpay-return
+                // để xác nhận giao dịch (session kẹt PENDING mãi). Phải để WebView tự
+                // load xong URL đó rồi mới đóng ở onLoadStart/onLoadStop bên dưới.
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  final url = navigationAction.request.url?.toString() ?? '';
-                  _handleUrl(url);
                   return NavigationActionPolicy.ALLOW;
                 },
               ),

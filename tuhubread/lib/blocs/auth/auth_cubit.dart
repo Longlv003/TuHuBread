@@ -9,6 +9,7 @@ import 'package:logger/logger.dart';
 import '../../models/user.model.dart';
 import '../../services/api_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/location_service.dart';
 import 'auth_state.dart';
 import '../../di.dart';
 import '../cart/cart_cubit.dart';
@@ -412,6 +413,12 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (_) {}
     try {
       getIt<NotificationCubit>().reset();
+    } catch (_) {}
+    // LocationService là singleton sống suốt vòng đời app — không xoá cờ ưu
+    // tiên địa chỉ giao hàng ở đây thì tài khoản đăng nhập kế tiếp trong cùng
+    // phiên chạy sẽ vẫn bị "khoá" theo địa chỉ của tài khoản vừa đăng xuất.
+    try {
+      getIt<LocationService>().resetDeliveryPreference();
     } catch (_) {}
 
     emit(const AuthInitial());

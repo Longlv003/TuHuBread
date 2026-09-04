@@ -3,11 +3,21 @@ import '../models/cart_item.model.dart';
 import '../models/order_result.model.dart';
 import '../models/payment_verify_result.model.dart';
 
-/// Abstract repository cho chức năng thanh toán VNPay.
+/// Abstract repository cho chức năng thanh toán SePay & VNPay.
 abstract class PaymentRepository {
-  /// Tạo payment URL. Nếu [items] được truyền (vd. "Mua ngay"), backend sẽ
-  /// thanh toán đúng các sản phẩm này thay vì đọc toàn bộ giỏ hàng thật.
-  /// Backend validate server-side, snapshot vào PaymentSession rồi trả về URL.
+  /// Tạo biểu mẫu thanh toán SePay. Nếu [items] được truyền (vd. "Mua ngay"),
+  /// backend sẽ thanh toán đúng các sản phẩm này thay vì đọc toàn bộ giỏ hàng
+  /// thật. Backend validate server-side, snapshot vào PaymentSession rồi trả
+  /// về checkoutUrl + checkoutFields đã ký sẵn.
+  Future<Result<OrderResultModel>> createSepayPayment({
+    required String addressId,
+    required String deliveryOption,
+    String? voucherCode,
+    String? note,
+    List<CartItemModel>? items,
+  });
+
+  /// Tạo URL thanh toán VNPay. Cùng ngữ nghĩa [items] như [createSepayPayment].
   Future<Result<OrderResultModel>> createVnpayPayment({
     required String addressId,
     required String deliveryOption,
@@ -18,5 +28,9 @@ abstract class PaymentRepository {
 
   /// Verify kết quả giao dịch sau khi WebView đóng.
   /// Flutter gọi API này để lấy trạng thái session & danh sách order codes.
-  Future<Result<PaymentVerifyResult>> verifyPayment({required String txnRef});
+  /// [gateway] chọn đúng endpoint tương ứng ("sepay" | "vnpay").
+  Future<Result<PaymentVerifyResult>> verifyPayment({
+    required String txnRef,
+    String gateway = 'sepay',
+  });
 }

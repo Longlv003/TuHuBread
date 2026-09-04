@@ -1,10 +1,9 @@
 <%
   // Mỗi thẻ chỉ hiện khi thực sự có việc cần làm — cảnh báo lúc nào cũng sáng
   // đèn thì chủ shop sẽ quen mắt và bỏ qua luôn cả lúc có chuyện thật.
-  const hasLowStock = alerts.lowStockVariants.length > 0;
   const hasUnpaid = alerts.unpaidOrders > 0;
   const hasPending = alerts.pendingOrders > 0;
-  const hasAny = hasLowStock || hasUnpaid || hasPending;
+  const hasAny = hasUnpaid || hasPending;
 %>
 
 <% if (!hasAny) { %>
@@ -12,7 +11,7 @@
     <div class="alert-card-icon"><i class="fa-solid fa-circle-check"></i></div>
     <div class="alert-card-body">
       <div class="alert-card-title">Không có cảnh báo nào</div>
-      <div class="alert-card-desc">Đơn hàng đã xử lý hết và kho vẫn còn đủ hàng.</div>
+      <div class="alert-card-desc">Đơn hàng đã xử lý hết.</div>
     </div>
   </div>
 <% } %>
@@ -37,28 +36,4 @@
     </div>
     <i class="fa-solid fa-chevron-right alert-card-arrow"></i>
   </a>
-<% } %>
-
-<% if (hasLowStock) { %>
-  <div class="alert-card alert-danger">
-    <div class="alert-card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-    <div class="alert-card-body">
-      <div class="alert-card-title">
-        <%= alerts.lowStockVariants.length %> sản phẩm sắp hết hàng
-      </div>
-      <div class="alert-card-desc">
-        Còn <%= alerts.lowStockThreshold %> sản phẩm trở xuống:
-      </div>
-      <ul class="alert-card-list">
-        <% alerts.lowStockVariants.forEach(v => { %>
-          <li>
-            <a href="/shop/products/<%= v.product_id %>">
-              <%= v.product_name %> — <%= v.variant_name %>
-            </a>
-            <span class="alert-card-count"><%= v.stock_quantity %></span>
-          </li>
-        <% }) %>
-      </ul>
-    </div>
-  </div>
 <% } %>

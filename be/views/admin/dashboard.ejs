@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <div class="section-card">
+  <div class="section-card" style="margin-bottom: 24px;">
     <div class="section-header"><h3>Top sản phẩm bán chạy toàn hệ thống</h3></div>
     <div class="table-container">
       <table>
@@ -71,7 +71,14 @@
           <% report.topProducts.forEach((p, idx) => { %>
             <tr>
               <td><%= idx + 1 %></td>
-              <td><strong><%= p.product_name %></strong></td>
+              <td>
+                <strong><%= p.product_name %></strong>
+                <% if (p.shop_name) { %>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+                    <i class="fa-solid fa-shop"></i> <%= p.shop_name %>
+                  </div>
+                <% } %>
+              </td>
               <td class="col-center"><%= p.quantity_sold %></td>
               <td><%= p.revenue.toLocaleString('vi-VN') %>đ</td>
             </tr>
@@ -79,6 +86,39 @@
           <% if (report.topProducts.length === 0) { %>
             <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Chưa có dữ liệu bán hàng trong khoảng thời gian này</td></tr>
           <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header"><h3>Top chi nhánh theo doanh thu</h3></div>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>#</th><th>Chi nhánh</th><th class="col-center">Số đơn</th><th>Doanh thu</th></tr></thead>
+        <tbody>
+          <% if (report.topShops.length === 0) { %>
+            <tr><td colspan="4">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-shop"></i></div>
+                <div class="empty-state-title">Chưa có dữ liệu doanh thu</div>
+                <div class="empty-state-desc">Chi nhánh có doanh thu cao nhất sẽ hiển thị ở đây.</div>
+              </div>
+            </td></tr>
+          <% } %>
+          <% report.topShops.forEach((s, idx) => { %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <img src="<%= s.logo || 'https://placehold.co/32' %>" onerror="this.src='https://placehold.co/32'" style="width:28px; height:28px; border-radius:8px; object-fit:cover;">
+                  <strong><%= s.shop_name || 'Chi nhánh đã xoá' %></strong>
+                </div>
+              </td>
+              <td class="col-center"><%= s.orders_count %></td>
+              <td><%= s.revenue.toLocaleString('vi-VN') %>đ</td>
+            </tr>
+          <% }) %>
         </tbody>
       </table>
     </div>

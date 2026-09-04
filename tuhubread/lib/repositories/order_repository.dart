@@ -13,13 +13,6 @@ abstract class OrderRepository {
     String? voucherCode,
   });
 
-  Future<Result<OrderResultModel>> createVnpayPayment({
-    required String addressId,
-    required String deliveryOption,
-    String? note,
-    String? voucherCode,
-  });
-
   /// Xem trước phí ship theo khoảng cách thật cho cả 3 tuỳ chọn giao hàng,
   /// dùng ở màn Thanh toán khi khách đổi địa chỉ — không tạo đơn hàng.
   Future<Result<DeliveryFeePreviewModel>> previewDeliveryFee({

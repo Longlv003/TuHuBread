@@ -29,6 +29,7 @@ import '../widgets/checkout/checkout_payment_method_tile.dart';
 import '../widgets/checkout/checkout_price_row.dart';
 import '../widgets/checkout/checkout_section_card.dart';
 import 'select_address_page.dart';
+import 'sepay_payment_page.dart';
 import 'vnpay_payment_page.dart';
 
 class _PaymentMethod {
@@ -47,13 +48,18 @@ class _PaymentMethod {
     icon: Icons.payments_rounded,
     color: Color(0xFF27AE60),
   );
+  static const sepay = _PaymentMethod(
+    id: 'sepay',
+    icon: Icons.qr_code_2_rounded,
+    color: Color(0xFF0068FF),
+  );
   static const vnpay = _PaymentMethod(
     id: 'vnpay',
     icon: Icons.account_balance_rounded,
-    color: Color(0xFF0068FF),
+    color: Color(0xFFD82D8B),
   );
 
-  static const all = [cash, vnpay];
+  static const all = [cash, sepay, vnpay];
 }
 
 /// Màn hình thanh toán: chọn địa chỉ giao hàng, tùy chọn tốc độ giao hàng,
@@ -376,6 +382,8 @@ class _CheckoutContentState extends State<_CheckoutContent> {
 
   String _methodLabel(AppLocalizations l10n, String id) {
     switch (id) {
+      case 'sepay':
+        return l10n.paymentMethodSepay;
       case 'vnpay':
         return l10n.paymentMethodVnpay;
       default:
@@ -403,6 +411,16 @@ class _CheckoutContentState extends State<_CheckoutContent> {
         ? null
         : _noteController.text.trim();
     final voucherCode = _selectedVoucher?.voucherCode;
+
+    // ── Thanh toán SePay ─────────────────────────────────────────────────────
+    if (_selectedMethod.id == 'sepay') {
+      await _placeSepayOrder(
+        l10n: l10n,
+        noteText: noteText,
+        voucherCode: voucherCode,
+      );
+      return;
+    }
 
     // ── Thanh toán VNPay ─────────────────────────────────────────────────────
     if (_selectedMethod.id == 'vnpay') {
@@ -441,20 +459,21 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     }
   }
 
-  /// Luồng VNPay:
-  ///  1. PaymentCubit.initiateVnpayPayment() → nhận paymentUrl
-  ///  2. Mở VnPayPaymentPage (WebView)
-  ///  3. WebView đóng → nhận VnPayResult với txnRef
-  ///  4. PaymentCubit.verifyAfterWebView(txnRef) → kết quả cuối cùng
-  Future<void> _placeVnpayOrder({
+  /// Luồng SePay:
+  ///  1. PaymentCubit.initiateSepayPayment() → nhận checkoutUrl + checkoutFields
+  ///  2. Mở SePayPaymentPage (WebView, POST biểu mẫu đã ký)
+  ///  3. WebView đóng → nhận SePayResult với txnRef
+  ///  4. PaymentCubit.verifyAfterWebView(txnRef) → kết quả cuối cùng (tự tra
+  ///     cứu lại trạng thái thật từ SePay, không tin theo URL callback)
+  Future<void> _placeSepayOrder({
     required AppLocalizations l10n,
     String? noteText,
     String? voucherCode,
   }) async {
     final paymentCubit = context.read<PaymentCubit>();
 
-    // Bước 1: Gọi backend tạo session + URL
-    await paymentCubit.initiateVnpayPayment(
+    // Bước 1: Gọi backend tạo session + biểu mẫu thanh toán
+    await paymentCubit.initiateSepayPayment(
       addressId: _selectedAddress!.id,
       deliveryOption: _selectedDelivery.id,
       voucherCode: voucherCode,
@@ -482,6 +501,81 @@ class _CheckoutContentState extends State<_CheckoutContent> {
     }
 
     // Bước 2: Mở WebView
+    final sePayResult = await getx.Get.to<SePayResult>(
+      () => SePayPaymentPage(
+        checkoutUrl: currentState.checkoutUrl,
+        checkoutFields: currentState.checkoutFields,
+        txnRef: currentState.txnRef,
+      ),
+      routeName: '/checkout/sepay-payment',
+      preventDuplicates: false,
+    );
+
+    if (!mounted) return;
+
+    // Người dùng đóng WebView bằng nút X (không có txnRef)
+    if (sePayResult == null || sePayResult.txnRef == null) {
+      await _showFailedDialog(context, l10n);
+      return;
+    }
+
+    // Bước 3: Verify kết quả từ backend
+    setState(() => _isPlacingOrder = true);
+    await paymentCubit.verifyAfterWebView(txnRef: sePayResult.txnRef!);
+    if (!mounted) return;
+    setState(() => _isPlacingOrder = false);
+
+    final verifyState = paymentCubit.state;
+    if (verifyState is PaymentSuccess) {
+      // Làm sạch giỏ hàng local
+      getIt<CartCubit>().clearCart();
+      await _showSuccessFromVerify(context, l10n, verifyState.result);
+    } else {
+      await _showFailedDialog(context, l10n);
+    }
+  }
+
+  /// Luồng VNPay:
+  ///  1. PaymentCubit.initiateVnpayPayment() → nhận paymentUrl
+  ///  2. Mở VnPayPaymentPage (WebView, redirect GET)
+  ///  3. WebView đóng → nhận VnPayResult với txnRef
+  ///  4. PaymentCubit.verifyAfterWebView(txnRef, gateway: 'vnpay') → kết quả
+  ///     cuối cùng (VNPay tin theo chữ ký return URL, xác thực ở backend)
+  Future<void> _placeVnpayOrder({
+    required AppLocalizations l10n,
+    String? noteText,
+    String? voucherCode,
+  }) async {
+    final paymentCubit = context.read<PaymentCubit>();
+
+    // Bước 1: Gọi backend tạo session + URL thanh toán
+    await paymentCubit.initiateVnpayPayment(
+      addressId: _selectedAddress!.id,
+      deliveryOption: _selectedDelivery.id,
+      voucherCode: voucherCode,
+      note: noteText,
+      items: widget.items,
+    );
+
+    if (!mounted) return;
+    setState(() => _isPlacingOrder = false);
+
+    final currentState = paymentCubit.state;
+    if (currentState is! VnpayUrlReady) {
+      final msg = currentState is PaymentError
+          ? currentState.message
+          : l10n.errorCreateVnpayLink;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: const Color(0xFFE74C3C),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Bước 2: Mở WebView
     final vnPayResult = await getx.Get.to<VnPayResult>(
       () => VnPayPaymentPage(paymentUrl: currentState.paymentUrl),
       routeName: '/checkout/vnpay-payment',
@@ -498,13 +592,15 @@ class _CheckoutContentState extends State<_CheckoutContent> {
 
     // Bước 3: Verify kết quả từ backend
     setState(() => _isPlacingOrder = true);
-    await paymentCubit.verifyAfterWebView(txnRef: vnPayResult.txnRef!);
+    await paymentCubit.verifyAfterWebView(
+      txnRef: vnPayResult.txnRef!,
+      gateway: 'vnpay',
+    );
     if (!mounted) return;
     setState(() => _isPlacingOrder = false);
 
     final verifyState = paymentCubit.state;
     if (verifyState is PaymentSuccess) {
-      // Làm sạch giỏ hàng local
       getIt<CartCubit>().clearCart();
       await _showSuccessFromVerify(context, l10n, verifyState.result);
     } else {
@@ -850,6 +946,7 @@ class _CheckoutContentState extends State<_CheckoutContent> {
                       ),
                     ),
                     if (_selectedMethod.id != 'cash' &&
+                        _selectedMethod.id != 'sepay' &&
                         _selectedMethod.id != 'vnpay') ...[
                       const SizedBox(height: 8),
                       Container(

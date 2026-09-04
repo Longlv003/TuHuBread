@@ -130,7 +130,7 @@ class OrderService {
     return updated;
   }
 
-  // --- Customer-facing cart validation + order creation (used by cash + VNPay flows) ---
+  // --- Customer-facing cart validation + order creation (used by cash + SePay flows) ---
 
   async validateCartAndCalculate(userId, { addressId, deliveryOption, voucherCode, explicitItems }) {
     // 1. Lấy danh sách sản phẩm cần đặt: ưu tiên explicitItems nếu được truyền
@@ -297,13 +297,13 @@ class OrderService {
     const shop = await shopModel.findOne({ _id: validatedItems[0].shop_id, deleted_at: null });
 
     // Cửa hàng đang tạm đóng thì không nhận đơn (áp dụng cho cả tiền mặt lẫn
-    // VNPay vì hai luồng đều đi qua hàm này).
+    // SePay vì hai luồng đều đi qua hàm này).
     if (shop && !shop.is_open) {
       throw new Error(`${shop.shop_name} hiện đang tạm đóng cửa, vui lòng quay lại sau`);
     }
 
     // Chặn địa chỉ không giao được (ngoài bán kính hoặc chưa có toạ độ) —
-    // áp dụng cho cả luồng tiền mặt lẫn VNPay (đều qua hàm này).
+    // áp dụng cho cả luồng tiền mặt lẫn SePay (đều qua hàm này).
     const blockReason = getDeliveryBlockReason(
       shop && shop.location ? shop.location.coordinates : undefined,
       address.location ? address.location.coordinates : undefined,

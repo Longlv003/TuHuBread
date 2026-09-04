@@ -17,6 +17,13 @@ const shopReportController = require("../controllers/shop_web/shop_report.contro
 const shopNotificationController = require("../controllers/shop_web/shop_notification.controller");
 const uploadProduct = require("../middlewares/upload_product.middleware");
 const uploadShopBanner = require("../middlewares/upload_shop_banner.middleware");
+// Form "Thêm/Sửa topping" không có field ảnh, nhưng vẫn submit bằng
+// multipart/form-data (dùng chung hàm submitForm() với các form có ảnh) —
+// express.json()/urlencoded() KHÔNG parse được multipart nên req.body rỗng
+// nếu thiếu middleware này, khiến optionName luôn undefined dù người dùng đã
+// nhập (lỗi "Tên topping là bắt buộc" dù đã điền tên).
+const multer = require("multer");
+const parseMultipartFields = multer().none();
 
 // Guest pages (Login & Register)
 router.get("/login", guestMiddleware, shopAuthController.showLogin);
@@ -45,8 +52,8 @@ router.post("/products/:productId/variants/add", authMiddleware, uploadProduct.s
 router.post("/products/:productId/variants/edit/:id", authMiddleware, uploadProduct.single("variantImage"), shopProductVariantController.editVariant);
 router.post("/products/:productId/variants/delete/:id", authMiddleware, shopProductVariantController.deleteVariant);
 
-router.post("/products/:productId/options/add", authMiddleware, shopProductOptionController.addOption);
-router.post("/products/:productId/options/edit/:id", authMiddleware, shopProductOptionController.editOption);
+router.post("/products/:productId/options/add", authMiddleware, parseMultipartFields, shopProductOptionController.addOption);
+router.post("/products/:productId/options/edit/:id", authMiddleware, parseMultipartFields, shopProductOptionController.editOption);
 router.post("/products/:productId/options/delete/:id", authMiddleware, shopProductOptionController.deleteOption);
 
 // Voucher routes

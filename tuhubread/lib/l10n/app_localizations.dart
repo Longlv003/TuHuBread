@@ -650,6 +650,12 @@ abstract class AppLocalizations {
   /// **'VNPay Payment Gateway'**
   String get paymentMethodVnpay;
 
+  /// No description provided for @paymentMethodSepay.
+  ///
+  /// In en, this message translates to:
+  /// **'SePay Payment Gateway'**
+  String get paymentMethodSepay;
+
   /// No description provided for @paymentMethodMomo.
   ///
   /// In en, this message translates to:
@@ -2477,7 +2483,7 @@ abstract class AppLocalizations {
   /// No description provided for @paymentVnpayFailed.
   ///
   /// In en, this message translates to:
-  /// **'The VNPAY payment was not successful.'**
+  /// **'The payment was not successful or was cancelled.'**
   String get paymentVnpayFailed;
 
   /// No description provided for @deliveryFree.

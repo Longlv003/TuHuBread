@@ -301,6 +301,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentMethodVnpay => 'Cổng thanh toán VNPay';
 
   @override
+  String get paymentMethodSepay => 'Cổng thanh toán SePay';
+
+  @override
   String get paymentMethodMomo => 'Ví MoMo';
 
   @override
@@ -1305,7 +1308,8 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get paymentVnpayFailed => 'Thanh toán qua VNPAY không thành công.';
+  String get paymentVnpayFailed =>
+      'Thanh toán không thành công hoặc đã bị hủy.';
 
   @override
   String get deliveryFree => 'Miễn phí';

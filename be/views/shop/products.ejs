@@ -28,7 +28,6 @@
         <option value="all">Tất cả sản phẩm</option>
         <option value="active">Đang bán</option>
         <option value="inactive">Ngừng bán</option>
-        <option value="out_of_stock">Hết hàng</option>
       </select>
     </div>
   </div>
@@ -45,14 +44,13 @@
             <th class="col-name">Tên sản phẩm</th>
             <th>Danh mục</th>
             <th>Giá</th>
-            <th>Tồn kho</th>
             <th class="col-status">Trạng thái</th>
             <th class="col-actions">Hành động</th>
           </tr>
         </thead>
         <tbody id="productsTableBody">
           <% if (products.length === 0) { %>
-            <tr><td colspan="7">
+            <tr><td colspan="6">
               <div class="empty-state">
                 <div class="empty-state-icon"><i class="fa-solid fa-bread-slice"></i></div>
                 <div class="empty-state-title">Chưa có sản phẩm nào</div>
@@ -68,7 +66,6 @@
               <td class="col-name"><strong><%= p.product_name %></strong></td>
               <td><%= p.global_category_id ? p.global_category_id.category_name : 'N/A' %></td>
               <td><%= p.display_variant ? p.display_variant.price.toLocaleString('vi-VN') + 'đ' : 'Chưa có giá' %></td>
-              <td><%= p.display_variant ? p.display_variant.stock_quantity : 0 %></td>
               <td class="col-status">
                 <span class="status-badge <%= p.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= p.status %></span>
               </td>
@@ -132,19 +129,13 @@
             <input type="number" id="price" name="price" required min="0" placeholder="20000">
           </div>
           <div class="form-group">
-            <label for="stockQuantity">Tồn kho</label>
-            <input type="number" id="stockQuantity" name="stockQuantity" min="0" value="0">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
             <label for="expiredAt">Hạn sử dụng</label>
             <input type="date" id="expiredAt" name="expiredAt">
           </div>
-          <div class="form-group">
-            <label for="variantImage">Ảnh sản phẩm</label>
-            <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewImage(this, 'addPreview')">
-          </div>
+        </div>
+        <div class="form-group">
+          <label for="variantImage">Ảnh sản phẩm</label>
+          <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewImage(this, 'addPreview')">
         </div>
         <img id="addPreview" class="preview-box">
       </div>

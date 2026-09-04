@@ -20,6 +20,10 @@
       <form id="settingsForm">
         <div class="form-group"><label>Tên cửa hàng *</label><input type="text" name="shopName" required value="<%= shop.shop_name %>"></div>
         <div class="form-group"><label>Số điện thoại *</label><input type="text" name="phoneNumber" required value="<%= shop.phone_number %>"></div>
+        <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group"><label>Tỉnh/Thành phố</label><select id="provinceSelect"><option value="">-- Đang tải... --</option></select></div>
+          <div class="form-group"><label>Phường/Xã</label><select id="wardSelect" disabled><option value="">Chọn tỉnh/thành phố trước</option></select></div>
+        </div>
         <div class="form-group"><label>Địa chỉ *</label><textarea name="address" rows="2" required><%= shop.address %></textarea></div>
         <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
           <div class="form-group"><label>Giờ mở cửa</label><input type="time" name="openTime" value="<%= shop.open_time || '' %>"></div>
@@ -69,6 +73,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/vn_address_picker.js"></script>
 <script>
   // Bản đồ chọn vị trí cửa hàng — khởi tạo tại vị trí đã lưu, chủ shop bấm vào
   // bản đồ để ghim lại vị trí mới trước khi bấm "Lưu thay đổi".
@@ -127,6 +132,28 @@
     // trước đó, hoặc chủ shop vừa bấm ghim mới — tránh việc chỉ sửa số điện
     // thoại/giờ mở cửa mà vô tình ghi đè vị trí thành toạ độ mặc định.
     window.__shopMapHasPinned = () => hasSavedLocation || hasPinnedNewLocation;
+
+    // Chọn Tỉnh/Thành phố + Phường/Xã -> tự chuyển bản đồ tới đó thay vì bắt
+    // chủ shop tự dò map, vẫn điền lại ô "Địa chỉ" và có thể bấm map để ghim
+    // chính xác hơn sau đó (dùng chung logic với register.ejs).
+    initVnAddressPicker({
+      provinceSelectId: "provinceSelect",
+      wardSelectId: "wardSelect",
+      onLocationResolved: (newLat, newLng, label) => {
+        lat = newLat;
+        lng = newLng;
+        hasPinnedNewLocation = true;
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng], 15);
+        document.getElementById("shopLatitude").value = lat;
+        document.getElementById("shopLongitude").value = lng;
+        const addressField = document.querySelector('textarea[name="address"]');
+        if (addressField) addressField.value = label;
+      },
+      onError: (err) => {
+        showToast(err.message || "Không xác định được vị trí khu vực này, hãy ghim tay trên bản đồ", "error");
+      },
+    });
   })();
 
   document.getElementById("settingsForm").addEventListener("submit", async (e) => {

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:geolocator/geolocator.dart';
 
 enum LocationFailureReason {
@@ -59,6 +61,21 @@ class LocationService {
     _preferDeliveryOverGps = preferOverGps && _deliveryCoordinates != null;
   }
 
+  /// Xoá toạ độ địa chỉ giao hàng đã "ghim" và cờ ưu tiên nó hơn GPS.
+  ///
+  /// [LocationService] là singleton sống suốt vòng đời app (đăng ký qua
+  /// GetIt), nên nếu không gọi hàm này khi đăng xuất, tài khoản đăng nhập kế
+  /// tiếp trong CÙNG phiên chạy app sẽ vẫn thấy "Cửa hàng gần bạn" tính theo
+  /// địa chỉ giao hàng của tài khoản TRƯỚC ĐÓ thay vì vị trí GPS thật — trông
+  /// như thể vị trí bị "khoá cứng" vào tài khoản đầu tiên đăng nhập trên máy.
+  /// Không xoá [_lastKnownCoordinates] — đó là toạ độ GPS thô của thiết bị,
+  /// không gắn với tài khoản nào, giữ lại giúp lần tải trang chủ kế tiếp có
+  /// ngay dữ liệu để hiện trong lúc chờ GPS tươi.
+  void resetDeliveryPreference() {
+    _deliveryCoordinates = null;
+    _preferDeliveryOverGps = false;
+  }
+
   /// Toạ độ có sẵn NGAY LẬP TỨC (không phải chờ GPS) để trang chủ hiện dữ
   /// liệu trước, rồi mới tải lại bằng GPS tươi sau. Null nếu chưa có gì.
   ({double latitude, double longitude})? get quickCoordinates {
@@ -102,33 +119,59 @@ class LocationService {
   /// cũ thay vì null (xem [_lastKnownCoordinates]).
   Future<({double latitude, double longitude})?> getCurrentCoordinates() async {
     try {
+      // TODO(debug): log tạm để chẩn đoán vì sao vị trí đôi khi không lấy
+      // được ngay lần đầu mở app — xoá khi đã xác nhận ổn định.
       if (!await Geolocator.isLocationServiceEnabled()) {
+        debugPrint('[LocationService] location service (GPS) đang TẮT trên thiết bị');
         return _lastKnownCoordinates;
       }
 
       var permission = await Geolocator.checkPermission();
+      debugPrint('[LocationService] permission hiện tại: $permission');
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
+        debugPrint('[LocationService] permission sau khi xin: $permission');
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         return _lastKnownCoordinates;
       }
 
+      return await _fetchPosition(const Duration(seconds: 6));
+    } catch (e) {
+      // Bao gồm cả TimeoutException khi máy bắt GPS chậm/không có tín hiệu.
+      debugPrint('[LocationService] getCurrentCoordinates lỗi: $e');
+      return _lastKnownCoordinates;
+    }
+  }
+
+  /// Lấy toạ độ GPS thô, với 1 lần thử lại nếu đây là lần bắt tín hiệu ĐẦU
+  /// TIÊN trong phiên chạy (chưa có [_lastKnownCoordinates] để dùng tạm) và
+  /// lần đầu bị timeout. Các lần sau đã có toạ độ cũ để dùng tạm nên không
+  /// cần thử lại, tránh làm các lần load thường ngày chậm thêm vô ích.
+  Future<({double latitude, double longitude})?> _fetchPosition(
+    Duration timeLimit, {
+    bool isRetry = false,
+  }) async {
+    try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
+        locationSettings: LocationSettings(
           accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 6),
+          timeLimit: timeLimit,
         ),
       );
+      debugPrint('[LocationService] GPS fix OK: ${position.latitude}, ${position.longitude}');
       _lastKnownCoordinates = (
         latitude: position.latitude,
         longitude: position.longitude,
       );
       return _lastKnownCoordinates;
-    } catch (_) {
-      // Bao gồm cả TimeoutException khi máy bắt GPS chậm/không có tín hiệu.
-      return _lastKnownCoordinates;
+    } on TimeoutException {
+      debugPrint('[LocationService] getCurrentPosition timeout (isRetry=$isRetry, limit=${timeLimit.inSeconds}s)');
+      if (!isRetry && _lastKnownCoordinates == null) {
+        return await _fetchPosition(timeLimit, isRetry: true);
+      }
+      rethrow;
     }
   }
 

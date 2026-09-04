@@ -3,6 +3,7 @@ const productVariantRepository = require("../repositories/productVariant.reposit
 const productBatchRepository = require("../repositories/productBatch.repository");
 const { toSlug } = require("../utils/slug.util");
 const { parseNonNegativeNumber, parseSalePrice } = require("../utils/validate.util");
+const { UNLIMITED_STOCK_FALLBACK } = require("../constants/inventory.constants");
 
 class ProductVariantService {
   /**
@@ -39,7 +40,12 @@ class ProductVariantService {
       throw new Error("Giá biến thể phải lớn hơn 0");
     }
 
-    const parsedStock = parseNonNegativeNumber(stockQuantity, "Tồn kho", { integer: true });
+    // Form Shop Portal không còn ô nhập tồn kho — bỏ trống thì coi như bán
+    // không giới hạn thay vì mặc định 0 (xem constants/inventory.constants.js).
+    const parsedStock = parseNonNegativeNumber(stockQuantity, "Tồn kho", {
+      integer: true,
+      fallback: UNLIMITED_STOCK_FALLBACK,
+    });
     const parsedSalePrice = parseSalePrice(salePrice, parsedPrice);
     let expiredAtObj = null;
     if (parsedStock > 0 && expiredAt) {

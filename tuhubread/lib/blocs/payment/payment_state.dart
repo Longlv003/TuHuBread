@@ -19,15 +19,39 @@ class PaymentLoading extends PaymentState {
   const PaymentLoading();
 }
 
-/// Đã nhận được URL thanh toán → sẵn sàng mở WebView
+/// Đã nhận được biểu mẫu thanh toán SePay → sẵn sàng mở WebView và POST
+/// [checkoutFields] tới [checkoutUrl].
 class PaymentUrlReady extends PaymentState {
-  final String paymentUrl;
+  final String checkoutUrl;
+  final Map<String, dynamic> checkoutFields;
+  final String txnRef;
   final double totalAmount;
 
-  const PaymentUrlReady({required this.paymentUrl, required this.totalAmount});
+  const PaymentUrlReady({
+    required this.checkoutUrl,
+    required this.checkoutFields,
+    required this.txnRef,
+    required this.totalAmount,
+  });
 
   @override
-  List<Object?> get props => [paymentUrl, totalAmount];
+  List<Object?> get props => [checkoutUrl, checkoutFields, txnRef, totalAmount];
+}
+
+/// Đã nhận được URL thanh toán VNPay → sẵn sàng mở WebView redirect GET.
+class VnpayUrlReady extends PaymentState {
+  final String paymentUrl;
+  final String txnRef;
+  final double totalAmount;
+
+  const VnpayUrlReady({
+    required this.paymentUrl,
+    required this.txnRef,
+    required this.totalAmount,
+  });
+
+  @override
+  List<Object?> get props => [paymentUrl, txnRef, totalAmount];
 }
 
 /// Thanh toán thành công (sau khi verify)

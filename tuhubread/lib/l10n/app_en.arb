@@ -112,6 +112,7 @@
   "paymentMethodSectionTitle": "Select Payment Method",
   "paymentMethodCash": "Payment on Delivery",
   "paymentMethodVnpay": "VNPay Payment Gateway",
+  "paymentMethodSepay": "SePay Payment Gateway",
   "paymentMethodMomo": "MoMo Wallet",
   "paymentMethodZalopay": "ZaloPay Wallet",
   "paymentMethodOnlineNote": "Online payment gateway is coming soon. Your order will still be placed and you can pay on delivery for now.",
@@ -524,7 +525,7 @@
       }
     }
   },
-  "paymentVnpayFailed": "The VNPAY payment was not successful.",
+  "paymentVnpayFailed": "The payment was not successful or was cancelled.",
   "deliveryFree": "Free",
   "addressPickTitle": "Pick an address",
   "addressBuildingHint": "Building, floor (optional)",

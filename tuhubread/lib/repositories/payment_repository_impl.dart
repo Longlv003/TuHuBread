@@ -18,6 +18,52 @@ class PaymentRepositoryImpl implements PaymentRepository {
   const PaymentRepositoryImpl({required this.apiService});
 
   @override
+  Future<Result<OrderResultModel>> createSepayPayment({
+    required String addressId,
+    required String deliveryOption,
+    String? voucherCode,
+    String? note,
+    List<CartItemModel>? items,
+  }) async {
+    try {
+      final res = await apiService.post('/api/payments/sepay', {
+        'address_id': addressId,
+        'delivery_option': deliveryOption,
+        'voucher_code': ?voucherCode,
+        'note': ?note,
+        if (items != null)
+          'items': items
+              .map(
+                (item) => {
+                  'product_id': item.productId,
+                  'variant_id': item.variantId,
+                  'product_name': item.productName,
+                  'variant_name': item.variantName,
+                  'product_image': item.image,
+                  'shop_id': item.shopId,
+                  'quantity': item.quantity,
+                  'unit_price': item.unitPrice,
+                  'selected_options': item.selectedOptionIds
+                      .map((id) => {'option_id': id})
+                      .toList(),
+                },
+              )
+              .toList(),
+      });
+
+      if (res['data'] != null) {
+        return Success(
+          OrderResultModel.fromJson(res['data'] as Map<String, dynamic>),
+        );
+      }
+      return Failure(res['msg'] ?? AppStrings.current.errorCreatePaymentLink);
+    } catch (e, s) {
+      _log.e('[createSepayPayment] Failed', error: e, stackTrace: s);
+      return Failure(AppStrings.current.errorConnectPayment);
+    }
+  }
+
+  @override
   Future<Result<OrderResultModel>> createVnpayPayment({
     required String addressId,
     required String deliveryOption,
@@ -66,10 +112,11 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<Result<PaymentVerifyResult>> verifyPayment({
     required String txnRef,
+    String gateway = 'sepay',
   }) async {
     try {
       final res = await apiService.get(
-        '/api/payment/vnpay-verify',
+        '/api/payment/$gateway-verify',
         query: {'txnRef': txnRef},
       );
 

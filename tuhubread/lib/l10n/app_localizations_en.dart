@@ -298,6 +298,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodVnpay => 'VNPay Payment Gateway';
 
   @override
+  String get paymentMethodSepay => 'SePay Payment Gateway';
+
+  @override
   String get paymentMethodMomo => 'MoMo Wallet';
 
   @override
@@ -1305,7 +1308,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get paymentVnpayFailed => 'The VNPAY payment was not successful.';
+  String get paymentVnpayFailed =>
+      'The payment was not successful or was cancelled.';
 
   @override
   String get deliveryFree => 'Free';

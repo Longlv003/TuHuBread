@@ -26,7 +26,12 @@ const orderService = require("../services/order.service");
 const reviewService = require("../services/review.service");
 const reviewRepository = require("../repositories/review.repository");
 
-const PAYMENT_METHODS = ["cash", "vnpay"];
+// Chỉ "cash" — thanh toán qua cổng (trước là VNPay, nay là SePay) luôn phải
+// đi qua /api/payments/sepay (tạo payment session riêng, Order chỉ được tạo
+// SAU KHI xác nhận đã thanh toán thật), không bao giờ tạo Order trực tiếp qua
+// route COD này. Để "vnpay" lọt vào whitelist ở đây trước đây là kẽ hở: cho
+// phép tạo đơn với payment_status mặc định "unpaid" mà né hẳn việc thanh toán.
+const PAYMENT_METHODS = ["cash"];
 
 async function findCurrentUser(req) {
   return userModel.findOne({ firebase_uid: req.user.uid });

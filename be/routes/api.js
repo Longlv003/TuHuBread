@@ -84,6 +84,10 @@ router.post("/carts/switch-shop", firebaseAuth, cartCtrl.switchShop);
 
 // Payment Routes
 var paymentCtrl = require("../controllers/payment.controller");
+router.post("/payments/sepay", firebaseAuth, paymentCtrl.createSepayPayment);
+router.get("/payment/sepay-return", paymentCtrl.sepayReturn);
+router.get("/payment/sepay-verify", firebaseAuth, paymentCtrl.verifyPayment);
+router.post("/payment/sepay-ipn", paymentCtrl.sepayIpn);
 router.post("/payments/vnpay", firebaseAuth, paymentCtrl.createVnpayPayment);
 router.get("/payment/vnpay-return", paymentCtrl.vnpayReturn);
 router.get("/payment/vnpay-ipn", paymentCtrl.vnpayIpn);

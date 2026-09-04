@@ -118,9 +118,10 @@ class ReportService {
   async getPlatformDashboard({ days = 30, from, to } = {}) {
     const { sinceDate, untilDate, numDays } = resolveDateRange({ days, from, to });
 
-    const [rawDaily, topProducts, totalShops, totalProducts, totalCustomers, totalOrders] = await Promise.all([
+    const [rawDaily, topProducts, topShops, totalShops, totalProducts, totalCustomers, totalOrders] = await Promise.all([
       reportRepository.getPlatformRevenueByDay(sinceDate, untilDate),
       reportRepository.getPlatformTopProducts(sinceDate, untilDate, 10),
+      reportRepository.getPlatformTopShops(sinceDate, untilDate, 10),
       reportRepository.countTotalShops(),
       reportRepository.countTotalProducts(),
       reportRepository.countTotalCustomers(),
@@ -134,6 +135,7 @@ class ReportService {
     return {
       dailyRevenue,
       topProducts,
+      topShops,
       summary: {
         totalRevenue,
         totalOrdersInRange,

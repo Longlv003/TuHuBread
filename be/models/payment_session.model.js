@@ -1,9 +1,9 @@
 const db = require("../configs/db");
 
 /**
- * PaymentSession — lưu thông tin giỏ hàng tạm thời TRƯỚC khi chuyển sang VNPAY.
- * _id của document này được dùng làm vnp_TxnRef (1 ID duy nhất, không phân tách).
- * Sau khi VNPAY callback thành công, service sẽ dùng session này để tạo các Order thực tế.
+ * PaymentSession — lưu thông tin giỏ hàng tạm thời TRƯỚC khi chuyển sang SePay.
+ * _id của document này được dùng làm order_invoice_number (1 mã duy nhất).
+ * Sau khi xác nhận SePay đã thanh toán, service sẽ dùng session này để tạo các Order thực tế.
  */
 const paymentSessionSchema = new db.mongoose.Schema(
   {
@@ -58,6 +58,15 @@ const paymentSessionSchema = new db.mongoose.Schema(
       enum: ["priority", "standard", "saving"],
       default: "standard",
     },
+    // Cổng thanh toán đã dùng để tạo session này — quyết định field nào
+    // (sepay_* hay vnp_*) được ghi khi confirm, và giá trị payment_method
+    // gán cho Order tạo ra từ session.
+    gateway: {
+      type: String,
+      required: true,
+      enum: ["sepay", "vnpay"],
+      default: "sepay",
+    },
     // Voucher snapshot (nếu có)
     voucher_id: {
       type: db.mongoose.Schema.Types.ObjectId,
@@ -74,6 +83,10 @@ const paymentSessionSchema = new db.mongoose.Schema(
       enum: ["PENDING", "PROCESSING", "PAID", "FAILED", "EXPIRED"],
       default: "PENDING",
     },
+    // Thông tin giao dịch sau khi xác nhận từ SePay
+    sepay_transaction_id: { type: String, default: null },
+    sepay_payment_method: { type: String, default: null },
+    sepay_status: { type: String, default: null },
     // Thông tin giao dịch sau khi VNPAY callback
     vnp_transaction_no: { type: String, default: null },
     vnp_bank_code: { type: String, default: null },

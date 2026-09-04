@@ -14,7 +14,20 @@ const _addressLabels = ['home', 'company', 'other'];
 class AddressFormPage extends StatefulWidget {
   final AddressModel? address;
 
-  const AddressFormPage({super.key, this.address});
+  /// Toạ độ + địa chỉ GPS điền sẵn khi mở form để THÊM MỚI (bỏ qua nếu
+  /// [address] có giá trị, tức đang sửa) — dùng khi khách bấm "Vị trí hiện
+  /// tại" thay vì phải tự dò trên bản đồ từ đầu.
+  final double? initialLatitude;
+  final double? initialLongitude;
+  final String? initialAddressText;
+
+  const AddressFormPage({
+    super.key,
+    this.address,
+    this.initialLatitude,
+    this.initialLongitude,
+    this.initialAddressText,
+  });
 
   @override
   State<AddressFormPage> createState() => _AddressFormPageState();
@@ -56,9 +69,9 @@ class _AddressFormPageState extends State<AddressFormPage> {
     _gateController = TextEditingController();
     _isDefault = widget.address?.isDefault ?? false;
     _selectedLabel = widget.address?.label ?? 'other';
-    _pickedAddress = widget.address?.addressDetail;
-    _detectedLatitude = widget.address?.latitude;
-    _detectedLongitude = widget.address?.longitude;
+    _pickedAddress = widget.address?.addressDetail ?? widget.initialAddressText;
+    _detectedLatitude = widget.address?.latitude ?? widget.initialLatitude;
+    _detectedLongitude = widget.address?.longitude ?? widget.initialLongitude;
   }
 
   @override

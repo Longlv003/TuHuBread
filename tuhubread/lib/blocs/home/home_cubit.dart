@@ -75,9 +75,12 @@ class HomeCubit extends Cubit<HomeState> {
       if (requestId != _loadRequestId || isClosed) return;
     }
 
-    // Pha 2: GPS tươi. Timeout để trang chủ không bao giờ treo vì GPS chậm.
+    // Pha 2: GPS tươi. Timeout để trang chủ không bao giờ treo vì GPS chậm —
+    // đủ dài hơn timeout thử-lại-lần-2 bên trong LocationService (12s) dành
+    // cho lần bắt tín hiệu đầu tiên (tài khoản/thiết bị mới), cộng thêm biên
+    // an toàn cho request permission dialog.
     final fresh = await locationService.resolveNearbyCoordinates().timeout(
-      const Duration(seconds: 8),
+      const Duration(seconds: 15),
       onTimeout: () => locationService.lastKnownCoordinates,
     );
     if (requestId != _loadRequestId || isClosed) return;

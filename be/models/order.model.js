@@ -26,7 +26,10 @@ const orderSchema = new db.mongoose.Schema(
     payment_method: {
       type: String,
       required: true,
-      enum: ["cash", "momo", "zalopay", "bank", "vnpay"],
+      // "vnpay" giữ lại trong enum dù không còn dùng để tạo đơn mới — các đơn
+      // cũ trong DB đã lưu giá trị này, xoá khỏi enum sẽ làm validate lỗi mỗi
+      // khi có thao tác .save() trên đơn cũ đó.
+      enum: ["cash", "momo", "zalopay", "bank", "vnpay", "sepay"],
     },
     delivery_option: {
       type: String,

@@ -1,5 +1,6 @@
 const { auth } = require("../configs/firebase.config");
 const { userModel } = require("../models/user.model");
+const { normalizePhone } = require("../utils/validate.util");
 
 exports.verifyFirebaseUser = async (req, res) => {
   let dataRes = { msg: "OK", data: null };
@@ -83,7 +84,20 @@ exports.updateProfile = async (req, res) => {
     const { full_name, phone } = req.body;
 
     if (full_name !== undefined) user.full_name = full_name;
-    if (phone !== undefined) user.phone = phone;
+    // Cho phép xoá trắng số điện thoại (phone === ""), nhưng nếu có nhập thì
+    // phải đúng định dạng — không âm thầm lưu số sai rồi mới lộ ra lúc cần gọi.
+    if (phone !== undefined) {
+      if (phone === "" || phone === null) {
+        user.phone = "";
+      } else {
+        try {
+          user.phone = normalizePhone(phone);
+        } catch (err) {
+          dataRes.msg = err.message;
+          return res.status(400).json(dataRes);
+        }
+      }
+    }
 
     await user.save();
 

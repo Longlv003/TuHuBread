@@ -26,8 +26,7 @@
           <label for="editStatus">Trạng thái</label>
           <select id="editStatus" name="status">
             <option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Đang bán</option>
-            <option value="inactive" <%= product.status === 'inactive' ? 'selected' : '' %>>Ngừng bán</option>
-            <option value="out_of_stock" <%= product.status === 'out_of_stock' ? 'selected' : '' %>>Hết hàng</option>
+            <option value="inactive" <%= product.status !== 'active' ? 'selected' : '' %>>Ngừng bán</option>
           </select>
         </div>
         <div class="form-group">
@@ -85,14 +84,13 @@
       </div>
       <div class="table-container">
         <table>
-          <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
+          <thead><tr><th>Tên</th><th>Giá</th><th>Giá KM</th><th>HSD</th><th>Trạng thái</th><th class="col-actions">Hành động</th></tr></thead>
           <tbody>
               <% variants.forEach(v => { %>
                 <tr>
                   <td><strong><%= v.variant_name %></strong></td>
                   <td><%= v.price.toLocaleString('vi-VN') %>đ</td>
                   <td><%= v.sale_price ? v.sale_price.toLocaleString('vi-VN') + 'đ' : '-' %></td>
-                  <td><%= v.stock_quantity %></td>
                   <td><%= variantExpiry[v._id] ? new Date(variantExpiry[v._id]).toLocaleDateString('vi-VN') : '-' %></td>
                   <td><span class="status-badge <%= v.status === 'active' ? 'status-active' : 'status-inactive' %>"><%= v.status %></span></td>
                   <td class="col-actions">
@@ -104,11 +102,11 @@
                 </tr>
               <% }) %>
               <% if (variants.length === 0) { %>
-                <tr><td colspan="7">
+                <tr><td colspan="6">
                   <div class="empty-state">
                     <div class="empty-state-icon"><i class="fa-solid fa-layer-group"></i></div>
                     <div class="empty-state-title">Chưa có biến thể nào</div>
-                    <div class="empty-state-desc">Bấm "Thêm biến thể" để tạo size, giá và tồn kho cho sản phẩm.</div>
+                    <div class="empty-state-desc">Bấm "Thêm biến thể" để tạo size và giá cho sản phẩm.</div>
                   </div>
                 </td></tr>
               <% } %>
@@ -190,27 +188,20 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="variantStock">Tồn kho</label>
-            <input type="number" id="variantStock" name="stockQuantity" min="0" value="0">
-          </div>
-          <div class="form-group">
             <label for="variantExpiredAt">Hạn sử dụng</label>
             <input type="date" id="variantExpiredAt" name="expiredAt">
           </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label for="variantStatus">Trạng thái</label>
             <select id="variantStatus" name="status">
               <option value="active">Đang bán</option>
               <option value="inactive">Ngừng bán</option>
-              <option value="out_of_stock">Hết hàng</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="variantImage">Ảnh</label>
-            <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewVariantImage(this)">
-          </div>
+        </div>
+        <div class="form-group">
+          <label for="variantImage">Ảnh</label>
+          <input type="file" id="variantImage" name="variantImage" accept="image/*" onchange="previewVariantImage(this)">
         </div>
         <img id="variantPreview" class="preview-box">
       </div>
@@ -347,11 +338,12 @@
       document.getElementById("variantName").value = v.variant_name;
       document.getElementById("variantPrice").value = v.price;
       document.getElementById("variantSalePrice").value = v.sale_price || "";
-      document.getElementById("variantStock").value = v.stock_quantity;
       // Hạn sử dụng để trống: chỉ điền khi vừa nhập thêm hàng, vì mỗi lần điền
       // là tạo một lô mới chứ không sửa hạn của lô cũ.
       document.getElementById("variantExpiredAt").value = "";
-      document.getElementById("variantStatus").value = v.status;
+      // "out_of_stock" là trạng thái cũ (từ thời còn quản lý tồn kho) — select
+      // giờ chỉ còn active/inactive, quy về "inactive" để không bị bỏ trống lựa chọn.
+      document.getElementById("variantStatus").value = v.status === "active" ? "active" : "inactive";
       if (v.image) {
         variantPreview.src = v.image;
         variantPreview.style.display = "block";

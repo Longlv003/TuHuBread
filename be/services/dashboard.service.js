@@ -1,13 +1,8 @@
 const orderRepository = require("../repositories/order.repository");
-const productVariantRepository = require("../repositories/productVariant.repository");
 const reportRepository = require("../repositories/report.repository");
 
-/** Tồn kho từ mức này trở xuống thì coi là sắp hết và đưa vào cảnh báo. */
-const LOW_STOCK_THRESHOLD = 5;
-
-/** Số dòng tối đa cho mỗi khối "Top sản phẩm" / "Sắp hết hàng". */
+/** Số dòng tối đa cho khối "Top sản phẩm". */
 const TOP_PRODUCTS_LIMIT = 5;
-const LOW_STOCK_LIMIT = 5;
 
 /** Các trạng thái shop còn phải xử lý (chưa xong, chưa huỷ). */
 const ACTIVE_STATUSES = ["pending", "confirmed", "preparing", "delivering"];
@@ -46,7 +41,6 @@ class DashboardService {
       todayStatusCounts,
       recent,
       topProductsToday,
-      lowStockVariants,
       unpaidOrders,
       activeOrders,
     ] = await Promise.all([
@@ -54,10 +48,6 @@ class DashboardService {
       orderRepository.countByStatusBetween(shopId, start, end),
       orderRepository.getRecentOrders(shopId, page),
       reportRepository.getTopProducts(shopId, start, end, TOP_PRODUCTS_LIMIT),
-      productVariantRepository.findLowStockByShopId(shopId, {
-        threshold: LOW_STOCK_THRESHOLD,
-        limit: LOW_STOCK_LIMIT,
-      }),
       orderRepository.countUnpaidActive(shopId),
       orderRepository.countByStatuses(shopId, ACTIVE_STATUSES),
     ]);
@@ -82,8 +72,6 @@ class DashboardService {
       topProductsToday,
 
       alerts: {
-        lowStockVariants,
-        lowStockThreshold: LOW_STOCK_THRESHOLD,
         unpaidOrders,
         pendingOrders,
       },

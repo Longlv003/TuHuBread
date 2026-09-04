@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/app_tokens.dart';
 
-/// Màu nền phần đầu tối của màn Đăng nhập / Đăng ký.
-const _authHeaderColor = Color(0xFF16162B);
+/// Màu nền phần đầu của màn Đăng nhập / Đăng ký — theo tông cam chủ đạo của app.
+const _authHeaderColor = AppColors.primary;
 const _authFieldFill = Color(0xFFF4F5F7);
 const _authLabelColor = Color(0xFF9AA0A6);
 
@@ -76,9 +76,9 @@ class AuthScaffold extends StatelessWidget {
                   Text(
                     subtitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFFB6B9C7),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],

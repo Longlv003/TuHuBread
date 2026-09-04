@@ -57,12 +57,17 @@ function parseOptionalDate(value, label) {
 
 /**
  * Số điện thoại Việt Nam: bỏ qua khoảng trắng/dấu chấm/gạch nối người dùng gõ,
- * chấp nhận cả di động (0xxxxxxxxx) lẫn cố định có mã vùng, và dạng +84.
+ * quy chuẩn dạng +84 về đầu 0, rồi bắt buộc kết quả cuối cùng phải bắt đầu
+ * bằng số 0 và có ĐÚNG 10 chữ số (0xxxxxxxxx) — không chấp nhận số cố định
+ * có mã vùng dài/ngắn hơn nữa.
  */
 function normalizePhone(value, label = "Số điện thoại") {
-  const cleaned = String(value || "").replace(/[\s.\-()]/g, "");
-  if (!/^(\+84|0)\d{8,10}$/.test(cleaned)) {
-    throw new Error(`${label} không hợp lệ (ví dụ: 0912345678)`);
+  let cleaned = String(value || "").replace(/[\s.\-()]/g, "");
+  if (cleaned.startsWith("+84")) {
+    cleaned = "0" + cleaned.slice(3);
+  }
+  if (!/^0\d{9}$/.test(cleaned)) {
+    throw new Error(`${label} phải bắt đầu bằng số 0 và có đúng 10 chữ số (ví dụ: 0912345678)`);
   }
   return cleaned;
 }

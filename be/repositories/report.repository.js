@@ -47,12 +47,77 @@ class ReportRepository {
         $group: {
           _id: "$details.product_id",
           product_name: { $first: "$details.product_name" },
+          // Mỗi sản phẩm chỉ thuộc đúng 1 shop (không dùng chung giữa các
+          // shop), nên $first ở đây luôn đúng — không phải gộp nhiều shop.
+          shop_id: { $first: "$shop_id" },
           quantity_sold: { $sum: "$details.quantity" },
           revenue: { $sum: "$details.subtotal" }
         }
       },
       { $sort: { quantity_sold: -1 } },
-      { $limit: limit }
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "shops",
+          localField: "shop_id",
+          foreignField: "_id",
+          as: "shop"
+        }
+      },
+      { $unwind: { path: "$shop", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          product_name: 1,
+          quantity_sold: 1,
+          revenue: 1,
+          shop_name: "$shop.shop_name"
+        }
+      }
+    ]);
+  }
+
+  /**
+   * Top chi nhánh (shop) theo doanh thu toàn sàn — cùng công thức doanh thu
+   * ("items_total - discount_amount", chỉ đơn "completed") với các thống kê
+   * khác để nhất quán số liệu trên Dashboard.
+   */
+  async getPlatformTopShops(sinceDate, untilDate, limit = 10) {
+    return orderModel.aggregate([
+      {
+        $match: {
+          order_status: "completed",
+          deleted_at: null,
+          createdAt: { $gte: sinceDate, $lte: untilDate }
+        }
+      },
+      {
+        $group: {
+          _id: "$shop_id",
+          revenue: { $sum: { $subtract: ["$items_total", "$discount_amount"] } },
+          orders_count: { $sum: 1 }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "shops",
+          localField: "_id",
+          foreignField: "_id",
+          as: "shop"
+        }
+      },
+      { $unwind: { path: "$shop", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          shop_id: "$_id",
+          shop_name: "$shop.shop_name",
+          logo: "$shop.logo",
+          revenue: 1,
+          orders_count: 1
+        }
+      }
     ]);
   }
 

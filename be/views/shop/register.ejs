@@ -286,12 +286,20 @@
           <label for="confirmPassword">Xác nhận mật khẩu</label>
           <input type="password" id="confirmPassword" required placeholder="••••••••">
         </div>
-        <div class="form-group full-width">
-          <label for="address">Địa chỉ cụ thể</label>
-          <textarea id="address" required placeholder="Ghim trên bản đồ bên dưới để lấy địa chỉ tự động"></textarea>
+        <div class="form-group">
+          <label for="provinceSelect">Tỉnh/Thành phố</label>
+          <select id="provinceSelect"><option value="">-- Đang tải... --</option></select>
+        </div>
+        <div class="form-group">
+          <label for="wardSelect">Phường/Xã</label>
+          <select id="wardSelect" disabled><option value="">Chọn tỉnh/thành phố trước</option></select>
         </div>
         <div class="form-group full-width">
-          <label>Vị trí cửa hàng trên Bản đồ (Click để ghim vị trí)</label>
+          <label for="address">Địa chỉ cụ thể</label>
+          <textarea id="address" required placeholder="Chọn tỉnh/thành + phường/xã ở trên, sau đó bổ sung số nhà/tên đường"></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Vị trí cửa hàng trên Bản đồ (tự chuyển tới khi chọn phường/xã — có thể bấm để ghim lại chính xác hơn)</label>
           <div id="map"></div>
         </div>
       </div>
@@ -306,6 +314,7 @@
 
   <!-- Leaflet JS for Map -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/vn_address_picker.js"></script>
 
   <script>
     const registerForm = document.getElementById("registerForm");
@@ -344,6 +353,24 @@
       } catch (err) {
         console.error("Geocoding failed:", err);
       }
+    });
+
+    // Chọn Tỉnh/Thành phố + Phường/Xã -> tự chuyển bản đồ tới đó, điền sẵn
+    // địa chỉ (chủ shop bổ sung thêm số nhà/tên đường, hoặc bấm map để ghim
+    // chính xác hơn) — thay cho việc phải tự dò map từ đầu.
+    initVnAddressPicker({
+      provinceSelectId: "provinceSelect",
+      wardSelectId: "wardSelect",
+      onLocationResolved: (lat, lng, label) => {
+        selectedLat = lat;
+        selectedLng = lng;
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng], 15);
+        document.getElementById("address").value = label;
+      },
+      onError: (err) => {
+        showAlert(err.message || "Không xác định được vị trí khu vực này, hãy ghim tay trên bản đồ", "error");
+      },
     });
 
     function showAlert(msg, type = "error") {

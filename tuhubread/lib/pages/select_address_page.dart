@@ -7,6 +7,8 @@ import '../blocs/address/address_cubit.dart';
 import '../blocs/address/address_state.dart';
 import '../di.dart';
 import '../models/address.model.dart';
+import '../services/geocoding_service.dart';
+import '../services/location_service.dart';
 import '../utils/address_label.dart';
 import 'address_form_page.dart';
 
@@ -38,27 +40,75 @@ class _SelectAddressContent extends StatefulWidget {
 
 class _SelectAddressContentState extends State<_SelectAddressContent> {
   final _searchController = TextEditingController();
+  final _geocoding = GeocodingService();
   String _query = '';
+  bool _locatingCurrentPosition = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _geocoding.dispose();
     super.dispose();
   }
 
   Future<void> _openAddressForm(
     BuildContext context, {
     AddressModel? address,
+    double? initialLatitude,
+    double? initialLongitude,
+    String? initialAddressText,
   }) async {
     final cubit = context.read<AddressCubit>();
     await getx.Get.to(
       () => BlocProvider.value(
         value: cubit,
-        child: AddressFormPage(address: address),
+        child: AddressFormPage(
+          address: address,
+          initialLatitude: initialLatitude,
+          initialLongitude: initialLongitude,
+          initialAddressText: initialAddressText,
+        ),
       ),
       routeName: '/select-address/address-form',
       preventDuplicates: false,
     );
+  }
+
+  /// Bấm "Vị trí hiện tại" — CHỦ ĐỘNG xin quyền + lấy GPS tươi (khác với
+  /// [LocationService.getCurrentCoordinates] chạy ngầm im lặng), dịch ngược
+  /// ra địa chỉ rồi mở form thêm địa chỉ đã điền sẵn, thay vì mở 1 form
+  /// trống không liên quan gì tới "vị trí hiện tại" như trước.
+  Future<void> _useCurrentLocation(BuildContext context) async {
+    if (_locatingCurrentPosition) return;
+    setState(() => _locatingCurrentPosition = true);
+
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final coords = await getIt<LocationService>().requestCurrentLocation();
+      final place = await _geocoding.reverse(coords.latitude, coords.longitude);
+      if (!context.mounted) return;
+      await _openAddressForm(
+        context,
+        initialLatitude: coords.latitude,
+        initialLongitude: coords.longitude,
+        initialAddressText: place?.displayName,
+      );
+    } on LocationException catch (e) {
+      if (!context.mounted) return;
+      final message = switch (e.reason) {
+        LocationFailureReason.serviceDisabled => l10n.homeLocationOffHint,
+        LocationFailureReason.permissionDeniedForever => l10n.homeLocationDeniedHint,
+        LocationFailureReason.permissionDenied => l10n.homeLocationRequiredHint,
+        LocationFailureReason.timeout => l10n.homeLocationFailedHint,
+      };
+      messenger.showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: const Color(0xFFE74C3C)),
+      );
+    } finally {
+      if (mounted) setState(() => _locatingCurrentPosition = false);
+    }
   }
 
   bool _matchesQuery(AddressModel address) {
@@ -163,7 +213,10 @@ class _SelectAddressContentState extends State<_SelectAddressContent> {
                     ],
                     _UseCurrentLocationRow(
                       label: l10n.addressUseCurrentLocation,
-                      onTap: () => _openAddressForm(context),
+                      loading: _locatingCurrentPosition,
+                      onTap: _locatingCurrentPosition
+                          ? null
+                          : () => _useCurrentLocation(context),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -307,9 +360,14 @@ class _PinnedAddressCard extends StatelessWidget {
 
 class _UseCurrentLocationRow extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool loading;
 
-  const _UseCurrentLocationRow({required this.label, required this.onTap});
+  const _UseCurrentLocationRow({
+    required this.label,
+    required this.onTap,
+    this.loading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -320,11 +378,21 @@ class _UseCurrentLocationRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         child: Row(
           children: [
-            const Icon(
-              Icons.my_location_rounded,
-              size: 18,
-              color: Color(0xFFE67E22),
-            ),
+            if (loading)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFE67E22),
+                ),
+              )
+            else
+              const Icon(
+                Icons.my_location_rounded,
+                size: 18,
+                color: Color(0xFFE67E22),
+              ),
             const SizedBox(width: 10),
             Text(
               label,

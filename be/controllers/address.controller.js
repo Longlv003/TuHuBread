@@ -1,5 +1,6 @@
 const { userModel } = require("../models/user.model");
 const { addressModel } = require("../models/address.model");
+const { normalizePhone } = require("../utils/validate.util");
 
 async function findCurrentUser(req) {
   return userModel.findOne({ firebase_uid: req.user.uid });
@@ -55,6 +56,14 @@ exports.createAddress = async (req, res) => {
       return res.status(400).json(dataRes);
     }
 
+    let normalizedPhone;
+    try {
+      normalizedPhone = normalizePhone(receiver_phone, "Số điện thoại người nhận");
+    } catch (err) {
+      dataRes.msg = err.message;
+      return res.status(400).json(dataRes);
+    }
+
     if (is_default) {
       await addressModel.updateMany({ user_id: user._id }, { is_default: false });
     }
@@ -62,7 +71,7 @@ exports.createAddress = async (req, res) => {
     const address = await addressModel.create({
       user_id: user._id,
       receiver_name,
-      receiver_phone,
+      receiver_phone: normalizedPhone,
       address_detail,
       label: ["home", "company", "other"].includes(label) ? label : "other",
       is_default: !!is_default,
@@ -114,7 +123,14 @@ exports.updateAddress = async (req, res) => {
     } = req.body;
 
     if (receiver_name !== undefined) address.receiver_name = receiver_name;
-    if (receiver_phone !== undefined) address.receiver_phone = receiver_phone;
+    if (receiver_phone !== undefined) {
+      try {
+        address.receiver_phone = normalizePhone(receiver_phone, "Số điện thoại người nhận");
+      } catch (err) {
+        dataRes.msg = err.message;
+        return res.status(400).json(dataRes);
+      }
+    }
     if (address_detail !== undefined) address.address_detail = address_detail;
     if (["home", "company", "other"].includes(label)) address.label = label;
     if (typeof latitude === "number" && typeof longitude === "number") {

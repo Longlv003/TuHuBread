@@ -1,9 +1,11 @@
-/// Model kết quả verify giao dịch — response của GET /api/payment/vnpay-verify.
+/// Model kết quả verify giao dịch — response của GET /api/payment/sepay-verify
+/// hoặc GET /api/payment/vnpay-verify.
 class PaymentVerifyResult {
   final String sessionStatus; // PENDING | PAID | FAILED | EXPIRED
   final double totalAmount;
   final DateTime? paidAt;
   final List<String> orderCodes;
+  final String? sepayStatus;
   final String? vnpResponseCode;
 
   const PaymentVerifyResult({
@@ -11,6 +13,7 @@ class PaymentVerifyResult {
     required this.totalAmount,
     this.paidAt,
     required this.orderCodes,
+    this.sepayStatus,
     this.vnpResponseCode,
   });
 
@@ -28,6 +31,7 @@ class PaymentVerifyResult {
       totalAmount: (json['total_amount'] as num? ?? 0).toDouble(),
       paidAt: paidAtStr != null ? DateTime.tryParse(paidAtStr) : null,
       orderCodes: codes,
+      sepayStatus: json['sepay_status'] as String?,
       vnpResponseCode: json['vnp_response_code'] as String?,
     );
   }

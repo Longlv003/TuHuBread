@@ -1,5 +1,6 @@
 "use strict";
 
+const { SePayPgClient } = require("sepay-pg-node");
 const {
   VNPay,
   ignoreLogger,
@@ -21,6 +22,21 @@ const notificationService = require("./notification.service");
 const { NOTIFICATION_TYPES } = require("../constants/notification.constants");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Tạo instance SePay Payment Gateway từ biến môi trường.
+ */
+function buildSepayClient() {
+  const { SEPAY_MERCHANT_ID, SEPAY_SECRET_KEY, SEPAY_ENV } = process.env;
+  if (!SEPAY_MERCHANT_ID || !SEPAY_SECRET_KEY) {
+    throw new Error("Thiếu cấu hình SePay (SEPAY_MERCHANT_ID hoặc SEPAY_SECRET_KEY)");
+  }
+  return new SePayPgClient({
+    env: SEPAY_ENV === "production" ? "production" : "sandbox",
+    merchant_id: SEPAY_MERCHANT_ID,
+    secret_key: SEPAY_SECRET_KEY,
+  });
+}
 
 /**
  * Tạo instance VNPay từ biến môi trường.
@@ -69,29 +85,12 @@ function generateOrderCode() {
 
 class PaymentService {
   /**
-   * Tạo URL thanh toán VNPAY.
-   *
-   * Luồng:
-   *  1. Gọi orderService.validateCartAndCalculate() để validate & tính giá server-side.
-   *  2. Snapshot toàn bộ dữ liệu đã validate vào paymentSessionModel (status=PENDING).
-   *  3. Dùng session._id làm vnp_TxnRef (1 ID duy nhất, không có dấu phẩy).
-   *  4. Đánh dấu voucher "đang dùng" (nếu có), nhưng CHƯA tiêu dùng thật sự.
-   *  5. Build & trả về paymentUrl.
-   *
-   * @param {import('express').Request} req
-   * @param {Object} user  — document userModel đã resolve từ firebase_uid
-   * @param {Object} params
-   * @param {string} params.addressId
-   * @param {string} params.deliveryOption
-   * @param {string|null} params.voucherCode
-   * @param {string|null} params.note
-   * @param {string} [params.locale="VN"]
-   * @param {Array|undefined} params.items — nếu có (vd. "Mua ngay"), thanh
-   *   toán đúng các sản phẩm này thay vì đọc toàn bộ giỏ hàng thật.
-   * @returns {Promise<{ paymentUrl: string, totalAmount: number }>}
+   * Validate giỏ hàng & tạo payment session (snapshot) dùng chung cho cả
+   * SePay và VNPay — mỗi cổng chỉ khác nhau ở bước build URL/biểu mẫu thanh
+   * toán phía sau, phần validate + snapshot giỏ hàng là như nhau.
+   * @private
    */
-  async createPaymentUrl(req, user, { addressId, deliveryOption, voucherCode, note, locale = "VN", items }) {
-    // 1. Validate giỏ hàng (hoặc items chỉ định thẳng) & tính giá server-side
+  async _createSession(user, { addressId, deliveryOption, voucherCode, note, items, gateway }) {
     const calc = await orderService.validateCartAndCalculate(user._id, {
       addressId,
       deliveryOption,
@@ -99,10 +98,10 @@ class PaymentService {
       explicitItems: items,
     });
 
-    // 2. Tạo payment session (snapshot)
     const session = await paymentSessionRepository.create({
       user_id: user._id,
       address_id: calc.address._id,
+      gateway,
       items: calc.validatedItems.map((it) => ({
         product_id: it.product_id,
         variant_id: it.variant_id,
@@ -128,9 +127,98 @@ class PaymentService {
       status: "PENDING",
     });
 
+    return { session, calc };
+  }
+
+  /**
+   * Tạo biểu mẫu thanh toán SePay từ giỏ hàng hiện tại.
+   *
+   * Luồng:
+   *  1. Gọi orderService.validateCartAndCalculate() để validate & tính giá server-side.
+   *  2. Snapshot toàn bộ dữ liệu đã validate vào paymentSessionModel (status=PENDING).
+   *  3. Dùng session._id làm order_invoice_number (1 ID duy nhất).
+   *  4. Đánh dấu voucher "đang dùng" (nếu có), nhưng CHƯA tiêu dùng thật sự.
+   *  5. Build & trả về checkoutUrl + checkoutFields (biểu mẫu POST đã ký).
+   *
+   * @param {import('express').Request} req
+   * @param {Object} user  — document userModel đã resolve từ firebase_uid
+   * @param {Object} params
+   * @param {string} params.addressId
+   * @param {string} params.deliveryOption
+   * @param {string|null} params.voucherCode
+   * @param {string|null} params.note
+   * @param {Array|undefined} params.items — nếu có (vd. "Mua ngay"), thanh
+   *   toán đúng các sản phẩm này thay vì đọc toàn bộ giỏ hàng thật.
+   * @returns {Promise<{ checkoutUrl: string, checkoutFields: Object, txnRef: string, totalAmount: number }>}
+   */
+  async createPaymentUrl(req, user, { addressId, deliveryOption, voucherCode, note, items }) {
+    const { session, calc } = await this._createSession(user, {
+      addressId,
+      deliveryOption,
+      voucherCode,
+      note,
+      items,
+      gateway: "sepay",
+    });
+
+    // txnRef dùng làm order_invoice_number cho SePay — phải DUY NHẤT tuyệt đối
+    // (SePay từ chối nếu trùng mã đã dùng trước đó), session._id (ObjectId)
+    // đảm bảo điều này tương tự cách VNPay dùng txnRef.
     const txnRef = session._id.toString();
 
-    // 3. Build VNPAY URL
+    // Build biểu mẫu thanh toán SePay (POST form) — khác VNPay ở chỗ SePay
+    // KHÔNG trả về 1 URL để redirect GET, mà trả checkoutUrl + các field cần
+    // POST kèm chữ ký HMAC-SHA256 do chính SDK tự tính (không tự viết logic ký
+    // tay, để đảm bảo khớp thuật toán mà server SePay kiểm tra).
+    // Gắn kèm txnRef vào URL callback — SePay redirect về ĐÚNG URL này (kèm
+    // nguyên query string) nên đây là cách duy nhất để nhận diện đúng giao
+    // dịch nào khi khách quay lại (SDK không tự đính order_invoice_number vào
+    // URL trả về).
+    const returnUrl = `${process.env.SEPAY_RETURN_URL}?txnRef=${txnRef}`;
+
+    const client = buildSepayClient();
+    const checkoutFields = client.checkout.initOneTimePaymentFields({
+      operation: "PURCHASE",
+      payment_method: "BANK_TRANSFER",
+      order_invoice_number: txnRef,
+      order_amount: Math.round(calc.totalAmount),
+      currency: "VND",
+      order_description: `Thanh toan don hang ${txnRef}`,
+      success_url: returnUrl,
+      error_url: returnUrl,
+      cancel_url: returnUrl,
+    });
+
+    return {
+      checkoutUrl: client.checkout.initCheckoutUrl(),
+      checkoutFields,
+      txnRef,
+      totalAmount: calc.totalAmount,
+    };
+  }
+
+  /**
+   * Tạo URL thanh toán VNPAY từ giỏ hàng hiện tại — cùng luồng validate +
+   * snapshot session như SePay ([_createSession]), chỉ khác bước build URL:
+   * VNPay chỉ cần 1 URL để redirect GET (không cần POST biểu mẫu như SePay).
+   *
+   * @param {import('express').Request} req
+   * @param {Object} user
+   * @param {Object} params — giống [createPaymentUrl], thêm `locale`
+   * @returns {Promise<{ paymentUrl: string, txnRef: string, totalAmount: number }>}
+   */
+  async createVnpayPaymentUrl(req, user, { addressId, deliveryOption, voucherCode, note, locale = "VN", items }) {
+    const { session, calc } = await this._createSession(user, {
+      addressId,
+      deliveryOption,
+      voucherCode,
+      note,
+      items,
+      gateway: "vnpay",
+    });
+
+    const txnRef = session._id.toString();
+
     const vnpay = buildVnpayInstance();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -150,9 +238,8 @@ class PaymentService {
       vnp_ExpireDate: dateFormat(tomorrow),
     });
 
-    return { paymentUrl, totalAmount: calc.totalAmount };
+    return { paymentUrl, txnRef, totalAmount: calc.totalAmount };
   }
-
 
   /**
    * Xác minh chữ ký VNPAY Return URL.
@@ -175,6 +262,22 @@ class PaymentService {
   }
 
   /**
+   * Tra cứu trạng thái giao dịch THẬT từ SePay — KHÔNG tin theo tham số trong
+   * URL callback (success_url/error_url), vì SDK không cung cấp cách verify
+   * chữ ký cho các callback này. Đây là nguồn xác nhận đáng tin duy nhất,
+   * đóng vai trò tương đương vnp_SecureHash của VNPay.
+   * @param {string} orderInvoiceNumber — chính là txnRef (session._id)
+   */
+  async fetchOrderStatus(orderInvoiceNumber) {
+    const client = buildSepayClient();
+    const response = await client.order.retrieve(orderInvoiceNumber);
+    // response.data là body JSON thô từ SePay API, bọc trong { data: {...} }
+    // (xác nhận qua log thực tế: { data: { order_status: "CAPTURED", ... } }) —
+    // cần bóc lớp "data" ngoài cùng này để lấy đúng object chi tiết đơn hàng.
+    return response.data?.data ?? response.data;
+  }
+
+  /**
    * Xác nhận kết quả thanh toán từ VNPAY và thực hiện các tác vụ sau thanh toán:
    *  - Nếu VNPAY trả về 00 (thành công):
    *    a. Tách items trong session theo shop_id → tạo Order + OrderDetail cho mỗi shop.
@@ -182,6 +285,98 @@ class PaymentService {
    *    c. Đánh dấu voucher đã dùng.
    *    d. Cập nhật session → PAID.
    *  - Nếu thất bại: cập nhật session → FAILED.
+   *
+   * KHÁC với VNPAY trước đây: hàm này KHÔNG nhận amount/trạng thái từ tham số
+   * URL callback (success_url/error_url) vì SDK SePay không cung cấp cách
+   * verify chữ ký cho các callback đó — tin theo tham số URL sẽ cho phép giả
+   * mạo (tự sửa URL thành "đã thanh toán"). Thay vào đó, hàm luôn tự gọi
+   * [fetchOrderStatus] để lấy amount + trạng thái THẬT trực tiếp từ SePay.
+   *
+   * @param {string} txnRef — order_invoice_number (chính là session._id)
+   * @returns {Promise<{ RspCode: string, Message: string, orderCodes?: string[] }>}
+   */
+  async confirmPayment(txnRef) {
+    // 1. Tìm session
+    const session = await paymentSessionRepository.findById(txnRef);
+    if (!session) {
+      return { RspCode: "01", Message: "Order not found" };
+    }
+
+    // 2. Kiểm tra idempotency — đã xử lý rồi thì không làm lại
+    if (session.status === "PAID") {
+      return { RspCode: "02", Message: "Order already confirmed" };
+    }
+    if (session.status === "FAILED") {
+      return { RspCode: "02", Message: "Order already failed" };
+    }
+
+    // 3. Tra cứu trạng thái THẬT từ SePay — nguồn tin cậy duy nhất.
+    // CHÚ Ý: tên field đọc dưới đây (order_status/status, transaction_id,
+    // amount, payment_method) dựa theo suy luận hợp lý nhất từ tài liệu công
+    // khai hiện có (README SDK không mô tả đầy đủ response của order.retrieve).
+    // Log toàn bộ response ra để đối chiếu và chỉnh field cho đúng ngay khi
+    // chạy thử với merchant_id/secret_key thật lần đầu.
+    let sepayOrder;
+    try {
+      sepayOrder = await this.fetchOrderStatus(txnRef);
+      console.log(`[PaymentService] SePay order.retrieve(${txnRef}) =`, JSON.stringify(sepayOrder));
+    } catch (err) {
+      console.error(`[PaymentService] fetchOrderStatus lỗi cho ${txnRef}:`, err.message);
+      return { RspCode: "99", Message: "Không tra cứu được trạng thái giao dịch từ SePay" };
+    }
+
+    const rawStatus = String(sepayOrder?.order_status || sepayOrder?.status || "").toUpperCase();
+    // "CAPTURED" là trạng thái thành công thật sự trả về từ order.retrieve
+    // (xác nhận qua log thực tế môi trường sandbox) — SDK/docs không liệt kê
+    // rõ field này nên giữ nguyên các giá trị suy đoán ban đầu (SUCCESS/PAID/
+    // COMPLETED) phòng trường hợp production trả khác.
+    const isSuccess = ["SUCCESS", "PAID", "COMPLETED", "CAPTURED"].includes(rawStatus);
+    const isFinalFailure = ["FAILED", "CANCELLED", "EXPIRED", "ERROR"].includes(rawStatus);
+
+    if (!isSuccess && !isFinalFailure) {
+      // Vẫn đang chờ khách quét mã/chuyển khoản — session giữ nguyên PENDING,
+      // không claim/không coi là thất bại.
+      return { RspCode: "02", Message: `Payment status is still ${rawStatus || "unknown"}` };
+    }
+
+    // 4. Kiểm tra số tiền khớp với session (khi SePay có trả về amount).
+    const returnedAmount = sepayOrder?.order_amount ?? sepayOrder?.amount;
+    if (isSuccess && returnedAmount !== undefined) {
+      if (Math.round(session.total_amount) !== Math.round(Number(returnedAmount))) {
+        return { RspCode: "04", Message: "Invalid amount" };
+      }
+    }
+
+    // 5. Claim nguyên tử session (PENDING -> PROCESSING) — chống xử lý trùng
+    // khi callback + polling cùng gọi confirmPayment gần như đồng thời.
+    const claimedSession = await paymentSessionRepository.claimPending(txnRef);
+    if (!claimedSession) {
+      const latest = await paymentSessionRepository.findById(txnRef);
+      if (latest?.status === "PAID") {
+        return { RspCode: "02", Message: "Order already confirmed" };
+      }
+      if (latest?.status === "FAILED") {
+        return { RspCode: "02", Message: "Order already failed" };
+      }
+      return { RspCode: "02", Message: "Payment is already being processed" };
+    }
+
+    const transactionId = sepayOrder?.transaction_id || sepayOrder?.id || null;
+    const paymentMethod = sepayOrder?.payment_method || null;
+
+    if (isSuccess) {
+      return await this._handleSuccessPayment(claimedSession, { transactionId, paymentMethod, rawStatus });
+    } else {
+      return await this._handleFailedPayment(claimedSession, { transactionId, rawStatus });
+    }
+  }
+
+  /**
+   * Xác nhận kết quả thanh toán từ VNPAY (return URL / IPN) và thực hiện các
+   * tác vụ sau thanh toán — tương tự [confirmPayment] (SePay) nhưng VNPAY
+   * KHÔNG có API tra cứu lại trạng thái đơn hàng như SePay, nên phải tin theo
+   * tham số trả về trong URL callback SAU KHI đã xác thực chữ ký
+   * (vnp_SecureHash) qua [verifyReturnUrl]/[verifyIpnCall] ở controller.
    *
    * @param {Object} params
    * @param {string} params.txnRef         — vnp_TxnRef (session._id)
@@ -192,7 +387,7 @@ class PaymentService {
    * @param {string} params.bankCode       — vnp_BankCode
    * @returns {Promise<{ RspCode: string, Message: string, orderCodes?: string[] }>}
    */
-  async confirmPayment({ txnRef, amount, responseCode, transactionStatus, transactionNo, bankCode }) {
+  async confirmVnpayPayment({ txnRef, amount, responseCode, transactionStatus, transactionNo, bankCode }) {
     // 1. Tìm session
     const session = await paymentSessionRepository.findById(txnRef);
     if (!session) {
@@ -217,7 +412,6 @@ class PaymentService {
     // callback VNPAY (return URL + IPN) — có thể tới gần như đồng thời — được xử lý.
     const claimedSession = await paymentSessionRepository.claimPending(txnRef);
     if (!claimedSession) {
-      // Request khác đã claim/xử lý xong trước đó — trả lời idempotent, không xử lý lại.
       const latest = await paymentSessionRepository.findById(txnRef);
       if (latest?.status === "PAID") {
         return { RspCode: "02", Message: "Order already confirmed" };
@@ -232,9 +426,16 @@ class PaymentService {
     const isSuccess = responseCode === "00" && (transactionStatus || responseCode) === "00";
 
     if (isSuccess) {
-      return await this._handleSuccessPayment(claimedSession, { transactionNo, bankCode, responseCode });
+      return await this._handleSuccessPayment(claimedSession, {
+        transactionId: transactionNo,
+        paymentMethod: bankCode,
+        rawStatus: responseCode,
+      });
     } else {
-      return await this._handleFailedPayment(claimedSession, { transactionNo, responseCode });
+      return await this._handleFailedPayment(claimedSession, {
+        transactionId: transactionNo,
+        rawStatus: responseCode,
+      });
     }
   }
 
@@ -242,7 +443,7 @@ class PaymentService {
    * Xử lý thanh toán thành công — tạo orders thực tế từ session.
    * @private
    */
-  async _handleSuccessPayment(session, { transactionNo, bankCode, responseCode }) {
+  async _handleSuccessPayment(session, { transactionId, paymentMethod, rawStatus }) {
     // 1. Gom nhóm items theo shop_id
     const itemsByShop = new Map();
     for (const item of session.items) {
@@ -294,7 +495,7 @@ class PaymentService {
         shop_id: shopId,
         voucher_id: session.voucher_id || null,
         address_id: session.address_id,
-        payment_method: "vnpay",
+        payment_method: session.gateway || "sepay",
         delivery_option: session.delivery_option,
         payment_status: "paid",
         order_status: "confirmed",
@@ -325,9 +526,10 @@ class PaymentService {
 
       createdOrders.push(order);
       socketService.emitNewOrder(shopId, order);
+      const gatewayLabel = session.gateway === "vnpay" ? "VNPay" : "SePay";
       notificationService.notifyUser(session.user_id, {
         title: "Thanh toán thành công",
-        body: `Đơn hàng #${order.order_code} đã thanh toán qua VNPay và được tiếp nhận.`,
+        body: `Đơn hàng #${order.order_code} đã thanh toán qua ${gatewayLabel} và được tiếp nhận.`,
         type: "order",
         data: { order_id: String(order._id), order_status: order.order_status },
       });
@@ -389,9 +591,15 @@ class PaymentService {
 
     // 5. Cập nhật session → PAID
     session.status = "PAID";
-    session.vnp_transaction_no = transactionNo || null;
-    session.vnp_bank_code = bankCode || null;
-    session.vnp_response_code = responseCode || null;
+    if (session.gateway === "vnpay") {
+      session.vnp_transaction_no = transactionId || null;
+      session.vnp_bank_code = paymentMethod || null;
+      session.vnp_response_code = rawStatus || null;
+    } else {
+      session.sepay_transaction_id = transactionId || null;
+      session.sepay_payment_method = paymentMethod || null;
+      session.sepay_status = rawStatus || null;
+    }
     session.paid_at = new Date();
     session.order_ids = createdOrders.map((o) => o._id);
     await session.save();
@@ -426,18 +634,24 @@ class PaymentService {
    * Xử lý thanh toán thất bại.
    * @private
    */
-  async _handleFailedPayment(session, { transactionNo, responseCode }) {
+  async _handleFailedPayment(session, { transactionId, rawStatus }) {
     session.status = "FAILED";
-    session.vnp_transaction_no = transactionNo || null;
-    session.vnp_response_code = responseCode || null;
+    if (session.gateway === "vnpay") {
+      session.vnp_transaction_no = transactionId || null;
+      session.vnp_response_code = rawStatus || null;
+    } else {
+      session.sepay_transaction_id = transactionId || null;
+      session.sepay_status = rawStatus || null;
+    }
     await session.save();
 
+    const gatewayLabel = session.gateway === "vnpay" ? "VNPay" : "SePay";
     try {
       await notificationService.notify({
         userId: session.user_id,
         type: NOTIFICATION_TYPES.PAYMENT_FAILED,
         title: "Thanh toán thất bại",
-        message: `Giao dịch thanh toán VNPAY của bạn đã không thành công hoặc bị hủy.`,
+        message: `Giao dịch thanh toán ${gatewayLabel} của bạn đã không thành công hoặc bị hủy.`,
         data: {
           sessionId: session._id.toString(),
           type: NOTIFICATION_TYPES.PAYMENT_FAILED,

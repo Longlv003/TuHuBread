@@ -10,12 +10,15 @@ import '../blocs/auth/auth_cubit.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/cart/cart_cubit.dart';
 import '../blocs/home/home_cubit.dart';
+import '../blocs/home/home_state.dart';
 import '../blocs/notification/notification_cubit.dart';
 import '../blocs/notification/notification_state.dart';
 import '../blocs/order/order_cubit.dart';
 import '../di.dart';
 import '../models/address.model.dart';
 import '../routes/routes.dart';
+import '../services/geocoding_service.dart';
+import '../services/location_service.dart';
 import '../widgets/customer_bottom_nav.dart';
 import '../widgets/app_background.dart';
 import '../widgets/customer_header.dart';
@@ -42,7 +45,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// Id địa chỉ giao hàng đang dùng ở lần cập nhật gần nhất — để phân biệt
   /// "địa chỉ vừa tải xong lúc mở app" với "khách vừa đổi sang địa chỉ khác".
+  /// `null` là giá trị HỢP LỆ của chính id (khi chưa có địa chỉ nào), nên
+  /// không thể dùng `_lastActiveAddressId != null` để suy ra "đã tải lần nào
+  /// chưa" — phải tách riêng bằng [_hasLoadedAddressOnce], nếu không lần
+  /// chuyển từ 0 -> 1 địa chỉ (thêm địa chỉ đầu tiên) sẽ không bao giờ được
+  /// coi là "đổi địa chỉ", khiến GPS tiếp tục được dùng thay vì địa chỉ mới.
   String? _lastActiveAddressId;
+  bool _hasLoadedAddressOnce = false;
+
+  // Dịch ngược toạ độ GPS ra địa chỉ text khi khách CHƯA lưu địa chỉ nào —
+  // để dòng "Giao đến" ở header không đứng im ở "Thêm địa chỉ giao hàng" dù
+  // GPS đã xác định được vị trí (xem [_buildDeliveryAddressRow]).
+  final _geocoding = GeocodingService();
+  String? _resolvedCoordsKey;
+  String? _currentLocationLabel;
 
   void _handleHomeScrollHide(bool hide) {
     final shouldShow = !hide;
@@ -62,6 +78,12 @@ class _MyHomePageState extends State<MyHomePage> {
         getIt<NotificationCubit>().refreshUnreadCount();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _geocoding.dispose();
+    super.dispose();
   }
 
   Future<void> _onBellPressed() async {
@@ -115,10 +137,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       final activeId = _activeDeliveryAddress(addressState)?.id;
                       // Lần tải đầu (mở app) chỉ ghi nhận địa chỉ làm dự phòng
                       // cho GPS. Chỉ khi địa chỉ đang dùng ĐỔI SANG CÁI KHÁC —
-                      // tức khách vừa tự tay chọn — mới ép "Cửa hàng gần bạn"
-                      // theo địa chỉ đó thay vì chỗ đang đứng.
-                      final switched = _lastActiveAddressId != null &&
+                      // tức khách vừa tự tay chọn (kể cả từ "chưa có địa chỉ
+                      // nào" sang "vừa thêm địa chỉ đầu tiên") — mới ép "Cửa
+                      // hàng gần bạn" theo địa chỉ đó thay vì chỗ đang đứng.
+                      // Dùng _hasLoadedAddressOnce (không phải activeId != null)
+                      // để tránh lẫn "chưa tải lần nào" với "activeId đang null
+                      // vì chưa có địa chỉ" — 2 trạng thái này có id giống hệt.
+                      final switched = _hasLoadedAddressOnce &&
                           activeId != _lastActiveAddressId;
+                      _hasLoadedAddressOnce = true;
                       _lastActiveAddressId = activeId;
 
                       final forNearby = _addressForNearbyShops(addressState);
@@ -337,71 +364,141 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Dòng địa chỉ giao hàng hiện tại ngay dưới lời chào — bấm vào để đổi
   /// nhanh mà không cần chờ tới lúc Thanh toán mới thấy được đang giao đâu.
   Widget _buildDeliveryAddressRow(AppLocalizations l10n) {
-    return BlocBuilder<AddressCubit, AddressState>(
-      builder: (context, state) {
-        if (state is! AddressLoaded) return const SizedBox(height: 16);
+    // Bọc thêm 1 lớp BlocBuilder<HomeCubit> để rebuild lại khi HomeCubit tải
+    // xong (kể cả sau khi GPS tươi về ở pha 2 của loadHomeData) — để dòng địa
+    // chỉ có thể chuyển từ "Thêm địa chỉ giao hàng" sang vị trí GPS vừa dịch
+    // ngược được ngay khi có, không cần khách tương tác gì thêm.
+    //
+    // PHẢI dùng BlocBuilder (không phải `context.watch<HomeCubit>()` bằng
+    // context của State) vì hàm này được gọi từ build() TRƯỚC khi cây widget
+    // đi vào bên trong MultiBlocProvider<HomeCubit> — context của State nằm
+    // ở NGOÀI provider đó nên context.watch sẽ ném ProviderNotFoundException.
+    // BlocBuilder tự tạo context riêng đúng vị trí khi được mount vào cây, an
+    // toàn dù được khởi tạo từ context nào.
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, homeState) {
+        return BlocBuilder<AddressCubit, AddressState>(
+          builder: (context, state) {
+            if (state is! AddressLoaded) return const SizedBox(height: 16);
 
-        final addresses = state.addresses;
-        if (addresses.isEmpty) {
-          return GestureDetector(
-            onTap: () => _openAddressesPage(context),
-            behavior: HitTestBehavior.opaque,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.add_location_alt_rounded,
-                  size: 14,
-                  color: Color(0xFFE67E22),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  l10n.homeAddAddressPrompt,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFE67E22),
+            final addresses = state.addresses;
+            if (addresses.isEmpty) {
+              return _buildNoSavedAddressRow(l10n);
+            }
+
+            final AddressModel current = _activeDeliveryAddress(state)!;
+
+            return GestureDetector(
+              onTap: () => _openAddressesPage(context),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on_rounded,
+                    size: 14,
+                    color: Color(0xFF95A5A6),
                   ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final AddressModel current = _activeDeliveryAddress(state)!;
-
-        return GestureDetector(
-          onTap: () => _openAddressesPage(context),
-          behavior: HitTestBehavior.opaque,
-          child: Row(
-            children: [
-              const Icon(
-                Icons.location_on_rounded,
-                size: 14,
-                color: Color(0xFF95A5A6),
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  l10n.homeDeliverTo(current.addressDetail),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF7F8C8D),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      l10n.homeDeliverTo(current.addressDetail),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF7F8C8D),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: Color(0xFFBDC3C7),
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 16,
-                color: Color(0xFFBDC3C7),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
+    );
+  }
+
+  /// Khách CHƯA lưu địa chỉ nào. Nếu GPS đã xác định được vị trí, dịch ngược
+  /// ra địa chỉ text để hiện tạm (giống Grab/ShopeeFood) thay vì để trống chờ
+  /// khách tự thêm — bấm vào vẫn mở màn Địa chỉ để khách lưu địa chỉ giao
+  /// hàng THẬT (toạ độ GPS chỉ mang tính tham khảo, không tự thành địa chỉ
+  /// giao hàng vì thiếu người nhận/SĐT).
+  Widget _buildNoSavedAddressRow(AppLocalizations l10n) {
+    final coords = getIt<LocationService>().lastKnownCoordinates;
+    if (coords != null) {
+      final key = '${coords.latitude},${coords.longitude}';
+      if (_resolvedCoordsKey != key) {
+        _resolvedCoordsKey = key;
+        _geocoding.reverse(coords.latitude, coords.longitude).then((place) {
+          if (!mounted || _resolvedCoordsKey != key) return;
+          setState(() => _currentLocationLabel = place?.displayName);
+        });
+      }
+    }
+
+    if (coords != null && _currentLocationLabel != null) {
+      return GestureDetector(
+        onTap: () => _openAddressesPage(context),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.my_location_rounded,
+              size: 14,
+              color: Color(0xFFE67E22),
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                l10n.homeDeliverTo(_currentLocationLabel!),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF7F8C8D),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: Color(0xFFBDC3C7),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _openAddressesPage(context),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.add_location_alt_rounded,
+            size: 14,
+            color: Color(0xFFE67E22),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            l10n.homeAddAddressPrompt,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFE67E22),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
