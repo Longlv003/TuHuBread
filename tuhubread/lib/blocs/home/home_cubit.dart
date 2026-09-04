@@ -16,7 +16,7 @@ class HomeCubit extends Cubit<HomeState> {
   final LocationService locationService;
 
   HomeCubit({required this.repository, required this.locationService})
-      : super(const HomeInitial());
+    : super(const HomeInitial());
 
   /// Số thứ tự lần tải trang chủ gần nhất — dùng để loại bỏ kết quả của các
   /// lần tải cũ về muộn hơn (xem [loadHomeData]).
@@ -28,43 +28,77 @@ class HomeCubit extends Cubit<HomeState> {
   /// Toạ độ được lưu trong [LocationService] (singleton) chứ không phải trong
   /// cubit này, vì HomeCubit đăng ký dạng factory nên sẽ bị tạo mới mỗi lần
   /// màn hình chính dựng lại.
-  Future<void> updateDeliveryLocation(double? lat, double? lng) async {
+  /// [preferOverGps] = true khi khách CHỦ ĐỘNG đổi địa chỉ (không phải lúc
+  /// danh sách địa chỉ chỉ mới tải xong khi mở app) — lúc đó "Cửa hàng gần
+  /// bạn" phải theo địa chỉ mới thay vì GPS.
+  Future<void> updateDeliveryLocation(
+    double? lat,
+    double? lng, {
+    bool preferOverGps = false,
+  }) async {
     final current = locationService.deliveryCoordinates;
-    if (lat == current?.latitude && lng == current?.longitude) return;
-    locationService.setDeliveryCoordinates(lat, lng);
+    final unchanged = lat == current?.latitude && lng == current?.longitude;
+    locationService.setDeliveryCoordinates(
+      lat,
+      lng,
+      preferOverGps: preferOverGps,
+    );
+    // Địa chỉ không đổi và chỉ là dự phòng cho GPS -> không cần tải lại,
+    // GPS lúc mở app đã lo phần hiển thị rồi.
+    if (unchanged && !preferOverGps) return;
     await loadHomeData();
   }
 
   // ─────────── LOAD ALL HOME DATA ───────────
 
-  /// Gọi tất cả API song song — 1 API fail KHÔNG crash toàn bộ.
-  /// Mỗi repo method đã wrap try/catch riêng → Future.wait không throw.
-  /// Sections lỗi sẽ hiện rỗng, lỗi được ghi vào [HomeLoaded.sectionErrors].
+  /// Tải trang chủ theo 2 pha để vừa nhanh vừa đúng:
+  ///   1. Có toạ độ sẵn (vị trí lần trước / địa chỉ giao hàng) -> tải và hiện
+  ///      NGAY, không bắt khách nhìn khung chờ tới 6 giây đợi GPS.
+  ///   2. Song song đó lấy GPS tươi; nếu khác chỗ cũ đáng kể thì tải lại cho
+  ///      đúng chỗ đang đứng.
+  /// Mỗi pha đều qua [_fetchAndEmit] với cùng cơ chế chống kết quả cũ đè mới.
   Future<void> loadHomeData() async {
     // Đánh dấu lần tải này. Trang chủ có thể bị gọi tải nhiều lần chồng nhau
-    // (lần đầu lúc mở app, lần sau khi biết địa chỉ giao hàng), mà lần chạy
-    // trước thường CHẬM hơn vì phải chờ GPS tới 6 giây. Nếu không chặn, kết
+    // mà lần chạy trước thường CHẬM hơn vì phải chờ GPS. Nếu không chặn, kết
     // quả cũ (chưa có toạ độ -> backend trả TẤT CẢ cửa hàng) sẽ về sau và ghi
     // đè lên kết quả mới đã lọc đúng, làm danh sách nhảy loạn.
     final requestId = ++_loadRequestId;
 
-    // Chỉ hiện khung chờ khi chưa có gì để xem. Các lần tải lại sau đó (vd.
-    // khi đã biết địa chỉ giao hàng) giữ nguyên nội dung cũ trên màn hình,
-    // tránh chớp skeleton giữa chừng.
+    // Chỉ hiện khung chờ khi chưa có gì để xem — các lần tải lại giữ nguyên
+    // nội dung cũ trên màn hình, tránh chớp skeleton giữa chừng.
     if (state is! HomeLoaded) emit(const HomeLoading());
 
-    // Ưu tiên toạ độ địa chỉ giao hàng đang chọn, không có thì lùi về GPS.
-    // Timeout ở đây là lớp bảo vệ để trang chủ không bị treo khi máy bắt GPS
-    // chậm — khi hết giờ vẫn dùng vị trí lấy được gần nhất thay vì bỏ trống,
-    // vì bỏ trống sẽ khiến backend trả về TẤT CẢ cửa hàng (kể cả rất xa).
-    final coords = await locationService.resolveNearbyCoordinates().timeout(
-          const Duration(seconds: 8),
-          onTimeout: () => locationService.lastKnownCoordinates,
-        );
+    // Pha 1: hiện nhanh bằng toạ độ có sẵn.
+    final quick = locationService.quickCoordinates;
+    if (quick != null) {
+      await _fetchAndEmit(quick, requestId);
+      if (requestId != _loadRequestId || isClosed) return;
+    }
 
-    // Đã có lần tải mới hơn trong lúc chờ GPS -> bỏ luôn, không gọi API thừa.
+    // Pha 2: GPS tươi. Timeout để trang chủ không bao giờ treo vì GPS chậm.
+    final fresh = await locationService.resolveNearbyCoordinates().timeout(
+      const Duration(seconds: 8),
+      onTimeout: () => locationService.lastKnownCoordinates,
+    );
     if (requestId != _loadRequestId || isClosed) return;
 
+    // Vị trí tươi trùng chỗ đã hiện (dưới 300m) -> khỏi tải lại vô ích.
+    final movedEnough =
+        quick == null ||
+        fresh == null ||
+        LocationService.distanceKm(quick, fresh) > 0.3;
+    if (quick != null && !movedEnough) return;
+
+    await _fetchAndEmit(fresh, requestId);
+  }
+
+  /// Gọi tất cả API song song — 1 API fail KHÔNG crash toàn bộ.
+  /// Mỗi repo method đã wrap try/catch riêng → Future.wait không throw.
+  /// Sections lỗi sẽ hiện rỗng, lỗi được ghi vào [HomeLoaded.sectionErrors].
+  Future<void> _fetchAndEmit(
+    ({double latitude, double longitude})? coords,
+    int requestId,
+  ) async {
     final lat = coords?.latitude;
     final lng = coords?.longitude;
 

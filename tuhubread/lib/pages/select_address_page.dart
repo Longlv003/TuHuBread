@@ -196,6 +196,7 @@ class _SelectAddressContentState extends State<_SelectAddressContent> {
                           onTap: () => getx.Get.back(result: address),
                           onEdit: () =>
                               _openAddressForm(context, address: address),
+                          showDefaultLabel: addresses.length > 1,
                         ),
                       ),
                   ],
@@ -346,11 +347,16 @@ class _SavedAddressRow extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
 
+  /// Chỉ hiện nhãn "Mặc định" khi khách có nhiều hơn 1 địa chỉ — có đúng 1
+  /// địa chỉ thì nhãn này thừa vì không có gì để so sánh.
+  final bool showDefaultLabel;
+
   const _SavedAddressRow({
     required this.address,
     required this.l10n,
     required this.onTap,
     required this.onEdit,
+    required this.showDefaultLabel,
   });
 
   @override
@@ -385,7 +391,7 @@ class _SavedAddressRow extends StatelessWidget {
                           color: Color(0xFF2C3E50),
                         ),
                       ),
-                      if (address.isDefault) ...[
+                      if (showDefaultLabel && address.isDefault) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(

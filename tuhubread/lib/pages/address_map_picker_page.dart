@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../di.dart';
 import '../l10n/app_localizations.dart';
+import '../services/geocoding_service.dart';
 import '../services/location_service.dart';
 
 /// Kết quả trả về khi khách chọn xong vị trí trên bản đồ.
@@ -67,13 +67,7 @@ class AddressMapPickerPage extends StatefulWidget {
 }
 
 class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
-  // Nominatim (OpenStreetMap) yêu cầu bắt buộc phải có User-Agent định danh
-  // ứng dụng trong mọi request — thiếu header này request thường bị chặn
-  // hoặc trả về rỗng mà không báo lỗi rõ ràng.
-  // https://operations.osmfoundation.org/policies/nominatim/
-  final _dio = Dio(
-    BaseOptions(headers: {'User-Agent': 'TuHuBreadApp/1.0'}),
-  );
+  final _geocoding = GeocodingService();
   final _searchController = TextEditingController();
   final _locationService = getIt<LocationService>();
   InAppWebViewController? _mapController;
@@ -107,7 +101,7 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
   void dispose() {
     _searchController.dispose();
     _searchDebounce?.cancel();
-    _dio.close();
+    _geocoding.dispose();
     super.dispose();
   }
 
@@ -160,32 +154,17 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
 
   Future<void> _reverseGeocode(double lat, double lng) async {
     setState(() => _isResolvingAddress = true);
-    try {
-      final res = await _dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'format': 'json',
-          'lat': lat,
-          'lon': lng,
-          'accept-language': 'vi',
-        },
-      );
-      if (!mounted) return;
-      final data = res.data as Map<String, dynamic>?;
-      final address = (data?['address'] as Map<String, dynamic>?) ?? {};
-      setState(() {
-        _centerDisplayName = data?['display_name'] as String?;
-        _centerStreetGuess = [
-          address['house_number'],
-          address['road'] ?? address['pedestrian'],
-        ].where((s) => s != null && '$s'.isNotEmpty).join(' ');
-        _centerWardGuess = (address['suburb'] ?? address['quarter'] ?? address['city_district'] ?? address['town'] ?? address['village']) as String?;
-        _centerProvinceGuess = (address['city'] ?? address['state']) as String?;
-        _isResolvingAddress = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _isResolvingAddress = false);
-    }
+    final place = await _geocoding.reverse(lat, lng);
+    if (!mounted) return;
+    setState(() {
+      if (place != null) {
+        _centerDisplayName = place.displayName;
+        _centerStreetGuess = place.street;
+        _centerWardGuess = place.ward;
+        _centerProvinceGuess = place.province;
+      }
+      _isResolvingAddress = false;
+    });
   }
 
   void _onCenterChanged(List<dynamic> args) {
@@ -217,24 +196,14 @@ class _AddressMapPickerPageState extends State<AddressMapPickerPage> {
       _searchErrorMessage = null;
     });
     try {
-      final res = await _dio.get(
-        'https://nominatim.openstreetmap.org/search',
-        queryParameters: {
-          'format': 'json',
-          'q': query,
-          'countrycodes': 'vn',
-          'accept-language': 'vi',
-          'limit': 8,
-        },
-      );
+      final places = await _geocoding.search(query);
       if (!mounted) return;
-      final list = (res.data as List? ?? []);
       setState(() {
-        _searchResults = list
-            .map((e) => _PlaceSuggestion(
-                  displayName: e['display_name'] as String,
-                  lat: double.parse(e['lat'] as String),
-                  lng: double.parse(e['lon'] as String),
+        _searchResults = places
+            .map((p) => _PlaceSuggestion(
+                  displayName: p.displayName,
+                  lat: p.latitude,
+                  lng: p.longitude,
                 ))
             .toList();
         _isSearching = false;

@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node ./bin/www",
     "seed:vouchers": "node scripts/seed_vouchers.js",
-    "recalc:ratings": "node scripts/recalc_shop_ratings.js"
+    "recalc:ratings": "node scripts/recalc_shop_ratings.js",
+    "seed:demo": "node scripts/seed_demo.js",
+    "seed:demo:undo": "node scripts/seed_demo.js --reset"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

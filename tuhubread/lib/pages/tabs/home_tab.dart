@@ -365,7 +365,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 205,
+          height: HorizontalProductCard.height,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -677,6 +677,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     AppLocalizations l10n, {
     required bool hasLocation,
   }) {
+    // [hasLocation] được suy ra từ việc có shop nào kèm khoảng cách hay không,
+    // nên khi danh sách RỖNG nó luôn bằng false — không có nghĩa là mất vị trí,
+    // mà chỉ là quanh đây không có cửa hàng nào. Lúc đó chỉ hiện đúng một
+    // thông báo "chưa có cửa hàng", không kèm cảnh báo vị trí gây hiểu nhầm.
+    final showAllShopsFallback = !hasLocation && shops.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -698,7 +704,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               ),
               const SizedBox(width: 8),
               Text(
-                hasLocation ? l10n.homeShopsNearYou : l10n.homeAllShops,
+                showAllShopsFallback ? l10n.homeAllShops : l10n.homeShopsNearYou,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -720,7 +726,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
         // Chưa xác định được vị trí thì danh sách này KHÔNG phải "gần bạn" —
         // nói thẳng và chỉ cách khắc phục, thay vì lặng lẽ hiện toàn bộ cửa
         // hàng như thể chúng đều ở gần.
-        if (!hasLocation) ...[
+        if (showAllShopsFallback) ...[
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),

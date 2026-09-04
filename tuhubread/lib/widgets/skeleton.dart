@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_tokens.dart';
+import 'product_grid_card.dart';
 
 /// Hiệu ứng "quét sáng" chạy ngang qua các khối skeleton bên trong.
 ///
@@ -205,7 +206,7 @@ class ProductGridSkeleton extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.68,
+          mainAxisExtent: ProductGridCard.height,
         ),
         itemCount: itemCount,
         itemBuilder: (context, _) => Column(

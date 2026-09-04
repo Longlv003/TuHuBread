@@ -40,6 +40,10 @@ class _MyHomePageState extends State<MyHomePage> {
   // (xem thêm nội dung) thì ẩn để nhường diện tích, cuộn lên thì hiện lại.
   bool _isNavVisible = true;
 
+  /// Id địa chỉ giao hàng đang dùng ở lần cập nhật gần nhất — để phân biệt
+  /// "địa chỉ vừa tải xong lúc mở app" với "khách vừa đổi sang địa chỉ khác".
+  String? _lastActiveAddressId;
+
   void _handleHomeScrollHide(bool hide) {
     final shouldShow = !hide;
     if (shouldShow == _isNavVisible) return;
@@ -108,10 +112,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     // bạn" theo toạ độ địa chỉ đó thay vì GPS của máy.
                     listener: (context, addressState) {
                       if (addressState is! AddressLoaded) return;
+                      final activeId = _activeDeliveryAddress(addressState)?.id;
+                      // Lần tải đầu (mở app) chỉ ghi nhận địa chỉ làm dự phòng
+                      // cho GPS. Chỉ khi địa chỉ đang dùng ĐỔI SANG CÁI KHÁC —
+                      // tức khách vừa tự tay chọn — mới ép "Cửa hàng gần bạn"
+                      // theo địa chỉ đó thay vì chỗ đang đứng.
+                      final switched = _lastActiveAddressId != null &&
+                          activeId != _lastActiveAddressId;
+                      _lastActiveAddressId = activeId;
+
                       final forNearby = _addressForNearbyShops(addressState);
                       context.read<HomeCubit>().updateDeliveryLocation(
                             forNearby?.latitude,
                             forNearby?.longitude,
+                            preferOverGps: switched,
                           );
                     },
                     child: AppBackground(

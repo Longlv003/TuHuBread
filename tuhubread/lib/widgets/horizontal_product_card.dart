@@ -9,6 +9,28 @@ class HorizontalProductCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
 
+  /// Chiều cao cố định của thẻ. Nơi nào đặt thẻ vào danh sách ngang PHẢI dùng
+  /// đúng hằng số này cho khung chứa — trước đây mỗi màn tự đặt 200/205px,
+  /// thấp hơn nội dung khi món vừa giảm giá vừa có tên 2 dòng, gây tràn 6px.
+  /// Mọi khối bên trong đều có chiều cao cố định nên tổng luôn bằng đúng
+  /// số này, không phụ thuộc chữ dài ngắn.
+  static const double height =
+      _imageHeight +
+      _padding * 2 +
+      _titleHeight +
+      _gapAfterTitle +
+      _descriptionHeight +
+      _gapBeforePrice +
+      _priceRowHeight;
+
+  static const double _imageHeight = 100;
+  static const double _padding = 8;
+  static const double _titleHeight = 30; // 2 dòng @12px
+  static const double _gapAfterTitle = 3;
+  static const double _descriptionHeight = 22; // 2 dòng @9px
+  static const double _gapBeforePrice = 6;
+  static const double _priceRowHeight = 31;
+
   const HorizontalProductCard({
     super.key,
     required this.product,
@@ -24,6 +46,7 @@ class HorizontalProductCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: 150,
+          height: height,
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -47,7 +70,7 @@ class HorizontalProductCard extends StatelessWidget {
                     ),
                     child: AppNetworkImage(
                       url: product.image,
-                      height: 100,
+                      height: _imageHeight,
                       width: 150,
                       fallbackIconSize: 30,
                     ),
@@ -77,61 +100,88 @@ class HorizontalProductCard extends StatelessWidget {
                     ),
                 ],
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+              Padding(
+                padding: const EdgeInsets.all(_padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Mỗi khối chữ chiếm đúng chiều cao cố định dù nội dung
+                    // ngắn hay dài -> giá và nút "+" của mọi thẻ luôn thẳng
+                    // hàng nhau, và tổng chiều cao không bao giờ vượt khung.
+                    SizedBox(
+                      height: _titleHeight,
+                      child: Text(
                         product.productName,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2C3E50),
+                          height: 1.25,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 3),
-                      Text(
+                    ),
+                    const SizedBox(height: _gapAfterTitle),
+                    SizedBox(
+                      height: _descriptionHeight,
+                      child: Text(
                         product.description ?? '',
                         style: const TextStyle(
                           fontSize: 9,
                           color: Color(0xFF7F8C8D),
+                          height: 1.2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Spacer(),
-                      Row(
+                    ),
+                    const SizedBox(height: _gapBeforePrice),
+                    SizedBox(
+                      height: _priceRowHeight,
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (product.hasDiscount)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // Luôn chừa dòng giá gốc (ẩn khi không giảm
+                                // giá) để giá bán của các thẻ nằm cùng một
+                                // đường, không bị nhấp nhô.
                                 Text(
-                                  CurrencyFormatter.formatVND(product.price),
+                                  product.hasDiscount
+                                      ? CurrencyFormatter.formatVND(
+                                          product.price,
+                                        )
+                                      : '',
                                   style: const TextStyle(
                                     fontSize: 9,
                                     color: Color(0xFFBDC3C7),
                                     decoration: TextDecoration.lineThrough,
+                                    height: 1.2,
                                   ),
+                                  maxLines: 1,
                                 ),
-                              Text(
-                                CurrencyFormatter.formatVND(
-                                  product.displayPrice,
+                                Text(
+                                  CurrencyFormatter.formatVND(
+                                    product.displayPrice,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFE67E22),
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFE67E22),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 4),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => onAddToCart?.call(),
@@ -150,8 +200,8 @@ class HorizontalProductCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

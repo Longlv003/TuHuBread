@@ -504,7 +504,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 200,
+          height: HorizontalProductCard.height,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -669,7 +669,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.68,
+          mainAxisExtent: ProductGridCard.height,
         ),
         itemCount: products.length,
         itemBuilder: (context, idx) {

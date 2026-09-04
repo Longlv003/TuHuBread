@@ -157,7 +157,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
-                      childAspectRatio: 0.68,
+                      mainAxisExtent: ProductGridCard.height,
                     ),
                     itemCount: products.length,
                     itemBuilder: (context, idx) {

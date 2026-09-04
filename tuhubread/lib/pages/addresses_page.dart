@@ -165,6 +165,7 @@ class _AddressesContent extends StatelessWidget {
                             onEdit: () => _openForm(context, address: address),
                             onDelete: () => _confirmDelete(context, l10n, address.id),
                             onSetDefault: () => context.read<AddressCubit>().setDefault(address.id),
+                            showDefaultControls: addresses.length > 1,
                           );
                         },
                       ),
@@ -207,24 +208,32 @@ class _AddressCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onSetDefault;
 
+  /// Chỉ bật khi khách có từ 2 địa chỉ trở lên. Có đúng 1 địa chỉ thì mọi đơn
+  /// đều giao tới đó, nên nhãn "Mặc định" và nút "Đặt làm mặc định" không mang
+  /// thêm thông tin gì — chỉ làm rối.
+  final bool showDefaultControls;
+
   const _AddressCard({
     required this.address,
     required this.l10n,
     required this.onEdit,
     required this.onDelete,
     required this.onSetDefault,
+    required this.showDefaultControls,
   });
 
   @override
   Widget build(BuildContext context) {
+    final highlightDefault = showDefaultControls && address.isDefault;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: address.isDefault ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1),
-          width: address.isDefault ? 1.5 : 1,
+          color: highlightDefault ? const Color(0xFFE67E22) : const Color(0xFFF1EAE1),
+          width: highlightDefault ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -242,7 +251,7 @@ class _AddressCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (address.isDefault)
+              if (highlightDefault)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -273,7 +282,7 @@ class _AddressCard extends StatelessWidget {
           const Divider(height: 20, color: Color(0xFFF1EAE1)),
           Row(
             children: [
-              if (!address.isDefault)
+              if (showDefaultControls && !address.isDefault)
                 TextButton(
                   onPressed: onSetDefault,
                   child: Text(

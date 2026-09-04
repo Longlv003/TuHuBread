@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:geolocator/geolocator.dart';
 
 enum LocationFailureReason {
@@ -41,19 +43,55 @@ class LocationService {
   ({double latitude, double longitude})? get deliveryCoordinates =>
       _deliveryCoordinates;
 
-  void setDeliveryCoordinates(double? latitude, double? longitude) {
+  /// Khách vừa CHỦ ĐỘNG đổi địa chỉ giao hàng -> "Cửa hàng gần bạn" phải theo
+  /// địa chỉ đó chứ không theo chỗ đang đứng. Ngược lại (mở app bình thường)
+  /// thì ưu tiên GPS.
+  bool _preferDeliveryOverGps = false;
+
+  void setDeliveryCoordinates(
+    double? latitude,
+    double? longitude, {
+    bool preferOverGps = false,
+  }) {
     _deliveryCoordinates = (latitude != null && longitude != null)
         ? (latitude: latitude, longitude: longitude)
         : null;
+    _preferDeliveryOverGps = preferOverGps && _deliveryCoordinates != null;
   }
 
-  /// Toạ độ dùng để tìm "Cửa hàng gần bạn": ưu tiên địa chỉ giao hàng đang
-  /// chọn, không có thì mới lấy GPS (đã tự lùi về vị trí cũ nếu GPS lỗi).
-  Future<({double latitude, double longitude})?> resolveNearbyCoordinates() {
-    if (_deliveryCoordinates != null) {
-      return Future.value(_deliveryCoordinates);
+  /// Toạ độ có sẵn NGAY LẬP TỨC (không phải chờ GPS) để trang chủ hiện dữ
+  /// liệu trước, rồi mới tải lại bằng GPS tươi sau. Null nếu chưa có gì.
+  ({double latitude, double longitude})? get quickCoordinates {
+    if (_preferDeliveryOverGps) return _deliveryCoordinates;
+    return _lastKnownCoordinates ?? _deliveryCoordinates;
+  }
+
+  /// Toạ độ chính xác dùng để tìm "Cửa hàng gần bạn".
+  ///
+  /// Mở app -> lấy GPS hiện tại (giống Grab/ShopeeFood: hiện quán quanh chỗ
+  /// đang đứng). Không lấy được GPS mới lùi về địa chỉ giao hàng. Riêng khi
+  /// khách vừa tự tay đổi địa chỉ thì dùng thẳng địa chỉ đó.
+  Future<({double latitude, double longitude})?>
+  resolveNearbyCoordinates() async {
+    if (_preferDeliveryOverGps && _deliveryCoordinates != null) {
+      return _deliveryCoordinates;
     }
-    return getCurrentCoordinates();
+    return await getCurrentCoordinates() ?? _deliveryCoordinates;
+  }
+
+  /// Khoảng cách gần đúng (km) giữa 2 toạ độ — đủ dùng để biết vị trí có
+  /// "đổi đáng kể" hay không, không cần chính xác tới mét.
+  static double distanceKm(
+    ({double latitude, double longitude}) a,
+    ({double latitude, double longitude}) b,
+  ) {
+    const kmPerDegree = 111.0;
+    final dLat = (a.latitude - b.latitude) * kmPerDegree;
+    final dLng =
+        (a.longitude - b.longitude) *
+        kmPerDegree *
+        math.cos(a.latitude * math.pi / 180);
+    return math.sqrt(dLat * dLat + dLng * dLng);
   }
 
   /// Trả về null nếu không có quyền/không bật GPS thay vì throw, vì đây là
@@ -112,7 +150,9 @@ class LocationService {
       throw const LocationException(LocationFailureReason.permissionDenied);
     }
     if (permission == LocationPermission.deniedForever) {
-      throw const LocationException(LocationFailureReason.permissionDeniedForever);
+      throw const LocationException(
+        LocationFailureReason.permissionDeniedForever,
+      );
     }
 
     try {

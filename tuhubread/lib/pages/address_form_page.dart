@@ -4,6 +4,7 @@ import 'package:get/get.dart' as getx;
 import 'package:tuhubread/l10n/app_localizations.dart';
 
 import '../blocs/address/address_cubit.dart';
+import '../blocs/address/address_state.dart';
 import '../models/address.model.dart';
 import '../utils/address_label.dart';
 import 'address_map_picker_page.dart';
@@ -34,6 +35,17 @@ class _AddressFormPageState extends State<AddressFormPage> {
   double? _detectedLongitude;
 
   bool get _isEditing => widget.address != null;
+
+  /// Có nên hiện ô "Đặt làm mặc định" không.
+  ///
+  /// Ẩn khi sau thao tác này khách vẫn chỉ có đúng 1 địa chỉ:
+  ///   - Thêm mới mà chưa có địa chỉ nào  -> địa chỉ này đương nhiên được dùng.
+  ///   - Sửa địa chỉ duy nhất đang có     -> không có gì để so sánh mặc định.
+  bool _showDefaultOption(BuildContext context) {
+    final state = context.read<AddressCubit>().state;
+    final count = state is AddressLoaded ? state.addresses.length : 0;
+    return _isEditing ? count > 1 : count >= 1;
+  }
 
   @override
   void initState() {
@@ -255,18 +267,23 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 8),
-            CheckboxListTile(
-              value: _isDefault,
-              onChanged: (v) => setState(() => _isDefault = v ?? false),
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-              activeColor: const Color(0xFFE67E22),
-              title: Text(
-                l10n.addressSetDefaultLabel,
-                style: const TextStyle(fontSize: 14, color: Color(0xFF2C3E50)),
+            // Chỉ hỏi "đặt làm mặc định" khi khách sẽ có từ 2 địa chỉ trở lên.
+            // Địa chỉ đầu tiên mặc nhiên là địa chỉ giao hàng nên hỏi thêm chỉ
+            // gây rối (xem [_showDefaultOption]).
+            if (_showDefaultOption(context)) ...[
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                value: _isDefault,
+                onChanged: (v) => setState(() => _isDefault = v ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                activeColor: const Color(0xFFE67E22),
+                title: Text(
+                  l10n.addressSetDefaultLabel,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF2C3E50)),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
